@@ -1,0 +1,6 @@
+{
+  "version": "0.1.0",
+  "author": "Jasim A Basheer",
+  "date": "May 2026",
+  "abstract": "Build and modify Sapporta applications: discover project tables and endpoints, create schema-as-code tables, insert and query data safely, write Hono/ts-rest domain endpoints, build custom frontend views, author and run hierarchical reports, configure drill-through links, and troubleshoot common Sapporta native-module issues."
+}

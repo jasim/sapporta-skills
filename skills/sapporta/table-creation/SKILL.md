@@ -113,8 +113,7 @@ compare and sort the same as any other `number`. The only difference is how
 they render. There is no `type: "money"` on `ColumnMeta` any more — the
 factory has already stamped `displayFormat: "currency"`.
 
-Deeper reading: [DATA-TYPE-PRINCIPLES.md](../../../docs/DATA-TYPE-PRINCIPLES.md)
-(in the Sapporta repo) — the full design rationale, including the
+Deeper reading: `docs/DATA-TYPE-PRINCIPLES.md` in the Sapporta repo -- the full design rationale, including the
 operator-applicability matrix and boundary-parse contract.
 
 ## Constraints
