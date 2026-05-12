@@ -284,7 +284,7 @@ group, scanned on every query. 2-4 columns is the common case.
 medium tables. Large, search-heavy tables will later get an FTS5
 (inverted-index) mode on the same `meta.search` field; it's a schema
 upgrade, not a migration. Until then, don't hand-roll FTS5 outside
-the framework.
+Sapporta.
 
 ## Sapporta Metadata
 

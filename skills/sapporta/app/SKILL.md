@@ -12,7 +12,7 @@ description: >
 
 `src/app/` is where the project's domain code lives. Each `.ts` file
 default-exports a `TsRestApi` instance — Sapporta's Hono sub-app with
-ts-rest contracts wired in. These sub-apps are peers of the framework's
+ts-rest contracts wired in. These sub-apps are peers of Sapporta's
 auto-generated CRUD and report endpoints; the same Hono tree serves all
 of them under `/api/`.
 
@@ -313,7 +313,7 @@ Key points:
 - `c.get("db")` — Drizzle `BetterSQLite3Database` (schema-aware queries).
 - `c.get("sqlite")` — raw `better-sqlite3` `Database` (prepared statements, `sqlite.transaction(...)`).
 
-Both are injected by framework middleware — no setup needed.
+Both are injected by Sapporta middleware — no setup needed.
 
 ## Synchronous DB
 

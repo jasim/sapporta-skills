@@ -1,7 +1,7 @@
 ---
 name: sapporta
 description: >
-  Sapporta is a TypeScript framework for building database-backed applications — schema-as-code tables, auto-generated CRUD, hierarchical reports, and domain code as Hono sub-apps in `src/app/`. Invoke whenever the user works in a Sapporta project, runs the `sapporta` CLI, mentions tables/schema/reports/`src/app/`/`src/schema/`, or asks to insert data, create endpoints, run reports, or troubleshoot native-module errors.
+  Sapporta is a TypeScript library for building database-backed applications — schema-as-code tables, auto-generated CRUD, hierarchical reports, and domain code as Hono sub-apps in `src/app/`. Invoke whenever the user works in a Sapporta project, runs the `sapporta` CLI, mentions tables/schema/reports/`src/app/`/`src/schema/`, or asks to insert data, create endpoints, run reports, or troubleshoot native-module errors.
 ---
 
 # Sapporta Application Builder
@@ -114,7 +114,7 @@ Grouped by concern. Pick the group, then the bullet.
 
 ### Application code in `src/app/`
 
-Two axes: how your code plugs into Sapporta (framework mechanics), and how to write the code well on top of that (TS+Hono patterns that aren't Sapporta-specific).
+Two axes: how your code plugs into Sapporta (library integration mechanics), and how to write the code well on top of that (TS+Hono patterns that aren't Sapporta-specific).
 
 - **How your code plugs into Sapporta — writing `TsRestApi<SapportaEnv>` sub-apps with ts-rest contracts (GET via `c.query`, POST/PUT/PATCH/DELETE via `c.mutation`, path params, JSON and `multipart/form-data` file uploads via the typed `files` channel), `api.register(...)` for one-declaration request validation + OpenAPI emission, `c.get("db")`/`c.get("sqlite")`, synchronous Drizzle, `sqlite.transaction()`, typed `{ status, body }` responses, and escape hatches to plain Hono. ts-rest contracts live in the `__SLUG__-shared` workspace package (one file per feature in `shared/src/contracts/`, barrelled through `shared/src/contracts/index.ts`); handlers in `src/app/` import from there.** -> read [app/SKILL.md](app/SKILL.md)
 - **Raising typed errors from deep workflow code so handlers return specific HTTP statuses (422/502) instead of bare 500s** -> read [user-code/SKILL.md](user-code/SKILL.md)
