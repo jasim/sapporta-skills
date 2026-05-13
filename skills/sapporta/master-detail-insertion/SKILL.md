@@ -8,6 +8,10 @@ description: >
 
 # Master-Detail Insertion
 
+## Scope & Safety
+
+Only insert parent-child data when the user has asked for a data change in the current local Sapporta project. Inspect both table schemas first, stay within the requested tables, and never fabricate values, credentials, or foreign keys.
+
 ## Command
 
 ```bash

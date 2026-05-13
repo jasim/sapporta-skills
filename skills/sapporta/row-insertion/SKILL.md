@@ -7,6 +7,10 @@ description: >
 
 # Row Insertion
 
+## Scope & Safety
+
+Only insert or change data when the user has asked for a data change in the current local Sapporta project. Inspect the table schema first, stay within the requested tables, and never fabricate values, credentials, or foreign keys.
+
 ## Command
 
 ```
