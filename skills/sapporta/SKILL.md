@@ -30,6 +30,36 @@ wire-format types — both backend handlers and the frontend's typed
 client import from it, so request and response shapes are declared
 exactly once.
 
+## Mandatory Dev Server Preflight
+
+In an existing Sapporta project, a running Sapporta dev server is a prerequisite for almost every workflow in this skill tree. The CLI commands used for discovery, metadata, tables, reports, and endpoint schemas call the local server's meta APIs; if the server is not running, they fail with generic errors such as `{"ok":false,"error":"fetch failed","code":"INTERNAL"}`.
+
+Before running **any** `pnpm exec sapporta ...` / `sapporta ...` command in a project, first verify that the project server is reachable:
+
+```bash
+curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/openapi.json" >/dev/null
+```
+
+If that probe fails, do **not** run Sapporta CLI discovery commands and do not fall back as though the project has no tables/endpoints. Tell the user the Sapporta dev server is required and ask them to either:
+
+1. start it themselves with `pnpm dev`, or
+2. confirm that you should start it.
+
+If the user confirms, start `pnpm dev` from the Sapporta project root as a long-running process, wait until `/api/openapi.json` responds successfully, and only then continue with Sapporta CLI commands.
+
+The server defaults to port **3000**. To use a different port, set `PORT` when starting the project's dev/start script:
+
+```bash
+PORT=5458 pnpm dev        # or: PORT=5458 pnpm start
+```
+
+When the server runs on a non-default port, set `SAPPORTA_API_URL` once or pass `--api-url` consistently to CLI commands:
+
+```bash
+export SAPPORTA_API_URL=http://localhost:5458
+sapporta meta tables --api-url http://localhost:5458
+```
+
 ## Quick Reference
 
 ```bash
@@ -99,7 +129,7 @@ The JSON is validated against the command's Zod schema — type errors are caugh
 
 ## Mandatory First Steps — Project Discovery
 
-**Before doing anything else**, run these two commands to understand what the project already has:
+**Before doing anything else**, complete the Mandatory Dev Server Preflight above. Then run these two commands to understand what the project already has:
 
 1. **List tables**: `sapporta meta tables` — shows all tables, their columns, types, and row counts.
 2. **List all endpoints**: `sapporta describe` — lists every HTTP endpoint (built-in and user-defined in `src/app/`).
@@ -168,22 +198,6 @@ When building an entire application or feature:
 - **No FK fabrication**: Always look up foreign key values before inserting. Never guess IDs.
 - **Data integrity**: Respect NOT NULL constraints. Omit auto-generated columns (`id`, `created_at`, `updated_at`).
 - **Schema-as-code**: Tables are TypeScript files using Drizzle's SQLite builder. Changes applied via `sapporta meta schema sync`.
-
-## Server Port
-
-The server defaults to port **3000**. To use a different port, set `PORT` when starting the project's dev/start script:
-
-```bash
-PORT=5458 pnpm dev        # or: PORT=5458 pnpm start
-```
-
-When the server runs on a non-default port, pass `--api-url` to CLI commands:
-
-```bash
-sapporta meta tables --api-url http://localhost:5458
-```
-
-Or set the environment variable once: `export SAPPORTA_API_URL=http://localhost:5458`.
 
 ## Common Pitfalls
 
