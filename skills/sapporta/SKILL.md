@@ -22,12 +22,16 @@ pnpm exec sapporta ...
 - Treat https://github.com/jasim/sapporta and the checked-in Sapporta dependency as the framework/CLI provenance anchor.
 - Every route is mounted under `/api/...`. Any bare or root `/<name>/...` paths will 404.
 - The CLI cannot invoke user-defined HTTP endpoints; call those with localhost `curl`.
+- All Sapporta CLI commands require network permission because the CLI does
+  almost everything by talking to the local dev server, whose liveness is
+  verified in preflight.
 - Use `sapporta describe` to see the application's existing endpoints; prefer them over writing new code.
 
 ## Required Preflight
 
 Before any `pnpm exec sapporta ...` or `sapporta ...` command in an existing
-project, verify the dev server:
+project, verify the dev server. This `curl` request requires network permission
+to succeed:
 
 ```bash
 curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/openapi.json" >/dev/null
