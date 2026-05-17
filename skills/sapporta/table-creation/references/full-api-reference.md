@@ -145,6 +145,9 @@ interface ColumnMeta {
    *  participate in query semantics — money compares the same as any other
    *  number. You normally don't set this by hand. */
   displayFormat?: "currency" | "percentage";
+  /** Presentation/editor hint for text columns. Does NOT change storage,
+   *  validation, filtering, sorting, or text semantics. */
+  textPresentation?: "multiLine" | "markdown";
   /** Custom column header for display */
   header?: string;
   /** Hide column from grid and drawer (auto-set for created_at/updated_at) */
@@ -177,5 +180,12 @@ interface ColumnMeta {
 There is **no** `type: "money"` field. `money()` already stamps
 `displayFormat: "currency"`; downstream consumers read that, not a separate
 meta override.
+
+Use `textPresentation: "multiLine"` by default for long plain text columns
+such as `description`, `notes`, `memo`, `comments`, `instructions`, `address`,
+`reason`, and `summary`. Use `"markdown"` only for user-authored formatted
+content such as `body`, `content`, `article`, `post`, `template`, or
+`message`. Do not add it for short labels, names, codes, SKUs, email/reference
+fields, enums, or other one-line identifiers.
 
 AI tools should read `notes` when generating code that references the column, and should write `notes` when the column has non-obvious semantics (domain meaning, units, conventions, or formulas).

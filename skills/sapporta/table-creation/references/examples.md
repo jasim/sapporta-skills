@@ -61,6 +61,9 @@ export const journalEntries = table({
   meta: {
     label: "Journal Entries",
     immutable: true,
+    columns: {
+      description: { textPresentation: "multiLine" },
+    },
     children: [
       {
         table: "journal_lines",
@@ -107,6 +110,7 @@ export const journalLines = table({
       // needed — `money()` already stamped displayFormat: "currency".
       debit: { tone: "positive" },
       credit: { tone: "negative" },
+      memo: { textPresentation: "multiLine" },
     },
   },
 });

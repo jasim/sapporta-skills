@@ -113,6 +113,11 @@ compare and sort the same as any other `number`. The only difference is how
 they render. There is no `type: "money"` on `ColumnMeta` any more — the
 factory has already stamped `displayFormat: "currency"`.
 
+**`textPresentation` is presentation, not semantics.** Use it only on `text()`
+columns when the UI should treat the value as longer-form text. Supported
+values are `"multiLine"` and `"markdown"`. It does not change storage,
+validation, filtering, sorting, or query behavior.
+
 Deeper reading: `docs/DATA-TYPE-PRINCIPLES.md` in the Sapporta repo -- the full design rationale, including the
 operator-applicability matrix and boundary-parse contract.
 
@@ -317,7 +322,8 @@ meta: {
   columns: {                               // Per-column display metadata
     total: { header: "Total Amount", width: 12 },
     quantity: { notes: "Actual amount in the food's serving_unit (e.g. 40 for 40gm)" },
-    description: { maxWidth: 60 },         // Sizing: width, minWidth, maxWidth (char counts)
+    description: { textPresentation: "multiLine", maxWidth: 60 },
+    body: { textPresentation: "markdown" },
     internal_notes: { visuallyHidden: true },
 
     // Numeric ink — only for money/number columns. Zero/null stays neutral.
@@ -331,6 +337,21 @@ meta: {
 ```
 
 Only include metadata fields you actually need. `label` is recommended for all tables.
+
+### When to use `textPresentation`
+
+Use `textPresentation` on text columns whose values are naturally longer than
+one line:
+
+- `textPresentation: "multiLine"` — default for long plain text such as
+  `description`, `notes`, `memo`, `comments`, `instructions`, `address`,
+  `reason`, and `summary`.
+- `textPresentation: "markdown"` — use only when users are expected to author
+  formatted markdown, such as `body`, `content`, `article`, `post`,
+  `template`, or `message`.
+
+Do not add `textPresentation` for short labels, names, codes, SKUs, email or
+reference fields, enum/select columns, or other one-line text identifiers.
 
 ### When to use `tone` and `emphasize`
 
