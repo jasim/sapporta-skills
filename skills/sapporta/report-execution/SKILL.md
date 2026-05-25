@@ -12,7 +12,7 @@ description: >
 
 1. **Check for an existing report** -- `sapporta reports`
 2. If a match exists, **execute it** with parameters.
-3. If not, **run read-only ad-hoc SQL** -- `sapporta meta sql "SELECT ..."`.
+3. If not, **run read-only ad-hoc SQL** -- `sapporta db exec-sql "SELECT ..."`.
 
 ## Running an existing report
 
@@ -33,9 +33,9 @@ sapporta reports run <report-name> --as_of_date 2024-12-31
 When no report covers the question, use read-only SQL (`SELECT` or `WITH`) against the current local Sapporta project:
 
 ```bash
-sapporta meta sql "SELECT ..."
-# or, to pass params + a row cap:
-sapporta meta sql --json '{"sql": "SELECT ...", "params": [...], "limit": 100}'
+sapporta db exec-sql "SELECT ..."
+# or, to pass a row cap:
+sapporta db exec-sql --input-body-json '{"sql": "SELECT ...", "limit": 100}'
 ```
 
 This skill is about reads. For mutations, use the relevant mutation skill (e.g. [row-insertion](../row-insertion/SKILL.md), [master-detail-insertion](../master-detail-insertion/SKILL.md)) or the raw SQL fallback only when the user has explicitly asked for that kind of data change.

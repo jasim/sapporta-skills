@@ -14,16 +14,16 @@ Only insert or change data when the user has asked for a data change in the curr
 ## Command
 
 ```
-sapporta tables add-row <table_name> --data '<json>'
+sapporta rows insert <table_name> --data '<json>'
 ```
 
 `--data` accepts a single JSON object or a JSON array for multiple rows.
 
 ## Before Inserting
 
-1. **Describe the table**: `sapporta meta tables show <table_name>`
-2. **Sample existing data**: `sapporta meta tables sample <table_name>`
-3. **Look up FK values**: `sapporta meta sql --json '{"sql": "SELECT id, name FROM referenced_table"}'`
+1. **Describe the table**: `sapporta tables show <table_name>`
+2. **Sample existing data**: `sapporta tables sample <table_name>`
+3. **Look up FK values**: `sapporta db exec-sql "SELECT id, name FROM referenced_table"`
 
 ## Lookup-or-Create Pattern
 
@@ -31,13 +31,13 @@ When inserting rows that reference other tables, or when records may already exi
 
 ```bash
 # Step 1: Check if record exists
-sapporta meta sql "SELECT id, name FROM customers WHERE name = 'Alice'"
+sapporta db exec-sql "SELECT id, name FROM customers WHERE name = 'Alice'"
 
 # Step 2: If not found, insert it
-sapporta tables add-row customers --data '{"name": "Alice", "email": "alice@example.com"}'
+sapporta rows insert customers --data '{"name": "Alice", "email": "alice@example.com"}'
 
 # Step 3: Use the ID (from step 1 or 2) in the dependent insert
-sapporta tables add-row orders --data '{"customer_id": 7, "status": "draft"}'
+sapporta rows insert orders --data '{"customer_id": 7, "status": "draft"}'
 ```
 
 This is especially important for FK columns — always resolve IDs from existing data before inserting.

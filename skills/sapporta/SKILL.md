@@ -22,16 +22,16 @@ pnpm exec sapporta ...
 - Treat https://github.com/jasim/sapporta and the checked-in Sapporta dependency as the framework/CLI provenance anchor.
 - Every route is mounted under `/api/...`. Any bare or root `/<name>/...` paths will 404.
 - The CLI cannot invoke user-defined HTTP endpoints; call those with localhost `curl`.
-- All Sapporta CLI commands require network permission because the CLI does
-  almost everything by talking to the local dev server, whose liveness is
-  verified in preflight.
+- API-backed Sapporta CLI commands require network permission because they talk
+  to the local dev server. `check` and `init` are local commands; `describe`
+  still reads the live OpenAPI document.
 - Use `sapporta describe` to see the application's existing endpoints; prefer them over writing new code.
 
 ## Required Preflight
 
-Before any `pnpm exec sapporta ...` or `sapporta ...` command in an existing
-project, verify the dev server. This `curl` request requires network permission
-to succeed:
+Before any API-backed `pnpm exec sapporta ...` or `sapporta ...` command in an
+existing project, verify the dev server. This `curl` request requires network
+permission to succeed:
 
 ```bash
 curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/openapi.json" >/dev/null
@@ -42,7 +42,7 @@ If the probe fails, stop. Tell the user the Sapporta dev server is required and 
 Then discover the project:
 
 ```bash
-pnpm exec sapporta meta tables
+pnpm exec sapporta tables
 pnpm exec sapporta describe
 ```
 
@@ -59,7 +59,7 @@ pnpm exec sapporta describe "METHOD /api/path"
 For data changes, use the highest fitting option:
 
 1. Existing project/domain endpoint from `sapporta describe`
-2. Built-in table CRUD: `sapporta tables add-row/update/delete`
+2. Built-in row CRUD: `sapporta rows insert/update/delete`
 3. Built-in reports/actions
 4. Raw SQL fallback: read [meta-sql/SKILL.md](meta-sql/SKILL.md) first
 
@@ -108,16 +108,16 @@ For data changes, use the highest fitting option:
 ```bash
 pnpm exec sapporta describe
 pnpm exec sapporta describe "METHOD /api/path"
-pnpm exec sapporta meta tables
-pnpm exec sapporta meta tables show <name>
-pnpm exec sapporta meta tables sample <name>
-pnpm exec sapporta tables add-row <table> --data '[{...}]'
+pnpm exec sapporta tables
+pnpm exec sapporta tables show <name>
+pnpm exec sapporta tables sample <name>
+pnpm exec sapporta rows insert <table> --data '[{...}]'
 pnpm exec sapporta reports
-pnpm exec sapporta reports run <name> --data '{...}'
-pnpm exec sapporta meta schema sync
+pnpm exec sapporta reports run <name> --as_of_date 2026-05-25
+pnpm exec sapporta schema sync
 ```
 
-Any command can accept `--json` with one JSON object matching its input schema.
+Commands with request bodies can accept `--input-body-json` with one JSON object matching the endpoint input schema. Row and table mutation commands also accept their route-specific `--data` shorthand.
 
 ## Data Rules
 
@@ -126,4 +126,4 @@ Any command can accept `--json` with one JSON object matching its input schema.
 - Respect NOT NULL constraints.
 - Omit generated columns such as `id`, `created_at`, and `updated_at`.
 - Tables are schema-as-code TypeScript files; apply changes with
-  `sapporta meta schema sync`.
+  `sapporta schema sync`.

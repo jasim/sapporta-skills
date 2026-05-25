@@ -372,8 +372,8 @@ These are display-only hints — the underlying values are stored verbatim and p
 
 ## After Creating a Table
 
-1. Run `sapporta meta schema sync` to apply the migration
-2. Verify with `sapporta meta tables show <table_name>`
+1. Run `sapporta schema sync` to apply the migration
+2. Verify with `sapporta tables show <table_name>`
 
 ## Modifying Existing Tables
 
@@ -382,9 +382,9 @@ These are display-only hints — the underlying values are stored verbatim and p
 Tables created through the browser UI are stored in `_sapporta_tables` metadata. Rename them with:
 
 ```bash
-sapporta meta tables update <old_name> --data '{"name":"<new_name>"}'
+sapporta tables update <old_name> --data '{"name":"<new_name>"}'
 # Optionally update label too:
-sapporta meta tables update <old_name> --data '{"name":"<new_name>","label":"Display Label"}'
+sapporta tables update <old_name> --data '{"name":"<new_name>","label":"Display Label"}'
 ```
 
 This atomically renames the SQLite table, updates all metadata rows, and fixes FK references.
@@ -396,7 +396,7 @@ Tables defined as TypeScript files in `src/schema/` are file-managed. To rename:
 1. Change the `sqliteTable("old_name", ...)` first argument to the new name
 2. Rename the file (e.g., `old-name.ts` → `new-name.ts`)
 3. Update imports in any files that reference the old table
-4. Run `sapporta meta schema sync` to apply the migration
+4. Run `sapporta schema sync` to apply the migration
 
 ## Reference Files
 
