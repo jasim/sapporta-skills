@@ -95,6 +95,11 @@ column is another LIKE in the OR group.
 
 ## ChildMeta
 
+Declare `children` on the table referenced by an FK when users need to inspect,
+create, or navigate child/source rows from the referenced row. Sapporta keeps
+this explicit: it detects FK columns for lookup/drill-up behavior, but it does
+not infer parent -> child collections from those FKs.
+
 ```typescript
 interface ChildMeta {
   /** SQL name of the child table */

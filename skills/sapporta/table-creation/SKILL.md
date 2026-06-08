@@ -217,6 +217,9 @@ export const orderItemsTable = sqliteTable("order_items", {
 - FK column naming: `{singular_referenced_table}_id` (e.g., `order_id`, `account_id`)
 - Always use `.references(() => targetTable.id)`
 - For cascade deletes: `.references(() => targetTable.id, { onDelete: "cascade" })`
+- After adding every FK, decide whether the referenced table should declare the
+  inverse `meta.children` entry. Sapporta intentionally does not infer children
+  from FKs; encode target -> source navigation explicitly when users need it.
 
 For **self-referential FKs**, import `AnySQLiteColumn` and use a return-type annotation:
 
@@ -394,9 +397,47 @@ These are display-only hints — the underlying values are stored verbatim and p
 
 ## Relationship Patterns
 
-- **One-to-many**: FK on the "many" side (e.g., `account_id` on `transactions` references `accounts`)
-- **Many-to-many**: join table with two FKs (e.g., `product_tags` with `product_id` + `tag_id`)
-- **Master-detail**: FK on detail table with `onDelete: "cascade"` so deleting the parent removes its children. Add `children` to the parent's `meta` for nested grid display in the UI.
+- Think of each relationship in two directions: the FK gives `source -> target`
+  navigation; `target.meta.children` opts into `target -> source` navigation.
+- **Many-to-one / drill-up**: put the FK on the source table with
+  `.references(() => targetTable.id)`. Sapporta renders that FK as a lookup
+  field and a drill-up link from the source row to the target row.
+- **One-to-many / drill-into**: add `children` to the referenced table's
+  `meta` for each inbound FK whose source rows users need to inspect, create,
+  or navigate from the target row. This powers nested grids, drill-into links,
+  and master-detail create payloads.
+- **Self hierarchy**: use a nullable self-FK such as `parent_id` for drill-up
+  and filtering. Self-FKs are supported for lookup and filtering, but recursive
+  `children` metadata is not supported by the schema-driven table grid. Use a
+  report for recursive hierarchy views.
+- **Many-to-many**: use a join table with two FKs. Add `children` from each
+  endpoint table to the join table when users should browse assignments from
+  either side. Do not model endpoint tables as direct children of each other
+  unless there is a real FK between them.
+- **Master-detail**: FK on detail table with `onDelete: "cascade"` so deleting
+  the parent removes its children. Add `children` to the parent's `meta` for
+  nested grid display and atomic parent + detail insertion.
+
+### Relationship Inventory Checklist
+
+Before finishing table schema work, make a relationship pass over every table:
+
+1. List every FK as `source_table.source_fk -> target_table.id`.
+2. For each FK, confirm the source column uses `.references()` and follows
+   `{singular_target}_id` naming unless the domain needs a clearer role name.
+3. Add `meta.children` on the target table when users need to inspect, create,
+   or navigate source rows from a target row. Prefer explicit children for
+   user-visible relationships, including history, assignments, and audit/detail
+   rows, not only cascade-owned details.
+4. Include multiple child entries when a parent has multiple useful collections
+   (for example, `authors -> books` and `authors -> quotes`).
+5. For each child entry, choose human-facing `label`, compact `columns`, and a
+   stable `defaultSort` when insertion order or date order is more useful than
+   primary-key order.
+6. For self-FKs, do not add self `children`; document or build a report for the
+   hierarchy if users need parent -> descendant browsing.
+7. For join tables, add children from both endpoint tables to the join table
+   when both browsing directions matter.
 
 ## After Creating a Table
 

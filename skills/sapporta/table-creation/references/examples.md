@@ -36,9 +36,22 @@ export const accounts = table({
     // name + code. UI toolbar surfaces a search input when this is set.
     // Omit if a table isn't worth searching — ?q= 400s without it.
     search: { columns: ["name", "code"] },
+    children: [
+      {
+        table: "journal_lines",
+        foreignKey: "account_id",
+        label: "Journal Lines",
+        columns: ["debit", "credit", "memo"],
+      },
+    ],
   },
 });
 ```
+
+Do not add a self `children` entry for `accounts.parent_id`. The FK gives
+account rows drill-up behavior to their parent, but recursive table-child graphs
+are not supported by the schema-driven grid. Use a report when the app needs an
+expandable account hierarchy.
 
 ### journal-entries.ts — Immutable journal entries
 
@@ -124,6 +137,11 @@ on the parent, `onDelete: "cascade"` on the child FK, `children` in parent
 meta for nested grid, and `money()` on price columns. See the bookkeeping
 examples for the full pattern.
 
+Add `children` for inbound FKs even when the child is not cascade-owned by the
+parent. For example, `journal_lines.account_id -> accounts.id` is not owned by
+`accounts`, but account rows should expose journal lines because users review
+activity from the account.
+
 ## Inventory Management
 
 ### products.ts — Demonstrates `unique()` and boolean defaults
@@ -162,4 +180,5 @@ The warehouses and stock-movements tables follow the same patterns —
 warehouses is a simple reference table (like accounts without the self-ref
 FK), and stock-movements combines multiple FKs (product_id + warehouse_id), a
 text status column with `meta.selects`, and `immutable: true` (like
-journal-lines).
+journal-lines). Products and warehouses should both declare `children` pointing
+to `stock_movements` if users should browse movement history from either side.
