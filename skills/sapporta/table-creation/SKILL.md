@@ -19,6 +19,7 @@ import { Temporal } from "@sapporta/shared/temporal";
 // Always export the raw Drizzle table so other schema files can reference its columns in .references()
 export const ordersTable = sqliteTable("orders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  workspace_id: integer("workspace_id").notNull(),
   customer_name: text("customer_name").notNull(),
   status: text("status").notNull(),
   total: money("total").notNull().default(0),
@@ -31,6 +32,7 @@ export const orders = table({
   drizzle: ordersTable,
   meta: {
     label: "Orders",
+    rowScope: "workspaceGlobal",
     selects: [
       {
         type: "select",
@@ -41,6 +43,21 @@ export const orders = table({
   },
 });
 ```
+
+## Auth Row Scope
+
+Auth-enabled projects must declare `meta.rowScope` on every table:
+
+- `workspaceUserScoped` requires `workspace_id` and `scoped_to_user_id`.
+- `workspaceGlobal` requires `workspace_id`.
+- `systemGlobal` is for installation-wide reference data and has no workspace
+  predicate.
+
+Do not infer row scope from column presence. Declare it explicitly. Scope
+columns are system-managed; clients must not submit or edit `workspace_id`,
+`workspaceId`, `scoped_to_user_id`, or `scopedToUserId`. Use Drizzle
+`.references()` wherever possible and `meta.references` only when a relationship
+cannot be proven from Drizzle metadata.
 
 ## Row and Insert Types
 

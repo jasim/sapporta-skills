@@ -16,6 +16,12 @@ in `shared/src/contracts/`. Prefer the project-local CLI:
 pnpm exec sapporta ...
 ```
 
+Auth-enabled Sapporta projects keep Better Auth integration in generated
+project code and adapt sessions into Sapporta's generic auth context. Core
+exports row-scope metadata, row-access predicates, guards, and workspace-safe
+table handlers; it does not import Better Auth. In the Sapporta repo, start at
+`docs/auth.md` for the auth narrative.
+
 ## Non-Negotiables
 
 - Work only in the local Sapporta project rooted at `cwd` or the nearest `sapporta.json`.
@@ -125,5 +131,7 @@ Commands with request bodies can accept `--input-body-json` with one JSON object
 - Do not fabricate foreign keys; look them up.
 - Respect NOT NULL constraints.
 - Omit generated columns such as `id`, `created_at`, and `updated_at`.
+- In auth-enabled projects, also omit system-managed `workspace_id`,
+  `workspaceId`, `scoped_to_user_id`, and `scopedToUserId`.
 - Tables are schema-as-code TypeScript files; apply changes with
   `sapporta schema sync`.

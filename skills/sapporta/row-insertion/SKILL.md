@@ -48,4 +48,6 @@ This is especially important for FK columns — always resolve IDs from existing
   - Text: `"value"` | Integer: `42` | Numeric/decimal: `"99.50"` (string for precision) | Boolean: `true`/`false` | Timestamp: `"2024-01-15T10:30:00Z"`
 - **No FK fabrication** — always look up foreign key IDs, never guess
 - **Respect NOT NULL** — include all required columns; omit `id`, `created_at`, `updated_at` (auto-generated)
+- **Auth scope is trusted server data** — in auth-enabled projects, omit
+  `workspace_id`, `workspaceId`, `scoped_to_user_id`, and `scopedToUserId`
 - **Use snake_case** — column names must match schema output exactly (`customer_name`, not `customerName`)

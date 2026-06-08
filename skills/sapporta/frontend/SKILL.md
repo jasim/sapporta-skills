@@ -15,6 +15,12 @@ The project template wires `TableRoute` and `ReportRoute` under
 wizards, forms that span multiple tables — add your own route and render it
 with the same primitives `@sapporta/ui` uses.
 
+Auth-enabled frontends load session and `/api/auth-context` before Sapporta
+metadata. Non-owner workspace users may enter generated product routes, but
+owner-only framework navigation for tables, reports, and metadata should be
+hidden. Generated and custom forms must omit system-managed scope fields and
+columns marked `clientEditable: false`.
+
 Follow the convention the template ships: `frontend/src/Welcome.tsx` is a
 working example of a custom view, imported in `App.tsx` and linked from
 `Sidebar.tsx`. Add new views the same way — one file per view at

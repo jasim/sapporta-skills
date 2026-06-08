@@ -18,6 +18,10 @@ Reports are far more useful when the user can jump from a row into the underlyin
 
 Both use the same `ReportLink` shape. Add them whenever a report exposes an entity key (account id, txn id, report period, etc.) — the user should almost always be able to drill through.
 
+In auth-enabled projects, links should only target rows visible through the same
+active workspace boundary. Prefer FK-backed or explicit reference metadata so
+table drill-through and lookup visibility stay consistent.
+
 ## The ReportLink shape
 
 ```typescript

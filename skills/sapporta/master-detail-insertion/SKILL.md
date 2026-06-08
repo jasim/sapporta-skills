@@ -20,6 +20,11 @@ sapporta rows insert <parent_table> --data '{"field":"value","$details":{"table"
 
 Runs in a single transaction: inserts master -> gets its `id` -> backfills `fk` on each detail row -> inserts details. Rolls back on any failure.
 
+In auth-enabled projects, trusted scope fields are propagated by the server for
+both master and detail rows. Do not include `workspace_id`, `workspaceId`,
+`scoped_to_user_id`, or `scopedToUserId`; do not include server-managed
+references marked `clientCanSet: false`.
+
 ## Critical Rule
 
 **Do NOT include the FK column in the detail `rows`** -- it's backfilled automatically from the master's ID.

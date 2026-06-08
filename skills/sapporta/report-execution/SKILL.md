@@ -27,6 +27,8 @@ sapporta reports run <report-name> --as_of_date 2024-12-31
 
 - Required params must be included; optional params use defaults.
 - Dates as ISO strings (`"2024-12-31"`).
+- In auth-enabled projects, report output should be interpreted within the
+  active workspace/user visibility boundary enforced by the report route.
 
 ## Ad-hoc queries
 

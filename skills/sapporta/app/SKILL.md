@@ -39,6 +39,29 @@ things from one declaration:
 and middleware (`api.use(...)`) remain available for the rare cases that
 fall outside ts-rest — see "Escape hatches" below.
 
+## Auth Boundary
+
+Product routes should resolve auth at the route edge with
+`projectAuth.requireWorkspaceUser(c)` or the appropriate project auth guard.
+Owner-only framework routes use the owner guard. Once auth is resolved, use the
+highest fitting data-access primitive:
+
+1. **Default:** `scopedRows(db, auth, table)` for ordinary table work:
+   `.list(...)`, `.get(...)`, `.create(...)`, `.update(...)`, `.delete(...)`,
+   `.lookup(...)`, `.count(...)`, and `.exportRows(...)`.
+2. **Advanced:** `auth.rowSecurity.forTable(table)` with Drizzle for joins,
+   transactions, aggregates, multi-table state transitions, custom SQL, or
+   domain invariants that `scopedRows()` cannot express.
+3. **Escape hatch:** raw SQL / `better-sqlite3` prepared statements only when
+   the above primitives genuinely do not fit. Keep raw SQL in the module's
+   `db/` folder and add a short justification explaining why `scopedRows()` or
+   `rowSecurity.forTable()` does not fit.
+
+Never manually stamp or filter `workspace_id`, `workspaceId`,
+`scoped_to_user_id`, or `scopedToUserId`. Never mutate scoped rows by primary
+key alone. Never insert `request.body` directly into scoped tables. Never fetch
+broadly and filter row ownership in JavaScript.
+
 ## Mounting: don't forget this step
 
 The scaffold's `boot.ts` ships two calls that turn a sub-app into a
@@ -102,6 +125,131 @@ Shared is a leaf package — no React, Hono, Drizzle, or better-sqlite3
 imports. Only `zod` and `@ts-rest/core` are allowed runtime deps. See
 `shared/CLAUDE.md` for the full constraints.
 
+## Backend organization
+
+Sapporta keeps route apps under `src/app/`, but substantial backend code should
+be organized as a vertical-slice modular monolith. Group by semantic domain,
+bounded context, or feature module first; use technical folders only as leaves
+inside that domain.
+
+Avoid root-level horizontal MVC:
+
+```text
+packages/api/src/models/
+packages/api/src/controllers/
+packages/api/src/services/
+packages/api/src/views/
+```
+
+Prefer domain modules:
+
+```text
+packages/api/src/modules/
+  orders/
+    db/
+      order-store.ts
+    services/
+      create-order.ts
+      fulfill-order.ts
+    routes/
+      orders.ts
+  billing/
+    db/
+      invoice-store.ts
+    services/
+      create-invoice.ts
+      record-payment.ts
+    routes/
+      invoices.ts
+  projects/
+    db/
+      project-store.ts
+    services/
+      assign-task.ts
+    routes/
+      projects.ts
+```
+
+Nested domains are fine when a subdomain is tightly coupled to a parent domain;
+apply the same rule recursively:
+
+```text
+packages/api/src/modules/
+  commerce/
+    orders/
+      db/
+      services/
+      routes/
+    inventory/
+      db/
+      services/
+      routes/
+    billing/
+      db/
+      services/
+      routes/
+```
+
+Small apps may keep a thin route file directly in `src/app/`. Larger features
+should put domain code in `src/modules/<domain>/`. `src/app/*.ts` can be thin
+route entrypoints importing module routes, or `src/app.ts` can mount route apps
+exported from modules, depending on the project's existing style.
+
+```text
+packages/api/src/app/orders.ts
+packages/api/src/modules/orders/routes/orders.ts
+packages/api/src/modules/orders/services/create-order.ts
+packages/api/src/modules/orders/services/fulfill-order.ts
+packages/api/src/modules/orders/db/order-store.ts
+```
+
+Do not pile parser, workflow, and database logic directly into `src/app/`.
+
+## Data-access layer
+
+The old prepared-statement style had one useful property: database code stayed
+in one place. Preserve that property with Sapporta primitives.
+
+- Route files are adapters: resolve auth, read `c.get("db")`, call a service,
+  and return the typed response.
+- Services orchestrate domain workflows and call the module store.
+- `db/` modules own all database reads and writes.
+- Store functions accept `db` plus `auth`, or a small typed context object such
+  as `{ db, auth }`.
+- Store functions use `scopedRows()` for ordinary table operations.
+- Store functions use `auth.rowSecurity.forTable(table)` for custom Drizzle
+  workflows.
+- Raw SQL stays inside `db/` modules, never in routes, parsers, or business
+  workflow files.
+
+An order workflow should look roughly like:
+
+```text
+packages/api/src/modules/orders/
+  db/
+    order-store.ts          # scopedRows / rowSecurity / rare raw SQL
+  services/
+    create-order.ts         # workflow orchestration
+    fulfill-order.ts        # workflow orchestration
+  routes/
+    orders.ts               # TsRestApi route adapter
+```
+
+Route responsibility:
+
+```typescript
+const auth = projectAuth.requireWorkspaceUser(c);
+const result = await createOrder({
+  db: c.get("db"),
+  auth,
+  input: request.body,
+});
+```
+
+Service responsibility: validate domain workflow inputs, coordinate multi-step
+work, and call the module store. Store responsibility: all database reads and
+writes. Prefer Sapporta scoped APIs.
+
 ## Minimal GET route
 
 ```typescript
@@ -151,7 +299,8 @@ Notes:
 - `c.query()` is for GETs (no body). `c.mutation()` is for POST/PUT/PATCH/DELETE (body allowed).
 - `request.query.name` is already `string` — the default kicked in at parse time.
 - The handler returns `{ status, body }`. The adapter serializes it based on the declared response content type (defaults to JSON).
-- `async` is optional — only use it when the handler actually awaits.
+- `async` is optional — use it when the handler awaits scoped row operations,
+  transactions, file I/O, or external HTTP.
 
 ## POST with JSON body
 
@@ -181,22 +330,19 @@ export const accountsContract = c.router({
 
 ```typescript
 // src/app/accounts.ts
-import { TsRestApi, type SapportaEnv } from "@sapporta/server";
+import { scopedRows, TsRestApi, type SapportaEnv } from "@sapporta/server";
 import { accountsContract } from "__SLUG__-shared";
+import { projectAuth } from "../project-auth/index.js";
+import { accounts } from "../schema/accounts.js";
 
 const api = new TsRestApi<SapportaEnv>();
 
-api.register("createAccount", accountsContract.createAccount, ({ c, request }) => {
-  const db = c.get("db");
-  const existing = db
-    .select()
-    .from(accountsTable)
-    .where(eq(accountsTable.name, request.body.name))
-    .get();
-  if (existing) return { status: 409, body: { error: "name taken" } };
+api.register("createAccount", accountsContract.createAccount, async ({ c, request }) => {
+  const auth = projectAuth.requireWorkspaceUser(c);
+  const rows = scopedRows(c.get("db"), auth, accounts);
 
-  const row = db.insert(accountsTable).values(request.body).returning().get();
-  return { status: 200, body: { id: row.id, name: row.name } };
+  const created = (await rows.create(request.body)) as { id: number; name: string };
+  return { status: 200, body: { id: created.id, name: created.name } };
 });
 
 export default api;
@@ -205,6 +351,10 @@ export default api;
 Each `status` you return must be declared in `responses` — TypeScript
 enforces this. If you genuinely need to return a status that isn't part
 of the API surface, see the `Response` escape hatch below.
+
+For uniqueness checks or other domain rules, keep the query inside the same
+row-security boundary, preferably in a module store. Do not replace
+`rows.create(...)` with a direct scoped-table insert.
 
 ## Path params
 
@@ -227,15 +377,12 @@ getAccount: c.query({
 
 ```typescript
 // src/app/accounts.ts
-api.register("getAccount", accountsContract.getAccount, ({ c, request }) => {
-  const row = c.get("db")
-    .select()
-    .from(accountsTable)
-    .where(eq(accountsTable.id, request.params.id))
-    .get();
-  return row
-    ? { status: 200, body: row }
-    : { status: 404, body: { error: "not found" } };
+api.register("getAccount", accountsContract.getAccount, async ({ c, request }) => {
+  const auth = projectAuth.requireWorkspaceUser(c);
+  const rows = scopedRows(c.get("db"), auth, accounts);
+
+  const row = await rows.get(request.params.id);
+  return { status: 200, body: row };
 });
 ```
 
@@ -311,46 +458,65 @@ Key points:
 ```
 
 - `c.get("db")` — Drizzle `BetterSQLite3Database` (schema-aware queries).
-- `c.get("sqlite")` — raw `better-sqlite3` `Database` (prepared statements, `sqlite.transaction(...)`).
 
-Both are injected by Sapporta middleware — no setup needed.
+Sapporta middleware injects the database — no setup needed. Product code should
+normally pass `c.get("db")` plus route-edge auth into services/stores. Do not
+pass the raw SQLite handle into domain services by default.
 
-## Synchronous DB
+## DB calls
 
-`better-sqlite3` is synchronous. Drizzle calls return values directly —
-do not `await` them:
+Sapporta's scoped row APIs and row-security helpers are async:
 
-- `.get()` — single row or `undefined`
-- `.all()` — array of rows
-- `.run()` — execute without return value
-- `.returning().get() / .all()` — insert/update and return rows
+- `await rows.list(...)`
+- `await rows.get(...)`
+- `await rows.create(...)`
+- `await rows.update(...)`
+- `await rows.delete(...)`
+- `await guard.insertValues(...)`
+- `await guard.patchValues(...)`
+- `await guard.insertManyValues(...)`
 
-Handlers only need `async` when they do real async work (file I/O,
-external HTTP).
+Raw `better-sqlite3` is synchronous, but raw prepared statements are an escape
+hatch, not the default data-access style.
 
 ## Transactions
 
-Multi-step writes that must succeed or fail together belong in a
-`sqlite.transaction(...)`:
+Try `scopedRows()` first. When a multi-step write needs custom persistence,
+use Drizzle transactions with one row-security guard per scoped table:
 
 ```typescript
-api.register("postEntry", postEntry, ({ c, request }) => {
+api.register("createInvoice", contract.createInvoice, async ({ c, request }) => {
   const db = c.get("db");
-  const sqlite = c.get("sqlite");
+  const auth = projectAuth.requireWorkspaceUser(c);
+  const invoiceGuard = auth.rowSecurity.forTable(invoices);
+  const lineGuard = auth.rowSecurity.forTable(invoiceLines);
 
-  const run = sqlite.transaction(() => {
-    const entry = db.insert(entriesTable).values(/*...*/).returning().get();
-    db.insert(linesTable).values(request.body.lines.map((l) => ({
-      entry_id: entry.id, ...l,
-    }))).run();
-    return entry;
+  const created = await db.transaction(async (tx) => {
+    const invoice = await tx
+      .insert(invoicesTable)
+      .values(await invoiceGuard.insertValues(tx, request.body.invoice))
+      .returning()
+      .get();
+
+    const lines = await lineGuard.insertManyValues(tx, request.body.lines, {
+      serverValues: () => ({ invoice_id: invoice.id }),
+    });
+
+    await tx.insert(invoiceLinesTable).values(lines);
+    return { invoice, lines };
   });
 
-  return { status: 200, body: run() };
+  return { status: 201, body: { data: created } };
 });
 ```
 
-Single statements are already atomic — don't wrap them.
+`insertValues()` and `insertManyValues()` reject client-managed scope fields,
+merge trusted server values, validate visible FKs, and stamp the authenticated
+workspace/user scope. Updates and deletes must include `guard.ownedRows(...)`
+in their `where(...)`; primary key alone is not authorization.
+
+Raw `sqlite.transaction(...)` is only for the justified raw-SQL escape hatch and
+belongs in a `modules/<domain>/db/` file.
 
 ## Error handling
 
@@ -422,13 +588,25 @@ it before writing client code.
 - **Repeated `/api` prefix.** `app` is already scoped; use bare paths in contracts.
 - **Reading `request.body.file` for multipart.** ts-rest strips File fields — use `files` instead.
 - **Returning an undeclared status.** TypeScript will reject it; add the status to `responses` or use the `Response` escape hatch.
-- **`await`-ing synchronous Drizzle calls.** They return values directly; awaiting makes the type a `Promise` that never resolves to anything useful.
+
+## Anti-patterns
+
+Do not:
+
+- Create `prepareStatements()` for scoped product tables unless raw SQL has
+  been justified.
+- Pass `c.get("sqlite")` into import/domain services by default.
+- Hand-code `workspace_id = ?` or `scoped_to_user_id = ?`.
+- Insert `request.body` directly into scoped tables.
+- Update/delete by primary key alone.
+- Mix parser, route, workflow, and SQL code in one file.
+- Create root-level `models/`, `controllers/`, `services/`, `views/`, or `css/`
+  folders under `packages/api/src`.
 
 ## Keep handler files thin
 
 Prefer: contract + handler body that does routing, validation branching,
-and the final write. Move categorization, parsing, and workflow logic
-into sibling files (e.g. `src/categorizer/`, `src/import/`) so the
-`src/app/` file reads as an endpoint map. See
-[../user-code/SKILL.md](../user-code/SKILL.md) for patterns that keep
-domain code testable and independent of Hono.
+and the final response. Move parsing, workflow logic, and persistence into
+`src/modules/<domain>/` so the `src/app/` file reads as an endpoint map. See
+[../user-code/SKILL.md](../user-code/SKILL.md) for patterns that keep domain
+code testable and independent of Hono.

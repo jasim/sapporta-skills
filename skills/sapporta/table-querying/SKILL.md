@@ -15,6 +15,11 @@ ops, and out-of-range values return **400** via `QueryParseError`. There
 is no silent-ignore fallback: `filter[naration]=foo` (typo) does **not**
 return all rows, it 400s.
 
+In auth-enabled projects, built-in table routes apply Sapporta row-access
+predicates before client filters, search, sort, pagination, lookup, count, and
+export. Do not add raw workspace filters to compensate; use the endpoint's
+normal filters for product-level criteria only.
+
 ## Filters — `filter[col][op]=value`
 
 Every filter must name an operator. `filter[col]=value` (no op) is a
