@@ -1,10 +1,9 @@
 ---
 name: report-linking
 description: >
-  Add row- and cell-level navigation (drill-up, drill-into, cross-report)
-  to Sapporta reports via `rowLinks` and `column.links`. Invoke whenever a
-  report surfaces IDs, FKs, or summary rows a user would want to explore —
-  this is usually a big quality-of-life win and easy to miss.
+  Use when the user wants report rows or cells to navigate somewhere useful.
+  Covers Sapporta `rowLinks`, `column.links`, drill-up, drill-into,
+  cross-report links, IDs, foreign keys, and explorable summary rows.
 ---
 
 # Report Linking
@@ -120,4 +119,5 @@ Two things to notice:
 ## Related
 
 - [report-creation](../report-creation/SKILL.md) — authoring reports. Declare links at the same time you declare columns.
-- Tables get `rowLinks` auto-synthesized from their `children` and FK columns (see `extractSchemas` in `packages/core/src/schema/extract.ts`), so the same mental model carries over to the table grids.
+- Table grids also use row and FK relationships for navigation, so report links
+  should follow the same user-facing navigation model.

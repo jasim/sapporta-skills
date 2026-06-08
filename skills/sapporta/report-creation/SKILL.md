@@ -1,9 +1,9 @@
 ---
 name: report-creation
 description: >
-  Create and validate hierarchical reports in Sapporta. Invoke for reports,
-  summaries, financial statements, trial balances, ledgers, or any structured
-  data view. Ensures reports pass sapporta check validation before completion.
+  Use when the user wants to create or change Sapporta reports. Covers report
+  definitions, summaries, financial statements, trial balances, ledgers,
+  structured data views, and `sapporta check` validation.
 ---
 
 # Report Creation
@@ -296,7 +296,7 @@ Validates source references, rollup/footer keys vs declared columns — no DB re
 
 ## Row & Cell Linking
 
-Reports can attach navigation targets to rows (`rowLinks` on a tree node) and cells (`links` on a column). These become right-click menu items and hover chips in the UI, and turn any surfaced ID or FK into a drill-through. **Almost every non-trivial report should declare some.** See [report-linking](../report-linking/SKILL.md) for the full guide.
+Reports can attach navigation targets to rows (`rowLinks` on a tree node) and cells (`links` on a column). These become right-click menu items and hover chips in the UI, and turn any displayed ID or FK into a drill-through. **Almost every non-trivial report should declare some.** See [report-linking](../report-linking/SKILL.md) for the full guide.
 
 ## Reference Files
 

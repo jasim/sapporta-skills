@@ -1,9 +1,9 @@
 ---
 name: master-detail-insertion
 description: >
-  Insert parent + child records atomically. Invoke for creating orders with
-  line items, journal entries with lines, invoices with details, or any
-  parent-child pair.
+  Use when the user wants to add a parent record and child rows together in an
+  existing Sapporta app, such as orders with line items, journal entries with
+  lines, invoices with details, or any parent-child data entry.
 ---
 
 # Master-Detail Insertion

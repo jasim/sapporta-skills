@@ -1,9 +1,9 @@
 ---
 name: user-code
 description: >
-  Patterns for the domain code you write in a Sapporta project — general
-  TypeScript + Hono best practice, bundled so you get them by default. Not
-  Sapporta-specific.
+  Use when the user wants backend workflow code to be easier to test, organize,
+  or reason about. Covers TypeScript + Hono patterns for Sapporta domain
+  services, modules, and logic that should stay independent of route adapters.
 ---
 
 # User Code Patterns

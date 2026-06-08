@@ -1,7 +1,9 @@
 ---
 name: troubleshooting
 description: >
-  Troubleshoot common Sapporta development errors. Use this skill whenever you encounter native module binding errors, better-sqlite3 failures, or "Could not locate the bindings file" messages during development, testing, or server startup. Also use it when `pnpm install` or `pnpm dev` fails with native addon errors.
+  Use when a Sapporta project fails during install, dev-server startup, tests,
+  or CLI use because of native module binding errors, better-sqlite3 failures,
+  "Could not locate the bindings file", or native addon issues.
 ---
 
 # Sapporta Troubleshooting

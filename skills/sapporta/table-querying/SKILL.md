@@ -1,19 +1,18 @@
 ---
 name: table-querying
 description: >
-  Query the auto-generated table list endpoint `GET /api/tables/<name>` —
-  filters, cross-column search, sort, and pagination. Invoke when composing
-  URLs against `/api/tables/*` from curl, frontend code, or `src/app/`
-  handlers, or when debugging 400 responses from the list endpoint.
+  Use when the user needs to query or compose URLs for Sapporta table list
+  APIs, `GET /api/tables/<name>`, with filters, cross-column search, sort, and
+  pagination. Applies to curl, frontend code, backend handlers, and 400
+  debugging.
 ---
 
 # Table Querying
 
-`GET /api/tables/<name>` is the auto-generated list endpoint for every
-table. Its query grammar is strict — typos, unknown columns, unknown
-ops, and out-of-range values return **400** via `QueryParseError`. There
-is no silent-ignore fallback: `filter[naration]=foo` (typo) does **not**
-return all rows, it 400s.
+`GET /api/tables/<name>` is the built-in list endpoint for every table. Its
+query grammar is strict — typos, unknown columns, unknown ops, and out-of-range
+values return **400** via `QueryParseError`. There is no silent-ignore fallback:
+`filter[naration]=foo` (typo) does **not** return all rows, it 400s.
 
 In auth-enabled projects, built-in table routes apply Sapporta row-access
 predicates before client filters, search, sort, pagination, lookup, count, and
@@ -37,7 +36,7 @@ Every filter must name an operator. `filter[col]=value` (no op) is a
 
 - `contains` / `startswith` / `endswith` escape `%` and `_` in the user
   value so they match literally. To pattern-match yourself, use the
-  columns directly in `src/app/` code with Drizzle — not this endpoint.
+  columns directly in `packages/api/app/` code with Drizzle — not this endpoint.
 - `like` is **not** an operator. Use `contains` / `startswith` /
   `endswith` instead. `filter[col][like]=foo%` returns 400.
 - Multiple filters AND together: `filter[type][eq]=asset&filter[balance][gt]=0`.

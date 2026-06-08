@@ -1,9 +1,9 @@
 ---
 name: report-execution
 description: >
-  Run existing reports or answer data questions via ad-hoc SQL queries.
-  Use when the user wants to see report output, check numbers, or query
-  data that may or may not have a pre-built report.
+  Use when the user wants to run Sapporta reports, see report output, check
+  numbers, or answer questions from existing app data with reports, table
+  queries, or ad-hoc read-only SQL.
 ---
 
 # Report Execution

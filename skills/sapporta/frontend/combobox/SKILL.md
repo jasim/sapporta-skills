@@ -1,11 +1,9 @@
 ---
 name: combobox
 description: >
-  Use `Combobox` from `@sapporta/ui` when a form field needs a searchable
-  dropdown over an id→label map — foreign-key pickers, tag selectors, any list
-  too long for a native `<select>`. It is the same Popover + cmdk picker the
-  grid's FK cell uses, exposed as a standalone click-to-open component with a
-  plain `value`/`onChange` API.
+  Use when a Sapporta React form field needs a searchable dropdown over an
+  id-to-label map. Covers `Combobox` from `@sapporta/ui`, foreign-key pickers,
+  tag selectors, and lists too long for a native `<select>`.
 ---
 
 # Combobox — searchable picker for id→label maps

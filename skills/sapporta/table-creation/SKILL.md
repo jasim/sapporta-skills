@@ -1,15 +1,16 @@
 ---
 name: table-creation
 description: >
-  Create or modify database tables in Sapporta. Invoke for creating tables, renaming tables,
-  defining schemas, adding columns, foreign keys, indexes, altering tables, or modeling data structures.
+  Use when the user wants to define or change Sapporta database tables in
+  TypeScript. Covers table modeling, creating or renaming tables, columns,
+  foreign keys, indexes, search config, display metadata, and schema sync.
 ---
 
 # Table Creation
 
 ## File Template
 
-Every table is a TypeScript file in the project's `src/schema/` directory (e.g., `<project-dir>/src/schema/`):
+Every table is a TypeScript file in the project's `packages/api/schema/` directory (e.g., `<project-dir>/packages/api/schema/`):
 
 ```typescript
 import { sqliteTable, integer } from "drizzle-orm/sqlite-core";
@@ -408,7 +409,7 @@ This atomically renames the SQLite table, updates all metadata rows, and fixes F
 
 ### Modifying file-managed tables
 
-Tables defined as TypeScript files in `src/schema/` are file-managed. To rename:
+Tables defined as TypeScript files in `packages/api/schema/` are file-managed. To rename:
 
 1. Change the `sqliteTable("old_name", ...)` first argument to the new name
 2. Rename the file (e.g., `old-name.ts` → `new-name.ts`)

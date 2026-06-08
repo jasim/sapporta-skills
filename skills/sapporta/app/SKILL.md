@@ -1,20 +1,19 @@
 ---
 name: app
 description: >
-  Write the project's core application code — domain endpoints, business
-  workflows, multi-table transactions — as `TsRestApi` sub-apps in
-  `src/app/`. This is where the user's product logic lives. Covers route
-  declaration, handler shape, file uploads, and how the single contract
-  drives both request validation and OpenAPI docs.
+  Use when the user wants to add or change Sapporta backend endpoints and
+  product workflows. Covers `TsRestApi` routes in `packages/api/app/`, shared
+  contracts, request validation, OpenAPI docs, typed clients, file uploads, and
+  multi-table transactions.
 ---
 
-# Application code (`src/app/`)
+# Application code (`packages/api/app/`)
 
-`src/app/` is where the project's domain code lives. Each `.ts` file
+`packages/api/app/` is where the project's domain code lives. Each `.ts` file
 default-exports a `TsRestApi` instance — Sapporta's Hono sub-app with
 ts-rest contracts wired in. These sub-apps are peers of Sapporta's
-auto-generated CRUD and report endpoints; the same Hono tree serves all
-of them under `/api/`.
+built-in table and report endpoints; the same Hono tree serves all of them
+under `/api/`.
 
 ## Why contracts (and not plain Hono)?
 
@@ -28,10 +27,10 @@ things from one declaration:
    `request.body` are the inferred output of the schemas. No `c.req.valid(...)` ceremony, no casts.
 3. **OpenAPI emission.** The same `AppRoute` object is walked by
    `@ts-rest/open-api` into the served spec — so `sapporta describe` and
-   `/api/openapi.json` report the route's exact surface with no extra
+   `/api/openapi.json` report the route's exact API shape with no extra
    annotations.
 4. **Typed frontend client.** The same `AppRoute` becomes a typed client
-   method via `createApiClient(contract)` in `frontend/src/api.ts`.
+   method via `createApiClient(contract)` in `packages/frontend/src/api.ts`.
    Request and response shapes can never drift between client and server
    because there is one declaration.
 
@@ -64,9 +63,9 @@ broadly and filter row ownership in JavaScript.
 
 ## Mounting: don't forget this step
 
-The scaffold's `boot.ts` ships two calls that turn a sub-app into a
-discoverable route. You don't edit `boot.ts`; you edit `loadApp()` in
-`src/app.ts`. The two calls are:
+The project template's `boot.ts` already has the two calls that turn a sub-app
+into a discoverable route. You don't edit `boot.ts`; you edit `loadApp()` in
+`packages/api/app.ts`. The two calls are:
 
 - `app.route("/api", apiApp)` in `boot.ts` — makes the `TsRestApi`
   reachable at runtime under `/api/*`.
@@ -101,33 +100,32 @@ sapporta describe "METHOD /api/your/path"
 ## Where contracts live
 
 Contracts live in the `__SLUG__-shared` workspace package, under
-`shared/src/contracts/` — one file per feature, re-exported from
-`shared/src/contracts/index.ts`, which `shared/src/index.ts` re-exports
-in turn. Handlers live in `src/app/`. The contract file is the single
-source of truth for the wire shape — the server registers a handler
-against it, and the frontend builds a typed client from the same
-export.
+`packages/shared/src/contracts/` — one file per feature, re-exported from
+`packages/shared/src/contracts/index.ts`, which `packages/shared/src/index.ts`
+re-exports in turn. Handlers live in `packages/api/app/`. The contract file is
+the single source of truth for the wire shape — the server registers a handler
+against it, and the frontend builds a typed client from the same export.
 
 The trio for any feature `<feature>`:
 
-- `shared/src/contracts/<feature>.ts` — the `c.router({...})` declaration.
-- `src/app/<feature>.ts` — the handler, registered against the
+- `packages/shared/src/contracts/<feature>.ts` — the `c.router({...})` declaration.
+- `packages/api/app/<feature>.ts` — the handler, registered against the
   contract.
-- `frontend/src/api.ts` — one entry adding the contract to the typed
+- `packages/frontend/src/api.ts` — one entry adding the contract to the typed
   client.
 
-Grouping contracts in `shared/src/contracts/` (rather than mixing them
+Grouping contracts in `packages/shared/src/contracts/` (rather than mixing them
 with other shared helpers) mirrors Sapporta's own
 `packages/shared/src/contracts/` layout: the directory's purpose is
 obvious at a glance.
 
 Shared is a leaf package — no React, Hono, Drizzle, or better-sqlite3
 imports. Only `zod` and `@ts-rest/core` are allowed runtime deps. See
-`shared/CLAUDE.md` for the full constraints.
+`packages/shared/CLAUDE.md` for the full constraints.
 
 ## Backend organization
 
-Sapporta keeps route apps under `src/app/`, but substantial backend code should
+Sapporta keeps route apps under `packages/api/app/`, but substantial backend code should
 be organized as a vertical-slice modular monolith. Group by semantic domain,
 bounded context, or feature module first; use technical folders only as leaves
 inside that domain.
@@ -135,16 +133,16 @@ inside that domain.
 Avoid root-level horizontal MVC:
 
 ```text
-packages/api/src/models/
-packages/api/src/controllers/
-packages/api/src/services/
-packages/api/src/views/
+packages/api/models/
+packages/api/controllers/
+packages/api/services/
+packages/api/views/
 ```
 
 Prefer domain modules:
 
 ```text
-packages/api/src/modules/
+packages/api/modules/
   orders/
     db/
       order-store.ts
@@ -174,7 +172,7 @@ Nested domains are fine when a subdomain is tightly coupled to a parent domain;
 apply the same rule recursively:
 
 ```text
-packages/api/src/modules/
+packages/api/modules/
   commerce/
     orders/
       db/
@@ -190,20 +188,21 @@ packages/api/src/modules/
       routes/
 ```
 
-Small apps may keep a thin route file directly in `src/app/`. Larger features
-should put domain code in `src/modules/<domain>/`. `src/app/*.ts` can be thin
-route entrypoints importing module routes, or `src/app.ts` can mount route apps
-exported from modules, depending on the project's existing style.
+Small apps may keep a thin route file directly in `packages/api/app/`. Larger
+features should put domain code in `packages/api/modules/<domain>/`.
+`packages/api/app/*.ts` can be thin route entrypoints importing module routes,
+or `packages/api/app.ts` can mount route apps exported from modules, depending
+on the project's existing style.
 
 ```text
-packages/api/src/app/orders.ts
-packages/api/src/modules/orders/routes/orders.ts
-packages/api/src/modules/orders/services/create-order.ts
-packages/api/src/modules/orders/services/fulfill-order.ts
-packages/api/src/modules/orders/db/order-store.ts
+packages/api/app/orders.ts
+packages/api/modules/orders/routes/orders.ts
+packages/api/modules/orders/services/create-order.ts
+packages/api/modules/orders/services/fulfill-order.ts
+packages/api/modules/orders/db/order-store.ts
 ```
 
-Do not pile parser, workflow, and database logic directly into `src/app/`.
+Do not pile parser, workflow, and database logic directly into `packages/api/app/`.
 
 ## Data-access layer
 
@@ -225,7 +224,7 @@ in one place. Preserve that property with Sapporta primitives.
 An order workflow should look roughly like:
 
 ```text
-packages/api/src/modules/orders/
+packages/api/modules/orders/
   db/
     order-store.ts          # scopedRows / rowSecurity / rare raw SQL
   services/
@@ -253,7 +252,7 @@ writes. Prefer Sapporta scoped APIs.
 ## Minimal GET route
 
 ```typescript
-// shared/src/contracts/hello.ts
+// packages/shared/src/contracts/hello.ts
 import { z } from "zod";
 import { initContract } from "@ts-rest/core";
 
@@ -273,7 +272,7 @@ export const helloContract = c.router({
 ```
 
 ```typescript
-// src/app/hello.ts
+// packages/api/app/hello.ts
 import { TsRestApi, type SapportaEnv } from "@sapporta/server";
 import { helloContract } from "__SLUG__-shared";
 
@@ -287,11 +286,11 @@ api.register("hello", helloContract.hello, ({ request }) => ({
 export default api;
 ```
 
-Re-export `helloContract` from `shared/src/contracts/index.ts` so
+Re-export `helloContract` from `packages/shared/src/contracts/index.ts` so
 `__SLUG__-shared` picks it up:
 
 ```typescript
-// shared/src/contracts/index.ts
+// packages/shared/src/contracts/index.ts
 export { helloContract } from "./hello.js";
 ```
 
@@ -305,7 +304,7 @@ Notes:
 ## POST with JSON body
 
 ```typescript
-// shared/src/contracts/accounts.ts
+// packages/shared/src/contracts/accounts.ts
 import { z } from "zod";
 import { initContract } from "@ts-rest/core";
 
@@ -329,7 +328,7 @@ export const accountsContract = c.router({
 ```
 
 ```typescript
-// src/app/accounts.ts
+// packages/api/app/accounts.ts
 import { scopedRows, TsRestApi, type SapportaEnv } from "@sapporta/server";
 import { accountsContract } from "__SLUG__-shared";
 import { projectAuth } from "../project-auth/index.js";
@@ -350,7 +349,7 @@ export default api;
 
 Each `status` you return must be declared in `responses` — TypeScript
 enforces this. If you genuinely need to return a status that isn't part
-of the API surface, see the `Response` escape hatch below.
+of the API contract, see the `Response` escape hatch below.
 
 For uniqueness checks or other domain rules, keep the query inside the same
 row-security boundary, preferably in a module store. Do not replace
@@ -359,11 +358,11 @@ row-security boundary, preferably in a module store. Do not replace
 ## Path params
 
 Declare them with `:name` in `path` and describe them with `pathParams`.
-The contract goes in `shared/src/contracts/accounts.ts` alongside
-sibling routes; the handler in `src/app/accounts.ts`:
+The contract goes in `packages/shared/src/contracts/accounts.ts` alongside
+sibling routes; the handler in `packages/api/app/accounts.ts`:
 
 ```typescript
-// shared/src/contracts/accounts.ts (extending the router)
+// packages/shared/src/contracts/accounts.ts (extending the router)
 getAccount: c.query({
   method: "GET",
   path: "/accounts/:id",
@@ -376,7 +375,7 @@ getAccount: c.query({
 ```
 
 ```typescript
-// src/app/accounts.ts
+// packages/api/app/accounts.ts
 api.register("getAccount", accountsContract.getAccount, async ({ c, request }) => {
   const auth = projectAuth.requireWorkspaceUser(c);
   const rows = scopedRows(c.get("db"), auth, accounts);
@@ -393,11 +392,11 @@ segment into a number at parse time.
 
 ts-rest declares `File` fields in the contract body (so clients know to
 send `FormData`) but intentionally strips them from the inferred
-**server** body type. Sapporta's adapter surfaces uploaded files on a
+**server** body type. Sapporta's adapter provides uploaded files on a
 separate, typed `files` argument on the handler:
 
 ```typescript
-// shared/src/contracts/import.ts
+// packages/shared/src/contracts/import.ts
 import { z } from "zod";
 import { initContract } from "@ts-rest/core";
 
@@ -421,7 +420,7 @@ export const importContract = c.router({
 ```
 
 ```typescript
-// src/app/import.ts
+// packages/api/app/import.ts
 import { TsRestApi, type SapportaEnv } from "@sapporta/server";
 import { importContract } from "__SLUG__-shared";
 
@@ -583,8 +582,8 @@ it before writing client code.
 
 ## Common pitfalls
 
-- **Forgot to mount.** File in `src/app/` alone is not enough — add `app.route("/", yourApp)` in `loadApp()`.
-- **Contract declared inline in `src/app/`.** The frontend can't import it from there. Move it to `shared/src/contracts/<feature>.ts`, re-export from `shared/src/contracts/index.ts`, and import from `__SLUG__-shared` on both sides.
+- **Forgot to mount.** File in `packages/api/app/` alone is not enough — add `app.route("/", yourApp)` in `loadApp()`.
+- **Contract declared inline in `packages/api/app/`.** The frontend can't import it from there. Move it to `packages/shared/src/contracts/<feature>.ts`, re-export from `packages/shared/src/contracts/index.ts`, and import from `__SLUG__-shared` on both sides.
 - **Repeated `/api` prefix.** `app` is already scoped; use bare paths in contracts.
 - **Reading `request.body.file` for multipart.** ts-rest strips File fields — use `files` instead.
 - **Returning an undeclared status.** TypeScript will reject it; add the status to `responses` or use the `Response` escape hatch.
@@ -601,12 +600,12 @@ Do not:
 - Update/delete by primary key alone.
 - Mix parser, route, workflow, and SQL code in one file.
 - Create root-level `models/`, `controllers/`, `services/`, `views/`, or `css/`
-  folders under `packages/api/src`.
+  folders under `packages/api/`.
 
 ## Keep handler files thin
 
 Prefer: contract + handler body that does routing, validation branching,
 and the final response. Move parsing, workflow logic, and persistence into
-`src/modules/<domain>/` so the `src/app/` file reads as an endpoint map. See
-[../user-code/SKILL.md](../user-code/SKILL.md) for patterns that keep domain
-code testable and independent of Hono.
+`packages/api/modules/<domain>/` so the `packages/api/app/` file reads as an
+endpoint map. See [../user-code/SKILL.md](../user-code/SKILL.md) for patterns
+that keep domain code testable and independent of Hono.

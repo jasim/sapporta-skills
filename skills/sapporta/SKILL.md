@@ -1,137 +1,115 @@
 ---
 name: sapporta
 description: >
-  Use for Sapporta projects: schema-as-code tables, auto-generated CRUD,
-  hierarchical reports, Hono sub-apps in `src/app/`, frontend views, data
-  insertion, CLI workflows, and native-module troubleshooting.
+  Use when the user is working in a Sapporta project or asks to change tables,
+  add reports, add endpoints, build frontend views, organize backend workflows,
+  inspect data, enter records, run reports, troubleshoot better-sqlite3, or use
+  the `sapporta` CLI. Start here to choose between changing the app's code and
+  working with records.
 ---
 
-# Sapporta
+## What Sapporta Gives The App Builder
 
-Sapporta is a TypeScript library for database-backed applications. Domain code
-lives in `src/app/`; schemas live in `src/schema/`; shared ts-rest contracts live
-in `shared/src/contracts/`. Prefer the project-local CLI:
+Sapporta is a TypeScript application framework for database-backed apps. A
+Sapporta project gives the application builder:
+
+- TypeScript files for defining database tables, columns, relationships,
+  display metadata, search behavior, and row ownership.
+- Built-in table APIs for listing, filtering, creating, updating, and deleting
+  records.
+- Hierarchical reports for ledgers, summaries, statements, and structured data
+  views.
+- Custom endpoints for product workflows that need business rules, file
+  uploads, transactions, or custom response shapes.
+- Custom React views layered on top of the built-in admin UI.
+- An OpenAPI document that `sapporta describe`, the frontend client, and API
+  tooling use to see the current app.
+
+The usual places to work are:
+
+- `packages/api/schema/` for table definitions.
+- `packages/api/reports/` for report definitions.
+- `packages/api/app/` for custom backend endpoints.
+- `packages/shared/src/contracts/` for request/response contracts shared by
+  backend, OpenAPI, and frontend code.
+- `packages/frontend/src/` for custom React pages.
+
+Prefer the project-local CLI:
 
 ```bash
 pnpm exec sapporta ...
 ```
 
-Auth-enabled Sapporta projects keep Better Auth integration in generated
-project code and adapt sessions into Sapporta's generic auth context. Core
-exports row-scope metadata, row-access predicates, guards, and workspace-safe
-table handlers; it does not import Better Auth. In the Sapporta repo, start at
-`docs/auth.md` for the auth narrative.
+The CLI is both a discovery tool and a local data console. It can inspect
+endpoints, list and describe tables, sample rows, run reports, insert/update
+rows, execute raw SQL fallback commands, sync schema, and run checks.
 
-## Non-Negotiables
+## Choose The Right Mode
 
-- Work only in the local Sapporta project rooted at `cwd` or the nearest `sapporta.json`.
-- Treat https://github.com/jasim/sapporta and the checked-in Sapporta dependency as the framework/CLI provenance anchor.
-- Every route is mounted under `/api/...`. Any bare or root `/<name>/...` paths will 404.
-- The CLI cannot invoke user-defined HTTP endpoints; call those with localhost `curl`.
-- API-backed Sapporta CLI commands require network permission because they talk
-  to the local dev server. `check` and `init` are local commands; `describe`
-  still reads the live OpenAPI document.
-- Use `sapporta describe` to see the application's existing endpoints; prefer them over writing new code.
+Decide what the user is trying to do before loading detailed context.
 
-## Required Preflight
+- The user wants to build or change app behavior: tables, reports, links,
+  custom endpoints, shared contracts, frontend views, auth-aware workflows, or
+  validation loops -> read
+  [app-framework/SKILL.md](app-framework/SKILL.md).
+- The user wants to inspect, query, insert, update, report on, validate, or
+  answer questions from records already in the app -> read
+  [data-console/SKILL.md](data-console/SKILL.md).
 
-Before any API-backed `pnpm exec sapporta ...` or `sapporta ...` command in an
-existing project, verify the dev server. This `curl` request requires network
-permission to succeed:
+Some tasks touch both: build a report with `app-framework`, then run it and
+inspect numbers with `data-console`.
 
-```bash
-curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/openapi.json" >/dev/null
-```
+## Rules That Prevent Wrong Work
 
-If the probe fails, stop. Tell the user the Sapporta dev server is required and ask them to start `pnpm dev`, or ask for confirmation to start it yourself. If using a non-default port, set `PORT` for the dev server and consistently set `SAPPORTA_API_URL` or pass `--api-url`.
+- Work in the local Sapporta project rooted at `cwd` or the nearest
+  `sapporta.json`.
+- Every HTTP route is mounted under `/api/...`; bare `/<name>/...` paths 404.
+- Prefer `pnpm exec sapporta ...` over a global `sapporta` binary.
+- Use `sapporta describe` to discover existing endpoints before adding code or
+  composing requests.
+- The CLI cannot invoke user-defined HTTP endpoints directly; call them with
+  localhost `curl`.
+- Raw SQL is a fallback, not the default mutation path.
 
-Then discover the project:
+## Direct Dispatch
 
-```bash
-pnpm exec sapporta tables
-pnpm exec sapporta describe
-```
+- Define/change tables, domain code, reports, report links, frontend routes,
+  custom endpoints, auth-scoped workflows -> read
+  [app-framework/SKILL.md](app-framework/SKILL.md)
+- Existing records, business questions, table samples, report output, built-in
+  row commands, local SQL fallback -> read
+  [data-console/SKILL.md](data-console/SKILL.md)
+- Native module binding failures, `better-sqlite3`, install/dev-server errors
+  -> read [troubleshooting/SKILL.md](troubleshooting/SKILL.md)
 
-Drill into relevant endpoints before composing requests:
+## Specific Task Skills
 
-```bash
-pnpm exec sapporta describe "METHOD /api/path"
-```
+### App-Building Tasks
 
-`sapporta describe` is the source of truth for endpoint schemas, including built-ins and user-defined routes from `src/app/`.
-
-## Mutation Ladder
-
-For data changes, use the highest fitting option:
-
-1. Existing project/domain endpoint from `sapporta describe`
-2. Built-in row CRUD: `sapporta rows insert/update/delete`
-3. Built-in reports/actions
-4. Raw SQL fallback: read [meta-sql/SKILL.md](meta-sql/SKILL.md) first
-
-## Routing
-
-### Schema & Data
-
-- Tables, columns, modeling, schema sync, search config -> read
+- Tables, columns, relations, indexes, search config, schema sync -> read
   [table-creation/SKILL.md](table-creation/SKILL.md)
-- Table list API, filters, sort, pagination, search, 400s from `/api/tables/*`
-  -> read [table-querying/SKILL.md](table-querying/SKILL.md)
-- Insert rows or seed flat data -> read
-  [row-insertion/SKILL.md](row-insertion/SKILL.md)
-- Insert parent and children atomically -> read
-  [master-detail-insertion/SKILL.md](master-detail-insertion/SKILL.md)
-- Raw SQL reads or writes when no endpoint, CRUD, or report fits -> read
-  [meta-sql/SKILL.md](meta-sql/SKILL.md)
-
-### App Code
-
-- Hono sub-apps, ts-rest contracts, handlers, uploads, DB access, OpenAPI
-  registration -> read [app/SKILL.md](app/SKILL.md)
-- Typed workflow errors and HTTP status mapping -> read
-  [user-code/SKILL.md](user-code/SKILL.md)
-
-### Frontend
-
-- Custom React views using `@sapporta/ui` -> read
-  [frontend/SKILL.md](frontend/SKILL.md)
-
-### Reports
-
-- Create reports -> read [report-creation/SKILL.md](report-creation/SKILL.md)
-- Report links and drill-through -> read
+- Hierarchical reports, summaries, ledgers, report validation -> read
+  [report-creation/SKILL.md](report-creation/SKILL.md)
+- Row links, cell links, drill-through, cross-report navigation -> read
   [report-linking/SKILL.md](report-linking/SKILL.md)
-- Run reports or ad-hoc report queries -> read
+- Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
+  transactions, OpenAPI registration -> read [app/SKILL.md](app/SKILL.md)
+- Custom React routes, dashboards, forms, `@sapporta/ui`, typed API client ->
+  read [frontend/SKILL.md](frontend/SKILL.md)
+- Domain services, module organization, testable TypeScript workflow code ->
+  read [user-code/SKILL.md](user-code/SKILL.md)
+- Deep workflow failures, typed HTTP errors, status/body mapping -> read
+  [user-code/typed-errors/SKILL.md](user-code/typed-errors/SKILL.md)
+
+### Existing Data Tasks
+
+- Insert rows, seed data, built-in row commands -> read
+  [row-insertion/SKILL.md](row-insertion/SKILL.md)
+- Atomic parent-child data entry, detail rows, line items -> read
+  [master-detail-insertion/SKILL.md](master-detail-insertion/SKILL.md)
+- Run reports, inspect report output, answer data questions -> read
   [report-execution/SKILL.md](report-execution/SKILL.md)
-
-### Troubleshooting
-
-- Native module errors, `better-sqlite3` binding failures -> read
-  [troubleshooting/SKILL.md](troubleshooting/SKILL.md)
-
-## Core Commands
-
-```bash
-pnpm exec sapporta describe
-pnpm exec sapporta describe "METHOD /api/path"
-pnpm exec sapporta tables
-pnpm exec sapporta tables show <name>
-pnpm exec sapporta tables sample <name>
-pnpm exec sapporta rows insert <table> --data '[{...}]'
-pnpm exec sapporta reports
-pnpm exec sapporta reports run <name> --as_of_date 2026-05-25
-pnpm exec sapporta schema sync
-```
-
-Commands with request bodies can accept `--input-body-json` with one JSON object matching the endpoint input schema. Row and table mutation commands also accept their route-specific `--data` shorthand.
-
-## Data Rules
-
-- Accept data as-is; do not coerce types.
-- Do not fabricate foreign keys; look them up.
-- Respect NOT NULL constraints.
-- Omit generated columns such as `id`, `created_at`, and `updated_at`.
-- In auth-enabled projects, also omit system-managed `workspace_id`,
-  `workspaceId`, `scoped_to_user_id`, and `scopedToUserId`.
-- Tables are schema-as-code TypeScript files; apply changes with
-  `sapporta schema sync`.
+- Compose `/api/tables/<name>` URLs, filters, search, sort, pagination -> read
+  [table-querying/SKILL.md](table-querying/SKILL.md)
+- Raw SQL fallback when no endpoint, CRUD, or report fits -> read
+  [meta-sql/SKILL.md](meta-sql/SKILL.md)

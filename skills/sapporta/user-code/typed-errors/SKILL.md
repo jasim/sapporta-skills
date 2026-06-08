@@ -1,11 +1,9 @@
 ---
 name: typed-errors
 description: >
-  Make each domain failure its own error subclass that owns its HTTP status and
-  JSON body, and dispatch them with a single shim at the HTTP edge. Use when
-  deep workflow code needs to signal a specific failure a caller can act on
-  (data-consistency violation, upstream dependency down, unprocessable input)
-  instead of collapsing to a 500.
+  Use when backend workflow code needs to return a specific actionable HTTP
+  error instead of collapsing to a 500. Defines domain error subclasses with
+  status/body data and dispatches them at the HTTP edge.
 ---
 
 # Typed Domain Errors
@@ -77,7 +75,7 @@ itself uses `api.register(name, route, handler)` and returns
 `{ status, body }` directly:
 
 ```typescript
-// src/app/<domain>-handlers.ts
+// packages/api/app/<domain>-handlers.ts
 import { ApiWorkflowError } from "../<domain>/errors.js";
 
 api.register("postEntry", postEntryContract.postEntry, async ({ request, c }) => {

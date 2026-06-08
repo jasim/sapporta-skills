@@ -1,16 +1,15 @@
 ---
 name: meta-sql
 description: >
-  Fallback: run raw SQL directly against the Sapporta database via
-  `sapporta db exec-sql "<sql>"`. The command auto-dispatches — statements that
-  return rows (SELECT, WITH, PRAGMA, EXPLAIN) give you rows; everything else
-  executes and reports the row-change count. Use only when no discovered
-  endpoint, table CRUD, or report covers the task.
+  Use only when no Sapporta endpoint, built-in row command, table query, action,
+  or report covers the user's data task. Runs raw SQL directly against the app
+  database with `sapporta db exec-sql "<sql>"`.
 ---
 
 # Meta SQL — Fallback Direct SQL Access
 
-This skill is a **fallback**. Reach for it only after confirming that no standard Sapporta surface covers the task:
+This skill is a **fallback**. Reach for it only after confirming that no
+endpoint, row command, report, or table query covers the task:
 
 1. Discovered project/domain endpoints (`sapporta describe`).
 2. Built-in row CRUD (`sapporta rows insert/update/delete`).

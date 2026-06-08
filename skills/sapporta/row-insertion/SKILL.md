@@ -1,8 +1,9 @@
 ---
 name: row-insertion
 description: >
-  Insert rows into Sapporta tables. Invoke for adding data, seeding tables,
-  populating records, or entering individual rows.
+  Use when the user wants to add records to an existing Sapporta app with
+  `sapporta rows insert`. Covers entering individual rows, seeding data,
+  looking up foreign keys, and using built-in row commands instead of raw SQL.
 ---
 
 # Row Insertion
@@ -47,7 +48,7 @@ This is especially important for FK columns — always resolve IDs from existing
 - **No coercion** — provide the exact type the column expects:
   - Text: `"value"` | Integer: `42` | Numeric/decimal: `"99.50"` (string for precision) | Boolean: `true`/`false` | Timestamp: `"2024-01-15T10:30:00Z"`
 - **No FK fabrication** — always look up foreign key IDs, never guess
-- **Respect NOT NULL** — include all required columns; omit `id`, `created_at`, `updated_at` (auto-generated)
+- **Respect NOT NULL** — include all required columns; omit `id`, `created_at`, `updated_at` (system-generated)
 - **Auth scope is trusted server data** — in auth-enabled projects, omit
   `workspace_id`, `workspaceId`, `scoped_to_user_id`, and `scopedToUserId`
 - **Use snake_case** — column names must match schema output exactly (`customer_name`, not `customerName`)
