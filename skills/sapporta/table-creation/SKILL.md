@@ -60,6 +60,16 @@ columns are system-managed; clients must not submit or edit `workspace_id`,
 `.references()` wherever possible and `meta.references` only when a relationship
 cannot be proven from Drizzle metadata.
 
+If the table has `workspace_id` or `scoped_to_user_id`, hide them from generated
+CRUD screens:
+
+```typescript
+columns: {
+  workspace_id: { visuallyHidden: true },
+  scoped_to_user_id: { visuallyHidden: true },
+},
+```
+
 ## Row and Insert Types
 
 When other code needs the TypeScript type of a table's row (e.g. a Hono handler staging records before insert, a report mapping query results), **derive it from the Drizzle table** — never hand-write a parallel `type FooRow = { ... }`. Hand-written row types drift silently when columns are added, renamed, or change nullability.
