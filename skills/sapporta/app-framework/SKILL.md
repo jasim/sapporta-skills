@@ -23,7 +23,7 @@ Use the path that matches the application builder's goal:
 - Add a backend workflow or endpoint -> `packages/shared/src/contracts/` plus
   `packages/api/app/`
 - Keep larger backend workflows readable -> `packages/api/modules/<domain>/`
-- Add a custom page or form -> `packages/frontend/src/`
+- Add a custom page, form, or table/grid workflow -> `packages/frontend/src/`
 
 ## Before Writing Code
 
@@ -42,7 +42,8 @@ Then change the narrowest part of the app:
 - custom backend endpoints -> `packages/shared/src/contracts/` plus
   `packages/api/app/`
 - substantial backend workflows -> `packages/api/modules/<domain>/`
-- custom frontend views -> `packages/frontend/src/`
+- custom frontend views, including table/grid workflow pages ->
+  `packages/frontend/src/`
 
 After changes, validate the thing you touched. Use `sapporta check` for report
 and table/report consistency, `sapporta schema sync` when table changes must be
@@ -110,7 +111,8 @@ failures, read troubleshooting before trying broad dependency changes.
 - Domain endpoints, Hono sub-apps, `TsRestApi`, shared contracts, handlers,
   uploads, transactions, OpenAPI registration -> read
   [../app/SKILL.md](../app/SKILL.md)
-- Custom React routes, dashboards, forms, `@sapporta/ui`, typed API client ->
+- Custom React routes, dashboards, forms, table/grid views, `@sapporta/ui`,
+  typed API client ->
   read [../frontend/SKILL.md](../frontend/SKILL.md)
 - Domain services, module organization, testable TypeScript workflow code ->
   read [../user-code/SKILL.md](../user-code/SKILL.md)

@@ -94,7 +94,8 @@ inspect numbers with `data-console`.
   [report-linking/SKILL.md](report-linking/SKILL.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
   transactions, OpenAPI registration -> read [app/SKILL.md](app/SKILL.md)
-- Custom React routes, dashboards, forms, `@sapporta/ui`, typed API client ->
+- Custom React routes, dashboards, forms, table/grid views, `@sapporta/ui`,
+  typed API client ->
   read [frontend/SKILL.md](frontend/SKILL.md)
 - Domain services, module organization, testable TypeScript workflow code ->
   read [user-code/SKILL.md](user-code/SKILL.md)
