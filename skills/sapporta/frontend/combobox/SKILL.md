@@ -6,19 +6,19 @@ description: >
   tag selectors, and lists too long for a native `<select>`.
 ---
 
-# Combobox — searchable picker for id→label maps
+# Combobox — searchable picker for id-to-label maps
 
-`Combobox` is a Popover + cmdk Command recipe styled to match the rest of
-`@sapporta/ui`. Reach for it whenever a plain `<select>` loses the user —
-hundreds of accounts, a long tag list, anywhere search-as-you-type matters.
+Use `Combobox` from `@sapporta/ui` when a form needs a searchable picker over
+an id-to-label map: foreign keys, tags, or any list too long for a short static
+`<select>`.
 
-Never rebuild this from scratch with a `<select>` + `<datalist>` or a hand-
-rolled popover. That is what this component exists to avoid.
+If the project source is not available, inspect the installed package
+declarations in `node_modules/@sapporta/ui`.
 
 ## Props
 
-- `value: number | null` — the currently selected id.
-- `onChange: (value: number | null) => void` — fires with the picked id, or
+- `value: string | null` — the currently selected id.
+- `onChange: (value: string | null) => void` — fires with the picked id, or
   `null` when the user picks "Clear".
 - `options: Record<string, string>` — id-as-string → display label. Same shape
   the grid's FK cell editor uses, so an options object built for one works
@@ -31,20 +31,15 @@ rolled popover. That is what this component exists to avoid.
 ## Typical use
 
 ```tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Combobox } from "@sapporta/ui";
 
-export function AssignAccountForm() {
-  const [accounts, setAccounts] = useState<Record<string, string>>({});
-  const [accountId, setAccountId] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetch("/api/tables/accounts")
-      .then((r) => r.json())
-      .then((body: { data: Array<{ id: number; name: string }> }) => {
-        setAccounts(Object.fromEntries(body.data.map((r) => [String(r.id), r.name])));
-      });
-  }, []);
+export function AssignAccountForm({
+  accountsById,
+}: {
+  accountsById: Record<string, string>;
+}) {
+  const [accountId, setAccountId] = useState<string | null>(null);
 
   return (
     <label className="flex flex-col gap-1">
@@ -52,7 +47,7 @@ export function AssignAccountForm() {
       <Combobox
         value={accountId}
         onChange={setAccountId}
-        options={accounts}
+        options={accountsById}
         placeholder="Choose an account…"
         className="w-64"
       />
@@ -65,10 +60,9 @@ export function AssignAccountForm() {
 
 - **`options` is `Record<string, string>`, not `Array<{id, label}>`.** Build it
   once with `Object.fromEntries(rows.map(r => [String(r.id), r.label]))`. Keys
-  are strings; the component stringifies `value` internally for comparison.
-- **Value is `number | null`.** The component coerces the picked key back to a
-  number on pick. If your ids aren't numeric PKs, don't work around the
-  coercion — raise it as a feature request instead.
+  and `value` are strings.
+- **Value is `string | null`.** Convert numeric primary keys at the boundary
+  with `String(id)` and parse only if the submit API needs a number.
 - **Clearing returns `null`.** The list always shows a "Clear" row. If the
   field is required, validate `value !== null` before submit — `Combobox`
   itself never forces a choice.
