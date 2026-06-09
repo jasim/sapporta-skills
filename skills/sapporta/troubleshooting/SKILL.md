@@ -18,14 +18,14 @@ Could not locate the bindings file. Tried:
  …/better-sqlite3/build/Debug/better_sqlite3.node
 ```
 
-Typical triggers: Node version change, wiped `node_modules`, or stale pnpm store entry.
+Typical triggers: Node version change, wiped `packages/api/node_modules`, or stale pnpm store entry.
 
 **Fix:** `pnpm rebuild better-sqlite3` from the project root.
 
 If `pnpm rebuild` doesn't work, build directly inside the package:
 
 ```bash
-cd node_modules/.pnpm/better-sqlite3@<version>/node_modules/better-sqlite3 && npx --yes node-gyp rebuild --release
+cd packages/api/node_modules/.pnpm/better-sqlite3@<version>/node_modules/better-sqlite3 && npx --yes node-gyp rebuild --release
 ```
 
 Replace `<version>` with the version from the error message (e.g. `12.8.0`).

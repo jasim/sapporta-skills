@@ -1,33 +1,32 @@
 # Table And Grid Views
 
-Use Sapporta's public table primitives from `@sapporta/frontend`. If the
-project source is not available, inspect the installed package declarations in
-`node_modules/@sapporta/frontend`.
+Use Sapporta table primitives from `@sapporta/frontend`. In an app, inspect
+`packages/frontend/node_modules/@sapporta/frontend` for exact props and types.
 
-## Decision Path
+## Choose The Surface
 
-1. `SchemaTableGridView` for a schema table rendered at an app-owned route.
-2. `buildSchemaTGridConfig` + `defineTGrid` when the schema graph is right but
-   the page changes columns, renderers, editors, query defaults, row clients,
-   interaction, or app services.
-3. `defineTGrid` directly when the page owns row shapes or level graph.
+1. `SchemaTableGridView` for a schema table on one of the app's routes.
+2. `buildSchemaTGridConfig` + `defineTGrid` when the table relationships are
+   right but the page needs different columns, renderers, editors, query
+   defaults, row transport, interaction, or services.
+3. `defineTGrid` directly when the page owns row shapes or the level graph.
 4. `useTGridSession`, `TGrid`, `TableToolbar`, `Pagination`,
    `useTableGridUrlState`, `useTableToolbarProps`, `useTablePaginationProps`,
-   and `TableGridSurface` only for a custom visible surface.
+   and `TableGridSurface` only when the visible surface itself is custom.
 
 Preserve search, filters, sort, pagination, CSV export, lookup labels, URL
 state, loading states, and error states unless the user asks for less.
 
 ## Standard Schema Route
 
-`SchemaTableGridView` keeps schema-derived columns, nested rows, default row
-transport, save behavior, toolbar, pagination, URL sync, loading/error states,
-lookup labels, and CSV export.
+Use the loaded schema metadata to find the table the page renders. `table` is a
+`TableSchema`; build `tablesByName` from the same `useSchemaStore` tables array.
 
 ```tsx
 import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { SchemaTableGridView, useSchemaStore } from "@sapporta/frontend";
+import { SchemaTableGridView } from "@sapporta/frontend";
+import { useSchemaStore } from "@sapporta/frontend/schema";
 
 export function InvoicesGridRoute() {
   const [searchParams] = useSearchParams();
@@ -54,22 +53,15 @@ export function InvoicesGridRoute() {
 }
 ```
 
-`route` is always `{ path, searchParams, navigate }`; do not pass separate
-`searchParams`, `navigate`, or `routePath` props to `TableGridView`.
+`SchemaTableGridView` keeps schema columns, nested rows, row loading/saving,
+toolbar, pagination, URL sync, lookup labels, loading/error states, and CSV
+export. `route` is always `{ path, searchParams, navigate }`; do not pass
+separate `searchParams`, `navigate`, or `routePath` props.
 
 ## Schema-Derived Customization
 
-Use `buildSchemaTGridConfig` when the schema graph is right but one level needs
-custom columns, query defaults, row transport, or services. Current helper
-shape:
-
-```ts
-buildSchemaTGridConfig({
-  source: { rootTableName, tablesByName },
-  rootRows,
-  relatedRows,
-});
-```
+Use `buildSchemaTGridConfig` when the page still uses the schema graph but
+needs page-specific behavior.
 
 ```tsx
 import { useMemo } from "react";
@@ -79,9 +71,9 @@ import {
   buildSchemaTGridConfig,
   defineTGrid,
   useTGridCell,
-  useSchemaStore,
   type SchemaTableRowsByLevel,
 } from "@sapporta/frontend";
+import { useSchemaStore } from "@sapporta/frontend/schema";
 import { eqCondition } from "@sapporta/shared/filter";
 
 function PaymentStatusCell() {
@@ -110,6 +102,7 @@ export function DraftInvoicesGridRoute() {
         fixedFilters: [eqCondition("status", "draft")],
         initialSort: [{ colId: "invoice_date", direction: "desc" }],
       },
+      relatedRows: { pageSize: 50 },
     });
 
     config.levels.invoices.columns = (columns) => [
@@ -118,8 +111,6 @@ export function DraftInvoicesGridRoute() {
       columns.table("status", {
         header: "Payment",
         renderCell: PaymentStatusCell,
-        readsRowFields: ["status"],
-        invalidatedBy: ["status"],
       }),
       columns.remainingTable({
         exclude: ["id", "customer_id", "invoice_date", "status"],
@@ -142,17 +133,17 @@ export function DraftInvoicesGridRoute() {
 }
 ```
 
-Use `fixedFilters` for enforced constraints hidden from toolbar editing. Use
+Use `fixedFilters` for constraints the user should not edit in the toolbar. Use
 `initialFilters` for editable defaults. Use the table name for `registerAs`
-when global create/save flows should reload this mounted grid; omit it when the
-custom page should not join that reload bridge.
+when create/save actions elsewhere should reload this grid. Omit `registerAs`
+when the custom page should stay independent. `relatedRows` applies to
+expansion-loaded child rows; omit it when child defaults are fine.
 
-## Fully Custom TGrid
+## Custom Rows Or Saves
 
 Use `defineTGrid` directly when the page has typed rows, custom children,
-client columns, app services, or save behavior that calls app APIs. Keep
-rendering and saving in the definition; let `TableGridView` keep the standard
-table affordances.
+client columns, app services, or save behavior that calls app APIs. Define row
+types from the data returned by that page's row source.
 
 ```tsx
 import {
@@ -166,16 +157,19 @@ type InvoiceRow = {
   due_date: string | null;
   status: "draft" | "sent" | "paid";
 };
+
 type InvoiceItemRow = {
   id: string;
   item_id: string | null;
   quantity: number;
   balance_stock: number | null;
 };
+
 type RowsByLevel = {
   invoices: InvoiceRow;
   "invoices.items": InvoiceItemRow;
 };
+
 type AppServices = {
   stockAvailable(input: {
     lineId: string;
@@ -212,17 +206,15 @@ async function saveQuantity(
 }
 ```
 
-Real routes still provide schemas, router state, and services before rendering
-`TableGridView`.
+Pass concrete `services` to `TableGridView` when `AppServices` is not
+`unknown`; those methods become available as `ctx.appServices`. Keep rendering
+and saving in the grid definition, and let `TableGridView` keep the standard
+table affordances.
 
-## Query Ownership
+## Query, Toolbar, Pagination
 
-Each level can have `query.owner`.
-
-- `host`: the page owns visible controls for that level.
-- `source`: expansion context loads rows for that level.
-
-Root levels default to `host`; child levels default to `source`.
+Each level can set `query.owner`: `host` for visible controls, `source` for
+expansion-loaded rows. Root defaults to `host`; children default to `source`.
 
 Query options: `pageSize`, `initialPage`, `initialSort`, `initialFilters`,
 `initialSearch`, `fixedFilters`, `urlSync`.
@@ -230,11 +222,9 @@ Query options: `pageSize`, `initialPage`, `initialSort`, `initialFilters`,
 URL helpers: `buildTableSearchParams`, `parseTableSearchParams`,
 `useTableGridUrlState`, `tableGridUrlForQueryState`.
 
-## Custom Toolbar, Pagination, Or Shell
-
-`TableGridView` accepts `toolbar` and `pagination` overrides. Pass
-`toolbar={false}` or `pagination={false}` only when the product explicitly does
-not want those controls.
+`TableGridView` accepts `toolbar` and `pagination` overrides. Use
+`toolbar={false}` or `pagination={false}` only when the product explicitly
+does not want those controls.
 
 ```tsx
 <TableGridView
@@ -248,9 +238,6 @@ not want those controls.
 />
 ```
 
-For custom surfaces, compose the advanced exports listed in the decision path.
-
-## Schema Metadata
-
-Grid primitives read `table.label`, column labels, `table.search.columns`,
-`table.children`, child `foreignKey`, child `columns`, and child `defaultSort`.
+Schema grid primitives read `table.label`, column labels,
+`table.search.columns`, `table.children`, child `foreignKey`, child `columns`,
+and child `defaultSort`.

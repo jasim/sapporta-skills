@@ -9,49 +9,49 @@ description: >
 
 # Custom Frontend Views
 
-The project template wires built-in table and report routes under
-`packages/frontend/src/App.tsx`. For everything else — domain dashboards, import
-wizards, forms that span multiple tables, custom table/grid workflow pages — add
-your own route and render it with the same primitives Sapporta uses.
-If project source is unavailable, inspect installed declarations under
-`node_modules/@sapporta/frontend`, `node_modules/@sapporta/ui`, and
-`node_modules/@sapporta/shared`.
+Build the app's own screens under `packages/frontend/src/`: dashboards, import
+wizards, multi-table forms, and custom table/grid workflows. Use the installed
+Sapporta packages for exact props and exports:
+`packages/frontend/node_modules/@sapporta/frontend`,
+`packages/frontend/node_modules/@sapporta/ui`, and
+`packages/frontend/node_modules/@sapporta/shared`.
 
-Auth-enabled frontends load session and `/api/auth-context` before Sapporta
-metadata. Non-owner workspace users may enter built-in product routes, but
-owner-only navigation for tables, reports, and metadata should be hidden.
-Built-in and custom forms must omit system-managed scope fields and columns
-marked `clientEditable: false`.
+In auth-enabled apps, let the existing app boot load the session and
+`/api/auth-context` before rendering screens that need tables or reports.
+Non-owner workspace users should not see owner-only table, report, or metadata
+links. Forms must omit system-managed scope fields and columns marked
+`clientEditable: false`.
 
-Follow the convention the current template ships: `packages/frontend/src/Welcome.tsx`
-is a working custom view. Custom route and sidebar extension points live together
-in `packages/frontend/src/App.tsx`. Add one file per view at
-`packages/frontend/src/<Name>.tsx`, import it in `App.tsx`, add a sibling
-`<Route>`, and add a matching sidebar item through `AppSidebar`:
+Follow the current app convention: `packages/frontend/src/App.tsx` exports
+`appNavigation`, `appHomeRoute`, and `appRoutes`. Add one file per screen, then
+add a route and a matching navigation item:
 
 ```tsx
-import { Route } from "react-router-dom";
-import { SidebarNavItem, SidebarSectionLabel } from "@sapporta/frontend/shell";
+import { Route, Navigate } from "react-router-dom";
+import type { Navigation } from "@sapporta/frontend/shell";
+import { Upload } from "lucide-react";
 import { Imports } from "./Imports";
-import { Welcome } from "./Welcome";
 
-export function AppSidebar() {
-  return (
-    <>
-      <SidebarSectionLabel>Workflows</SidebarSectionLabel>
-      <SidebarNavItem to="/imports" label="Imports" />
-    </>
-  );
-}
+const importsPath = "/imports";
 
-export const appHomeRoute = <Route index element={<Welcome />} />;
+export const appNavigation: Navigation = [
+  {
+    label: "Workflows",
+    items: [{ label: "Imports", to: importsPath, icon: Upload }],
+  },
+];
 
-export const appRoutes = (
-  <>
-    <Route path="imports" element={<Imports />} />
-  </>
+export const appHomeRoute = (
+  <Route index element={<Navigate to={importsPath} replace />} />
 );
+
+export const appRoutes = <Route path="imports" element={<Imports />} />;
 ```
+
+`AppShell` receives `navigation={appNavigation}`. Tables and reports appear
+automatically when `showFrameworkNavigation` is true. Do not use older
+`sidebarContent`, `AppSidebar`, `SidebarNavItem`, or `SidebarSectionLabel`
+patterns.
 
 ## Primitives
 
@@ -62,13 +62,11 @@ export const appRoutes = (
   state. For custom table/grid routes, read
   [references/table-grid.md](references/table-grid.md).
 
-## Calling backend APIs from custom views
+## Backend APIs
 
-The typed client lives in `packages/frontend/src/api.ts`. The project template keeps this
-file small; read it as the canonical wiring:
+Keep the app's typed API clients in `packages/frontend/src/api.ts`:
 
 ```ts
-// packages/frontend/src/api.ts
 import { createApiClient } from "@sapporta/shared/client";
 import { getApiBase } from "@sapporta/frontend/platform";
 import { helloContract } from "__SLUG__-shared";
@@ -76,49 +74,17 @@ import { helloContract } from "__SLUG__-shared";
 export const customApi = createApiClient(helloContract, { baseUrl: getApiBase });
 ```
 
-`getApiBase` is passed as a function, not a string — the typed-client
-factory expects a getter so the base is resolved at call time.
-
-Each contract method becomes a client method that returns the 2xx body
-on success or throws on non-2xx:
-
-```ts
-import { customApi } from "./api";
-const { message } = await customApi.hello();
-```
-
-### Errors
-
-Import `ApiError` from `@sapporta/shared/client` and discriminate with
-`instanceof`. The error's `body` carries the server's typed error
-payload; `status` carries the HTTP status. Never reinterpret it —
-report it verbatim. The canonical pattern is the `useEffect` block in
-`packages/frontend/src/Welcome.tsx` (loading → ok → error states):
-
-```tsx
-import { ApiError } from "@sapporta/shared/client";
-
-customApi.hello().then(
-  (body) => setHello({ kind: "ok", message: body.message }),
-  (err: unknown) => {
-    if (err instanceof ApiError) {
-      setHello({ kind: "error", status: err.status, body: err.body });
-    } else {
-      setHello({ kind: "error", status: 0, body: err });
-    }
-  },
-);
-```
-
-### Adding a new endpoint
+Pass `getApiBase` itself, not `getApiBase()`. Contract methods return the 2xx
+body and throw `ApiError` on non-2xx. Preserve `ApiError.status` and
+`ApiError.body` so the screen can show the server's actual error. Use the
+existing `readApiError()` pattern from `Welcome.tsx`, or `instanceof ApiError`
+when package identity is reliable.
 
 Three touchpoints, in order: declare the contract in
 `packages/shared/src/contracts/<feature>.ts` (and re-export from
 `packages/shared/src/contracts/index.ts`), register the handler in
 `packages/api/app/<feature>.ts` (and mount it in `loadApp()`), then add one
 entry to `packages/frontend/src/api.ts` so a typed client method exists for it.
-
-### Anti-pattern
 
 Don't write `fetch("/api/foo")` by hand. The typed client exists
 precisely so request and response shapes are checked against the
