@@ -10,12 +10,12 @@ description: >
 
 Reports are far more useful when the user can jump from a row into the underlying data. Sapporta has two declarative hooks for this:
 
-| Hook | Declared on | Rendered as |
+| Hook | Declared on | Returned as |
 |------|-------------|-------------|
-| `rowLinks` | a `ReportTreeNode` | right-click **context menu** items on every data row at that level |
-| `column.links` | a `ColumnSchema` inside `columns[]` | a **hover chip** on that cell; also mirrored into the row context menu for discoverability |
+| `rowLinks` | a `ReportTreeNode` | `ReportResult.levelLinks[levelName]` |
+| `column.links` | a report column inside `columns[]` | `ReportResult.levelColumns[levelName][].links` |
 
-Both use the same `ReportLink` shape. Add them whenever a report exposes an entity key (account id, txn id, report period, etc.) — the user should almost always be able to drill through.
+Both use the same `ReportLink` shape. Add them whenever a report exposes an entity key (account id, txn id, report period, etc.) so report UIs and clients have enough metadata to drill through. The current engine serializes this metadata; do not assume a particular visual control unless the app's report UI implements it.
 
 In auth-enabled projects, links should only target rows visible through the same
 active workspace boundary. Prefer FK-backed or explicit reference metadata so
@@ -28,24 +28,24 @@ type ReportLink =
   | { kind: "table";  table: string;  bind: LinkBind; label?: string; icon?: LinkIcon }
   | { kind: "report"; report: string; bind: LinkBind; label?: string; icon?: LinkIcon };
 
-type LinkBind = Record<string, string>;           // target-key → source-column-on-row
+type LinkBind = Record<string, string>;           // target-key -> source-column-on-row
 type LinkIcon = "drill-up" | "drill-into" | "report";
 ```
 
-- **`kind: "table"`** — navigates to `/tables/<table>` with each `bind` entry encoded as an equality filter. Use for drilling to the source row (FK drill-up) or a filtered collection (master → children drill-into).
-- **`kind: "report"`** — navigates to `/reports/<report>` with each `bind` entry set as a URL param. Use for cross-report drill-through (summary → detail).
-- **`bind`** maps **target key → source column name on the current row**. Parallels `ReportTreeNode.bind`'s static-map form. The source column must appear in the level's `columns[]` — otherwise the value isn't in the row and the link resolves to null.
-- **`label`** is the menu/chip title. Defaults to `Open in <table>` or `Open report: <report>`.
-- **`icon`** is a visual hint only: `drill-up` (→ single row), `drill-into` (→ filtered list), `report` (→ another report). Omit it and the UI picks a sensible default from `kind`.
+- **`kind: "table"`** — targets `/tables/<table>` with each `bind` entry encoded as an equality filter. Use for drilling to the source row (FK drill-up) or a filtered collection (master -> children drill-into).
+- **`kind: "report"`** — targets `/reports/<report>` with each `bind` entry set as a URL param. Use for cross-report drill-through (summary -> detail).
+- **`bind`** maps **target key -> source column name on the current row**. Parallels `ReportTreeNode.bind`'s static-map form. The source column must appear in the level's `columns[]` — otherwise the value isn't in the row and the link resolves to null.
+- **`label`** is the display text a UI can use for the link.
+- **`icon`** is a visual hint only: `drill-up` (single row), `drill-into` (filtered list), `report` (another report).
 
 ## Resolvability rules
 
-A link is skipped (not rendered) for a row when:
-
-- any `bind` source column on the row is `null` or `undefined`, or
-- the row is structural (`kind: "opening" | "closing" | "subtotal"`) or a footer row — these never render row links even if `rowLinks` is declared.
-
-This means you can declare links optimistically on levels with mixed rows; the engine only resolves them where the data supports it.
+For a link to resolve for a row, every `bind` source column must be present in
+that row's `columns` object and have a usable value. Declare helper IDs in
+`columns[]`; use `visuallyHidden: true` when the value is needed for navigation
+but should not be displayed. Structural row behavior is UI-specific, so do not
+depend on automatic suppression for opening, closing, subtotal, or footer rows
+unless your app's report renderer implements it.
 
 ## Worked example — a ledger with both kinds
 
@@ -54,19 +54,19 @@ tree: {
   source: "accounts",
   levelName: "account",
   columns: [
-    { name: "id" },                                    // needed so bind has `id` on the row
+    { name: "id", visuallyHidden: true },              // needed so bind has `id` on the row
     {
       name: "name",
-      header: "Account",
+      label: "Account",
       links: [
-        // Cell-level: chip next to the account name → jumps to the account row.
+        // Cell-level metadata: jumps to the account row when the UI supports it.
         { kind: "table", table: "accounts", bind: { id: "id" }, icon: "drill-up" },
       ],
     },
-    { name: "balance", header: "Balance", kind: "number", displayFormat: "currency" },
+    { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
   ],
 
-  // Row-level: right-click → opens the ledger report scoped to this account.
+  // Row-level metadata: opens the ledger report scoped to this account.
   rowLinks: [
     {
       kind: "report",
@@ -82,11 +82,11 @@ tree: {
       source: "lines",
       levelName: "line",
       columns: [
-        { name: "id" },
-        { name: "journal_entry_id" },
-        { name: "date", header: "Date", kind: "date" },
-        { name: "memo", header: "Memo" },
-        { name: "amount", header: "Amount", kind: "number", displayFormat: "currency" },
+        { name: "id", visuallyHidden: true },
+        { name: "journal_entry_id", visuallyHidden: true },
+        { name: "date", label: "Date", kind: "date" },
+        { name: "memo", label: "Memo" },
+        { name: "amount", label: "Amount", kind: "number", displayFormat: "currency" },
       ],
       // Each line row can jump to its journal entry.
       rowLinks: [
@@ -99,21 +99,21 @@ tree: {
 
 Two things to notice:
 
-1. `{ name: "id" }` and `{ name: "journal_entry_id" }` are declared with **no `header`**. They're needed as bind sources but not shown as columns — this is the standard pattern for compute- or link-only columns.
+1. `{ name: "id", visuallyHidden: true }` and `{ name: "journal_entry_id", visuallyHidden: true }` are declared because link binds need those values on the row, while `visuallyHidden` tells supporting UIs not to display them as normal columns.
 2. The child level has its own `rowLinks`. Every tree level is independent.
 
 ## Patterns
 
 - **FK drill-up** (most common): `{ kind: "table", table: "<fk-target>", bind: { id: "<fk-column>" }, icon: "drill-up" }`. Declared on either `rowLinks` or the FK column's `links`.
-- **Master → children drill-into**: `{ kind: "table", table: "<child>", bind: { <fk>: "id" }, icon: "drill-into" }` — opens the child table filtered to the parent.
+- **Master -> children drill-into**: `{ kind: "table", table: "<child>", bind: { <fk>: "id" }, icon: "drill-into" }` — opens the child table filtered to the parent.
 - **Cross-report**: `{ kind: "report", report: "<name>", bind: { <param>: "<col>" }, icon: "drill-into" }` — the target report's param names must match the bind keys.
 
 ## Checklist before shipping a report
 
-- [ ] Every FK-like column has either a `column.links` chip or a row-level `rowLinks` entry pointing at the referenced row.
+- [ ] Every FK-like column has either `column.links` metadata or a row-level `rowLinks` entry pointing at the referenced row.
 - [ ] Any row whose identity maps to another report has a `rowLinks: [{ kind: "report", ... }]`.
-- [ ] All columns named in `bind` source positions are declared in `columns[]` (add header-less entries for ones that shouldn't render).
-- [ ] For levels containing synthetic rows (opening/closing balances, subtotals), the report `transform` sets `kind: "opening" | "closing" | "subtotal"` on those nodes so row links are auto-suppressed.
+- [ ] All columns named in `bind` source positions are declared in `columns[]` (add `visuallyHidden: true` for helper values that should not display).
+- [ ] For levels containing synthetic rows (opening/closing balances, subtotals), verify the app's report UI handles row links correctly for those node kinds.
 - [ ] `sapporta check` passes.
 
 ## Related
