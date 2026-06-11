@@ -139,6 +139,84 @@ when create/save actions elsewhere should reload this grid. Omit `registerAs`
 when the custom page should stay independent. `relatedRows` applies to
 expansion-loaded child rows; omit it when child defaults are fine.
 
+## Interaction Presets
+
+TGrid definitions accept an optional `interaction` from `@sapporta/grid`.
+Use it when the page needs different keyboard, focus, row-highlight, cell
+selection, or row-selection behavior. If omitted, Sapporta uses
+`CELL_EDITING_GRID`.
+
+```tsx
+import {
+  ROW_PRIMARY_MASTER_DETAIL,
+  type GridInteractionConfig,
+} from "@sapporta/grid";
+
+const definition = defineTGrid<SchemaTableRowsByLevel>({
+  ...config,
+  interaction: ROW_PRIMARY_MASTER_DETAIL,
+});
+```
+
+Choose from the existing presets before composing your own:
+
+| Desired UX | Preset | Behavior |
+| --- | --- | --- |
+| Editable spreadsheet | `CELL_EDITING_GRID` | Default. Active cell plus Shift+Arrow cell range selection. |
+| Editable spreadsheet without cell ranges | `CELL_EDITING_NO_SELECTION_GRID` | Active cell and editing remain, but Shift+Arrow moves without selecting cells. |
+| Editable spreadsheet with row highlight | `CELL_GRID_WITH_ACTIVE_ROW` | Active row derives from the active cell; no row selection. |
+| Editable spreadsheet with independent row selection | `CELL_GRID_WITH_INDEPENDENT_ROW_SELECTION` | Cell cursor remains primary; selected rows are independent operation targets. |
+| Editable spreadsheet with detail panel following the cursor row | `CELL_PRIMARY_WITH_SIDE_PANEL_ROW` | Row selection follows the active cell's row; Space does not pin a different row. |
+| Editable spreadsheet with independently pinned detail row | `CELL_PRIMARY_WITH_SELECTED_SIDE_PANEL_ROW` | Space toggles the active cell's row as the selected detail target. |
+| Master-detail row list | `ROW_PRIMARY_MASTER_DETAIL` | No active cell and no cell selection. Arrow keys move the row cursor; selection follows the active row. Use for row highlight only. |
+| Multi-select row list | `ROW_MULTISELECT_LIST` | No active cell. Arrow keys move the row cursor; Shift+Arrow extends row selection; Space toggles the active row. |
+
+Use `ROW_PRIMARY_MASTER_DETAIL` when the user asks for a table grid with row
+highlighting and no cell-based selection. Use `CELL_GRID_WITH_ACTIVE_ROW` when
+they still need cell editing or cell keyboard focus but also need row highlight.
+For bulk actions, read selected rows from the grid runtime (`selectedRowsFor`
+or `selectedRowIds`) instead of reading controller internals.
+
+The presets are ordinary `GridInteractionConfig` values, not special runtime
+cases. For a custom pattern, compose a concrete value and use
+`satisfies GridInteractionConfig`:
+
+```tsx
+import { type GridInteractionConfig } from "@sapporta/grid";
+
+const ROW_LIST_WITH_SINGLE_PINNED_SELECTION = {
+  mode: "row-list",
+  activeCell: { kind: "none" },
+  selectedCells: { kind: "none" },
+  activeRow: {
+    kind: "from-row-cursor",
+    keyboard: {
+      arrows: "move-active-row",
+      shiftArrows: "move-active-row",
+      expansion: "left-right-enter",
+    },
+  },
+  selectedRows: {
+    kind: "enabled",
+    mode: "single",
+    sync: { kind: "independent" },
+    keyboard: { space: "toggle-active-row" },
+  },
+} satisfies GridInteractionConfig;
+```
+
+Valid configs use one of two modes:
+
+- `cell-grid`: `activeCell` is enabled; `selectedCells` may be `range` or
+  `none`; `activeRow` may derive from the active cell; `selectedRows` may be
+  disabled, follow the active row, or be independent.
+- `row-list`: `activeCell` and `selectedCells` must both be `none`; the row
+  cursor owns keyboard movement; row selection may follow the active row or be
+  independent.
+
+If the visible surface itself is custom and needs checkbox selection chrome,
+inspect `@sapporta/grid/column-preset` for the lower-level column preset APIs.
+
 ## Custom Rows Or Saves
 
 Use `defineTGrid` directly when the page has typed rows, custom children,
