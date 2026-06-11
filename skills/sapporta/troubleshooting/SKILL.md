@@ -20,14 +20,19 @@ Could not locate the bindings file. Tried:
 
 Typical triggers: Node version change, wiped `packages/api/node_modules`, or stale pnpm store entry.
 
-**Fix:** `pnpm rebuild better-sqlite3` from the project root.
+**Fix:** run `pnpm rebuild better-sqlite3` in the app package that installed
+better-sqlite3, usually the generated API package or the project root.
 
-If `pnpm rebuild` doesn't work, build directly inside the package:
+If `pnpm rebuild` doesn't work, find the installed better-sqlite3 package
+directory from the error message or with Node package resolution, then rebuild
+there:
 
 ```bash
-cd packages/api/node_modules/.pnpm/better-sqlite3@<version>/node_modules/better-sqlite3 && npx --yes node-gyp rebuild --release
+npx --yes node-gyp rebuild --release
 ```
 
-Replace `<version>` with the version from the error message (e.g. `12.8.0`).
+Run that command from the resolved better-sqlite3 package directory. Avoid
+hard-coding a pnpm store path; the installed location depends on the package
+manager layout and version.
 
 If rebuild fails with missing build tools: `xcode-select --install` (macOS).

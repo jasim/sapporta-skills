@@ -11,8 +11,8 @@ description: >
 Use this skill when the user wants to work with records in an existing Sapporta
 app rather than change the app's code. The Sapporta CLI acts as a console over
 the selected running app and database: it can discover endpoints, list tables,
-sample data, run reports, insert or update rows through built-in row commands,
-and run raw SQL only as a fallback.
+sample data, run reports, insert, update, or delete rows through built-in row
+commands, and run raw SQL only as a fallback.
 
 Prefer the project-local command form:
 
@@ -85,11 +85,11 @@ For data changes, use the highest fitting option:
 
 1. Existing project/domain endpoint from `sapporta describe`
 2. Built-in row commands: `sapporta rows insert/update/delete`
-3. Built-in reports/actions if the app exposes them
+3. Existing reports or custom endpoints when they match the workflow
 4. Raw SQL fallback after reading [../meta-sql/SKILL.md](../meta-sql/SKILL.md)
 
 Raw SQL writes bypass application behavior and normal row-save validation, so
-use them only when no endpoint, row command, report, or action fits.
+use them only when no endpoint, row command, or report fits.
 In auth-enabled projects, raw SQL also bypasses normal row-access helpers; read
 [../meta-sql/SKILL.md](../meta-sql/SKILL.md) before using it for scoped tables.
 

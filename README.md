@@ -1,6 +1,6 @@
 # Sapporta Codex Skills
 
-Sapporta is a TypeScript library and application framework for building database-backed apps. It gives projects a schema-as-code data layer, auto-generated CRUD endpoints, hierarchical reports, and a place for product-specific domain code as Hono/ts-rest sub-apps.
+Sapporta is a TypeScript library and framework-style scaffold for building database-backed apps. It gives projects a schema-as-code data layer, built-in CRUD endpoints, hierarchical reports, OpenAPI-backed discovery, and a place for product-specific domain code as Hono/ts-rest sub-apps.
 
 This repository contains agentic skills for working inside Sapporta projects. The skills teach the coding agent Sapporta conventions, CLI commands, project layout, and implementation patterns for common tasks such as:
 
