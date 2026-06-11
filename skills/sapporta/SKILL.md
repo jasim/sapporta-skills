@@ -10,8 +10,8 @@ description: >
 
 ## What Sapporta Gives The App Builder
 
-Sapporta is a TypeScript application framework for database-backed apps. A
-Sapporta project gives the application builder:
+Sapporta is a TypeScript library and framework-style scaffold for
+database-backed apps. A Sapporta project gives the application builder:
 
 - TypeScript files for defining database tables, columns, relationships,
   display metadata, search behavior, and row ownership.
@@ -20,7 +20,7 @@ Sapporta project gives the application builder:
 - Hierarchical reports for ledgers, summaries, statements, and structured data
   views.
 - Custom endpoints for product workflows that need business rules, file
-  uploads, transactions, or custom response shapes.
+  uploads, atomic database changes, or custom response shapes.
 - Custom React views layered on top of the built-in admin UI.
 - An OpenAPI document that `sapporta describe`, the frontend client, and API
   tooling use to see the current app.
@@ -42,8 +42,7 @@ pnpm exec sapporta ...
 
 The CLI is both a discovery tool and a data console for a selected running app.
 It can inspect endpoints, list and describe tables, sample rows, run reports,
-insert/update rows, execute raw SQL fallback commands, sync schema, and run
-checks.
+insert/update/delete rows, execute raw SQL fallback commands, and run checks.
 
 For protected or non-local apps, keep the top-level context small and read the
 CLI access details only when needed:
@@ -68,7 +67,9 @@ inspect numbers with `data-console`.
 
 - Work in the local Sapporta project rooted at `cwd` or the nearest
   `sapporta.json`.
-- Every HTTP route is mounted under `/api/...`; bare `/<name>/...` paths 404.
+- Framework table/report/meta APIs and custom app APIs are served under
+  `/api/...`; health checks and frontend/static routes can live outside
+  `/api`.
 - Prefer `pnpm exec sapporta ...` over a global `sapporta` binary.
 - Use `sapporta describe` to discover existing endpoints before adding code or
   composing requests.
@@ -96,14 +97,15 @@ inspect numbers with `data-console`.
 
 ### App-Building Tasks
 
-- Tables, columns, relations, indexes, search config, schema sync -> read
+- Tables, columns, relations, indexes, search config, and generated schema
+  metadata -> read
   [table-creation/SKILL.md](table-creation/SKILL.md)
 - Hierarchical reports, summaries, ledgers, report validation -> read
   [report-creation/SKILL.md](report-creation/SKILL.md)
 - Row links, cell links, drill-through, cross-report navigation -> read
   [report-linking/SKILL.md](report-linking/SKILL.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
-  transactions, OpenAPI registration -> read [app/SKILL.md](app/SKILL.md)
+  atomic database changes, OpenAPI registration -> read [app/SKILL.md](app/SKILL.md)
 - Custom React routes, dashboards, forms, table/grid views, `@sapporta/ui`,
   typed API client ->
   read [frontend/SKILL.md](frontend/SKILL.md)
