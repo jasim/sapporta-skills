@@ -22,13 +22,16 @@ Persistence code that touches scoped tables should use `scopedRows(db, auth,
 table)` for ordinary CRUD and `auth.rowSecurity.forTable(table)` for custom
 Drizzle queries, joins, transactions, aggregates, and multi-step writes. Do not
 thread `workspace_id`, `workspaceId`, `scoped_to_user_id`, or `scopedToUserId`
-through service inputs. Do not mutate by primary key alone, fetch broadly and
-filter ownership in JavaScript, or let a client-provided scope field decide row
-visibility.
+through service inputs. The helpers reject or stamp ownership fields for the
+operations they perform; raw database access can bypass that protection, so
+keep custom persistence behind the same route-edge auth context. Do not mutate
+by primary key alone, fetch broadly and filter ownership in JavaScript, or let
+a client-provided scope field decide row visibility.
 
-Raw SQL belongs at the edge of a store only when the scoped helpers genuinely
-do not fit. Document that reason next to the query and keep the same
-data-authority row predicate the corresponding scoped helper would have applied.
+When raw SQL is genuinely needed, keep it in the module's store layer rather
+than in route or workflow code. Document why the scoped helpers do not fit, and
+keep the same data-authority row predicate the corresponding scoped helper
+would have applied.
 
 ## Routing
 

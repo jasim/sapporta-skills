@@ -8,9 +8,10 @@ description: >
 
 # Typed Domain Errors
 
-Hono turns any uncaught `Error` into 500 + stack trace. Right for server faults
-— wrong for *workflow facts* a caller could act on. Each such fact deserves
-its own status and JSON shape; none should look like a crash.
+Sapporta's scaffold installs a default error handler for unexpected faults: it
+logs server-side details and returns a generic JSON 500 response. Right for
+server faults — wrong for *workflow facts* a caller could act on. Each such
+fact deserves its own status and JSON shape; none should look like a crash.
 
 **The core move**: the error class *is* the HTTP response. It carries the
 status, it carries the payload, and a single shim at the HTTP edge translates
