@@ -22,6 +22,12 @@ Non-owner workspace users should not see owner-only table, report, or metadata
 links. Forms must omit system-managed scope fields and columns marked
 `clientEditable: false`.
 
+Client code does not enforce row ownership. Do not add hidden
+`workspace_id`, `workspaceId`, `scoped_to_user_id`, or `scopedToUserId` inputs,
+and do not rely on `fixedFilters` or URL params as authorization. Use built-in
+table/report routes or typed custom endpoints whose server handlers resolve
+auth and apply `scopedRows()` or `rowSecurity`.
+
 Follow the current app convention: `packages/frontend/src/App.tsx` exports
 `appNavigation`, `appHomeRoute`, and `appRoutes`. Add one file per screen, then
 add a route and a matching navigation item:
@@ -90,3 +96,8 @@ Don't write `fetch("/api/foo")` by hand. The typed client exists
 precisely so request and response shapes are checked against the
 contract at compile time. Hand-rolled fetches re-introduce the drift
 the shared package was built to prevent.
+
+Typed clients still call server code; they do not make a route auth-safe by
+themselves. When adding a frontend call that mutates or reveals scoped data,
+confirm the matching backend handler chooses the route's ability/data authority
+and uses scoped row helpers.

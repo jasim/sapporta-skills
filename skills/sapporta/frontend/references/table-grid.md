@@ -17,6 +17,12 @@ Use Sapporta table primitives from `@sapporta/frontend`. In an app, inspect
 Preserve search, filters, sort, pagination, CSV export, lookup labels, URL
 state, loading states, and error states unless the user asks for less.
 
+In auth-enabled apps, schema grid primitives should load rows through the
+built-in table APIs so row-access predicates are applied server-side. Custom
+row sources, save handlers, and app services must call scoped backend
+endpoints; `fixedFilters`, hidden columns, and client-only checks are product
+constraints, not authorization.
+
 ## Standard Schema Route
 
 Use the loaded schema metadata to find the table the page renders. `table` is a
@@ -138,6 +144,8 @@ Use `fixedFilters` for constraints the user should not edit in the toolbar. Use
 when create/save actions elsewhere should reload this grid. Omit `registerAs`
 when the custom page should stay independent. `relatedRows` applies to
 expansion-loaded child rows; omit it when child defaults are fine.
+Do not include `workspace_id` or `scoped_to_user_id` in `fixedFilters` to
+enforce auth; the server must own data-authority scope.
 
 ## Interaction Presets
 
@@ -288,6 +296,8 @@ Pass concrete `services` to `TableGridView` when `AppServices` is not
 `unknown`; those methods become available as `ctx.appServices`. Keep rendering
 and saving in the grid definition, and let `TableGridView` keep the standard
 table affordances.
+Custom save services must omit scope fields from payloads and let the backend
+handler stamp or guard scope through Sapporta auth helpers.
 
 ## Query, Toolbar, Pagination
 

@@ -17,6 +17,26 @@ endpoint, row command, report, or table query covers the task:
 
 If one of the above fits, use it. Raw SQL is the last rung of the ladder.
 
+## Auth And Row Scope
+
+`sapporta db exec-sql` runs direct SQL against the app database. It does not go
+through built-in table handlers, `scopedRows()`, route-edge ability/data
+authority helpers, table save hooks, or row-security predicates.
+
+In auth-enabled projects:
+
+- Prefer reports, table endpoints, row commands, or custom endpoints for
+  user-facing reads and writes.
+- Treat raw SQL results as database-admin inspection, not as the visibility a
+  workspace user would see.
+- Do not use raw SQL to compensate for missing auth filters in product code.
+  Fix the table `rowScope`, report, or endpoint instead.
+- Never accept `workspace_id`, `workspaceId`, `scoped_to_user_id`, or
+  `scopedToUserId` from a client payload and pass them through raw SQL.
+- For emergency writes to scoped tables, explicitly document why no scoped API
+  fits and verify the target rows belong to the intended workspace/user before
+  executing.
+
 ## One command, auto-dispatched
 
 `sapporta db exec-sql` accepts any single statement. The runner asks better-sqlite3 whether the prepared statement returns rows:
@@ -45,6 +65,8 @@ Prefer `--input-body-json` when you need `limit` or `dryRun`; positional is fine
 Raw SQL bypasses Sapporta's validation and save pipeline. For mutations you are on your own for:
 
 - Auto-managed columns (`id`, `created_at`, `updated_at`) — no defaults filled in; `NOT NULL` on these will reject your insert.
+- Auth-managed columns (`workspace_id`, `scoped_to_user_id`) — no trusted
+  data-authority scope is stamped for you.
 - Column defaults declared in the schema — not applied.
 - Table-specific save hooks, derived fields, and cross-column validations — not run.
 - Input coercion and type normalization — not performed.

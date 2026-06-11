@@ -41,9 +41,13 @@ fall outside ts-rest — see "Escape hatches" below.
 ## Auth Boundary
 
 Product routes should resolve auth at the route edge with
-`projectAuth.requireWorkspaceUser(c)` or the appropriate project auth guard.
-Owner-only framework routes use the owner guard. Once auth is resolved, use the
-highest fitting data-access primitive:
+the narrowest data-authority helper that fits the workflow, such as
+`projectAuth.requireAuthorizedWorkspaceUserData(c, requirement)`,
+`projectAuth.requireAuthorizedWorkspaceData(c, requirement)`, or
+`projectAuth.requireAuthorizedSystemData(c, requirement)`. Ability checks decide
+whether the feature may run; data authority decides which trusted row facts
+database helpers may use. Once auth is resolved, use the highest fitting
+data-access primitive:
 
 1. **Default:** `scopedRows(db, auth, table)` for ordinary table work:
    `.list(...)`, `.get(...)`, `.create(...)`, `.update(...)`, `.delete(...)`,
@@ -237,7 +241,10 @@ packages/api/modules/orders/
 Route responsibility:
 
 ```typescript
-const auth = projectAuth.requireWorkspaceUser(c);
+const auth = projectAuth.requireAuthorizedWorkspaceUserData(c, {
+  action: "create",
+  subject: "orders",
+});
 const result = await createOrder({
   db: c.get("db"),
   auth,
@@ -337,7 +344,10 @@ import { accounts } from "../schema/accounts.js";
 const api = new TsRestApi<SapportaEnv>();
 
 api.register("createAccount", accountsContract.createAccount, async ({ c, request }) => {
-  const auth = projectAuth.requireWorkspaceUser(c);
+  const auth = projectAuth.requireAuthorizedWorkspaceData(c, {
+    action: "create",
+    subject: "accounts",
+  });
   const rows = scopedRows(c.get("db"), auth, accounts);
 
   const created = (await rows.create(request.body)) as { id: number; name: string };
@@ -377,7 +387,10 @@ getAccount: c.query({
 ```typescript
 // packages/api/app/accounts.ts
 api.register("getAccount", accountsContract.getAccount, async ({ c, request }) => {
-  const auth = projectAuth.requireWorkspaceUser(c);
+  const auth = projectAuth.requireAuthorizedWorkspaceData(c, {
+    action: "read",
+    subject: "accounts",
+  });
   const rows = scopedRows(c.get("db"), auth, accounts);
 
   const row = await rows.get(request.params.id);
@@ -486,7 +499,10 @@ use Drizzle transactions with one row-security guard per scoped table:
 ```typescript
 api.register("createInvoice", contract.createInvoice, async ({ c, request }) => {
   const db = c.get("db");
-  const auth = projectAuth.requireWorkspaceUser(c);
+  const auth = projectAuth.requireAuthorizedWorkspaceUserData(c, {
+    action: "create",
+    subject: "invoice_workflow",
+  });
   const invoiceGuard = auth.rowSecurity.forTable(invoices);
   const lineGuard = auth.rowSecurity.forTable(invoiceLines);
 
@@ -511,7 +527,7 @@ api.register("createInvoice", contract.createInvoice, async ({ c, request }) => 
 
 `insertValues()` and `insertManyValues()` reject client-managed scope fields,
 merge trusted server values, validate visible FKs, and stamp the authenticated
-workspace/user scope. Updates and deletes must include `guard.ownedRows(...)`
+data-authority scope. Updates and deletes must include `guard.ownedRows(...)`
 in their `where(...)`; primary key alone is not authorization.
 
 Raw `sqlite.transaction(...)` is only for the justified raw-SQL escape hatch and

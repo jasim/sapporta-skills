@@ -79,12 +79,12 @@ code and adapt sessions into Sapporta's generic auth context. Sapporta core
 exports row-scope metadata, row-access predicates, guards, and workspace-safe
 table handlers; it does not import Better Auth.
 
-Application code should resolve auth at the route edge with the appropriate
-project auth guard, then use scoped row APIs or row-security guards. Do not
-manually stamp or filter `workspace_id`, `workspaceId`, `scoped_to_user_id`, or
-`scopedToUserId`. Do not mutate scoped rows by primary key alone, insert
-`request.body` directly into scoped tables, or fetch broadly and filter row
-ownership in JavaScript.
+Application code should resolve auth at the route edge with the narrowest
+ability/data-authority helper for the workflow, then use scoped row APIs or
+row-security guards. Do not manually stamp or filter `workspace_id`,
+`workspaceId`, `scoped_to_user_id`, or `scopedToUserId`. Do not mutate scoped
+rows by primary key alone, insert `request.body` directly into scoped tables, or
+fetch broadly and filter row ownership in JavaScript.
 
 ## Validation
 

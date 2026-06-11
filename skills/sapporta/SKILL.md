@@ -76,6 +76,9 @@ inspect numbers with `data-console`.
   `http://localhost:3000`; set `SAPPORTA_API_TOKEN` when the app is protected.
 - The CLI cannot invoke user-defined HTTP endpoints directly; call them with
   `curl` or another HTTP client against the selected app URL.
+- Auth scope is server-owned. Built-in endpoints apply row visibility; custom
+  code must choose the route's ability/data authority and then use scoped row
+  helpers; raw SQL bypasses those helpers and is only a fallback.
 - Raw SQL is a fallback, not the default mutation path.
 
 ## Direct Dispatch
