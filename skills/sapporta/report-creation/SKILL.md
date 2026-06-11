@@ -14,7 +14,7 @@ Reports are declarative: SQL data sources + a tree structure that assembles resu
 
 ## File Location
 
-`<project-dir>/src/reports/<name>.ts` — each file must `export default report({...})`.
+`<project-dir>/packages/api/reports/<name>.ts` — export a report definition from each file. The usual template is `export default report({...})`; named exports that are report definitions are also loaded.
 
 ## File Template
 
@@ -26,7 +26,8 @@ export default report({
   label: "Trial Balance",      // Human-readable title
 
   // User-supplied parameters (rendered as UI form)
-  // Fields: name, type ("date"|"string"|"integer"|"float"), required, default?, label?, lookup?
+  // Fields: name, type ("date"|"string"|"integer"|"float"|"daterange"),
+  // required, default?, label?, lookup?, fromBind?, toBind?
   params: [
     { name: "as_of_date", type: "date", required: true, label: "As of Date" },
   ],
@@ -56,10 +57,10 @@ export default report({
     source: "accounts",       // references a key in sources
     levelName: "account",     // key for this level in parent's children map
     columns: [
-      { name: "name", header: "Account" },
-      { name: "account_type", header: "Type" },
-      { name: "total_debit", header: "Debit", format: "currency" },
-      { name: "total_credit", header: "Credit", format: "currency" },
+      { name: "name", label: "Account" },
+      { name: "account_type", label: "Type" },
+      { name: "total_debit", label: "Debit", kind: "number", displayFormat: "currency" },
+      { name: "total_credit", label: "Credit", kind: "number", displayFormat: "currency" },
     ],
     footer: [
       {
@@ -81,11 +82,13 @@ Each param becomes a form field in the UI and a `$name` bind variable in SQL sou
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | `string` | Bind variable name. Used as `$name` in SQL sources. Must be unique. |
-| `type` | `"date" \| "string" \| "integer" \| "float"` | Data type. The engine coerces user input to this type. |
+| `type` | `"date" \| "string" \| "integer" \| "float" \| "daterange"` | Data type. Scalar string inputs are parsed before SQL binding. |
 | `required` | `boolean` | If true, execution throws when this param is not supplied. |
 | `default?` | `unknown` | Used when the param is not supplied. Only relevant if `required: false`. |
 | `label?` | `string` | Display label for the UI parameter form. Falls back to `name` if omitted. |
 | `lookup?` | `string` | Table name. Renders a dropdown populated from the table's `_lookup` endpoint — shows the table's display column as labels, submits the row's primary key as the value. |
+| `fromBind?` | `string` | Required for `type: "daterange"`. SQL bind name for the resolved start date. |
+| `toBind?` | `string` | Required for `type: "daterange"`. SQL bind name for the resolved end date. |
 
 ### Lookup params
 
@@ -103,6 +106,34 @@ params: [
 ```
 
 The display value shown in the dropdown is controlled by the target table's `meta.rowLabelColumns` — an array of column names whose values are concatenated with a space (or heuristic: first text column that isn't a PK or FK).
+
+### Date range params
+
+Use `type: "daterange"` when the UI should capture a period as one parameter while SQL receives separate lower and upper bounds:
+
+```typescript
+params: [
+  {
+    name: "period",
+    type: "daterange",
+    required: false,
+    label: "Period",
+    fromBind: "start_date",
+    toBind: "end_date",
+    default: { type: "all_time" },
+  },
+],
+sources: {
+  entries: {
+    query: `
+      SELECT *
+      FROM journal_entries
+      WHERE ($start_date IS NULL OR date >= $start_date)
+        AND ($end_date IS NULL OR date <= $end_date)
+    `,
+  },
+},
+```
 
 ## Sources
 
@@ -163,14 +194,15 @@ However, explicit casts are rarely needed — SQLite's type affinity handles mos
 
 ### Columns
 
-Only declared columns appear in output. Format options: `"string"` | `"integer"` | `"date"` | `"currency"` | `"percentage"`
+Only declared columns appear in `node.columns` and in the report's emitted column metadata. Omitted `label` values are filled from the column name, so use `visuallyHidden: true` for helper values that must be present for links or transforms but should not be displayed.
 
 ```typescript
 columns: [
-  { name: "name", header: "Account Name" },
-  { name: "amount", header: "Amount", format: "currency" },
+  { name: "name", label: "Account Name" },
+  { name: "amount", label: "Amount", kind: "number", displayFormat: "currency" },
   // Sizing: width (fixed), minWidth, maxWidth (in character counts)
-  { name: "memo", header: "Memo", minWidth: 20, maxWidth: 60 },
+  { name: "memo", label: "Memo", minWidth: 20, maxWidth: 60 },
+  { name: "account_id", visuallyHidden: true },
 ]
 ```
 
@@ -269,19 +301,19 @@ footer: [
 
 ## Critical: Column Declaration Rules
 
-The engine enforces that all rendered values must be declared in `columns[]`. Undeclared keys are silently dropped.
+The engine only copies declared SQL fields into `node.columns`. Transforms receive `context.rawRows`, so they can read undeclared SQL fields, but any value that should appear in output columns, rollups, footers, links, or UI metadata must be declared in `columns[]`.
 
 ### Rollup and footer keys must be declared in `columns[]`
 
 ```typescript
 // WRONG — rollup produces "total" but columns[] doesn't declare it
-columns: [{ name: "section", header: "Section" }],
+columns: [{ name: "section", label: "Section" }],
 rollup: (children) => ({ total: children.items.reduce(...) }),
 
 // CORRECT — "total" is declared in columns[]
 columns: [
-  { name: "section", header: "Section" },
-  { name: "total", header: "Total", format: "currency" },
+  { name: "section", label: "Section" },
+  { name: "total", label: "Total", kind: "number", displayFormat: "currency" },
 ],
 ```
 
@@ -289,13 +321,13 @@ The same applies to footer `compute` — returned keys must match declared colum
 
 ### Transform needs columns declared too
 
-If your transform needs SQL columns for computation (not display), declare them without a header:
+If your transform needs SQL fields only for computation, prefer `context.rawRows`. If a computed value should be returned in `node.columns`, declare it:
 
 ```typescript
 columns: [
-  { name: "id" },           // needed by transform, no header = won't label in UI
-  { name: "parent_id" },    // needed by transform
-  { name: "name", header: "Account" },
+  { name: "id", visuallyHidden: true }, // needed for links but not displayed
+  { name: "name", label: "Account" },
+  { name: "running_balance", label: "Balance", kind: "number", displayFormat: "currency" },
 ],
 ```
 
@@ -307,11 +339,11 @@ After creating or modifying any report:
 sapporta check
 ```
 
-Validates source references, rollup/footer keys vs declared columns — no DB required. Fix all issues before considering work complete.
+Validates report definitions and can check SQL planning when a database is available. It also validates source references and rollup/footer keys vs declared columns. Fix all issues before considering work complete.
 
 ## Row & Cell Linking
 
-Reports can attach navigation targets to rows (`rowLinks` on a tree node) and cells (`links` on a column). These become right-click menu items and hover chips in the UI, and turn any displayed ID or FK into a drill-through. **Almost every non-trivial report should declare some.** See [report-linking](../report-linking/SKILL.md) for the full guide.
+Reports can attach navigation metadata to rows (`rowLinks` on a tree node) and cells (`links` on a column). The report engine returns these as `levelLinks` and column `links` so report UIs can navigate to tables or other reports. **Almost every non-trivial report should declare some.** See [report-linking](../report-linking/SKILL.md) for the full guide.
 
 ## Reference Files
 

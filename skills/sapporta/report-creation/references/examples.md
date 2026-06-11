@@ -1,6 +1,6 @@
 # Report Creation — Worked Examples
 
-These examples show the report tree, bind, rollup, and formatting patterns.
+These examples show the report tree, bind, rollup, and display metadata patterns.
 For auth-enabled projects, reports over scoped tables must use the project's
 server-side row-security pattern for report SQL. Do not add `workspace_id` or
 `scoped_to_user_id` as user-editable report parameters to make these examples
@@ -46,10 +46,10 @@ export default report({
     source: "accounts",
     levelName: "account",
     columns: [
-      { name: "name", header: "Account" },
-      { name: "account_type", header: "Type" },
-      { name: "total_debit", header: "Debit", format: "currency" },
-      { name: "total_credit", header: "Credit", format: "currency" },
+      { name: "name", label: "Account" },
+      { name: "account_type", label: "Type" },
+      { name: "total_debit", label: "Debit", kind: "number", displayFormat: "currency" },
+      { name: "total_credit", label: "Credit", kind: "number", displayFormat: "currency" },
     ],
     footer: [
       {
@@ -122,8 +122,8 @@ export default report({
     source: "accounts",
     levelName: "account",
     columns: [
-      { name: "name", header: "Account" },
-      { name: "account_type", header: "Type" },
+      { name: "name", label: "Account" },
+      { name: "account_type", label: "Type" },
     ],
 
     // Compute totals from child transactions
@@ -140,13 +140,13 @@ export default report({
         source: "transactions",
         levelName: "transaction",
         columns: [
-          { name: "date", header: "Date", format: "date" },
-          { name: "description", header: "Description" },
-          { name: "reference", header: "Ref" },
-          { name: "debit", header: "Debit", format: "currency" },
-          { name: "credit", header: "Credit", format: "currency" },
-          { name: "running_balance", header: "Balance", format: "currency" },
-          { name: "memo", header: "Memo" },
+          { name: "date", label: "Date", kind: "date" },
+          { name: "description", label: "Description" },
+          { name: "reference", label: "Ref" },
+          { name: "debit", label: "Debit", kind: "number", displayFormat: "currency" },
+          { name: "credit", label: "Credit", kind: "number", displayFormat: "currency" },
+          { name: "running_balance", label: "Balance", kind: "number", displayFormat: "currency" },
+          { name: "memo", label: "Memo" },
         ],
 
         // Bind parent account ID into the child query
@@ -201,6 +201,7 @@ export default report({
     summary: {
       query: `
         SELECT
+          a.id,
           a.name,
           a.account_type,
           COUNT(jl.id) AS transaction_count,
@@ -211,7 +212,8 @@ export default report({
         LEFT JOIN journal_lines jl ON jl.account_id = a.id
         LEFT JOIN journal_entries je ON je.id = jl.journal_entry_id
           AND je.date BETWEEN $start_date AND $end_date
-        WHERE ($account_type IS NULL OR a.account_type = $account_type)
+        WHERE a.id = $account_id
+          AND ($account_type IS NULL OR a.account_type = $account_type)
         GROUP BY a.id, a.name, a.account_type
         HAVING COUNT(jl.id) > 0
         ORDER BY a.name
@@ -223,12 +225,13 @@ export default report({
     source: "summary",
     levelName: "account",
     columns: [
-      { name: "name", header: "Account" },
-      { name: "account_type", header: "Type" },
-      { name: "transaction_count", header: "# Transactions", format: "integer" },
-      { name: "total_debit", header: "Total Debit", format: "currency" },
-      { name: "total_credit", header: "Total Credit", format: "currency" },
-      { name: "net", header: "Net", format: "currency" },
+      { name: "id", visuallyHidden: true },
+      { name: "name", label: "Account" },
+      { name: "account_type", label: "Type" },
+      { name: "transaction_count", label: "# Transactions", kind: "number" },
+      { name: "total_debit", label: "Total Debit", kind: "number", displayFormat: "currency" },
+      { name: "total_credit", label: "Total Credit", kind: "number", displayFormat: "currency" },
+      { name: "net", label: "Net", kind: "number", displayFormat: "currency" },
     ],
     footer: [
       {
