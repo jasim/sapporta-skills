@@ -14,10 +14,10 @@ query grammar is strict — typos, unknown columns, unknown ops, and out-of-rang
 values return **400** via `QueryParseError`. There is no silent-ignore fallback:
 `filter[naration]=foo` (typo) does **not** return all rows, it 400s.
 
-In auth-enabled projects, built-in table routes apply Sapporta row-access
-predicates before client filters, search, sort, pagination, lookup, count, and
-export. Do not add raw workspace filters to compensate; use the endpoint's
-normal filters for product-level criteria only.
+In auth-enabled projects, built-in table routes include Sapporta row-access
+predicates in list, lookup, count, export, get, update, and delete operations.
+Do not add raw workspace filters to compensate; use the endpoint's normal
+filters for product-level criteria only.
 
 For protected or non-local apps, first read the concise CLI access reference:
 [../data-console/references/cli-server-access.md](../data-console/references/cli-server-access.md).

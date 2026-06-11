@@ -71,9 +71,6 @@ interface SapportaMeta {
   /** User-provided Zod validation schema (overrides auto-inferred from Drizzle) */
   validation?: z.ZodObject<any>;
 
-  /** Custom save function (overrides default insert/update) */
-  save?: (record: Record<string, unknown>, db: any) => Promise<any>;
-
   /** Explicit reference rules keyed by source SQL column name */
   references: Record<string, ReferenceRule>;
 
@@ -143,8 +140,8 @@ interface SelectMeta {
 interface SearchMeta {
   /** Column names matched by the `q` query parameter. Each column is
    *  matched with LIKE '%q%' and the results OR-ed. Must reference
-   *  existing columns on the same table — sapporta-check flags
-   *  missing columns as a dev-time misconfiguration. */
+   *  existing columns on the same table. Missing or invalid search
+   *  config is reported when the list endpoint receives `q`. */
   columns: string[];
 }
 ```
@@ -180,8 +177,10 @@ interface ChildMeta {
 
 ## Column factories
 
-Import from `@sapporta/server/table`. Each factory picks storage + stamps
+Import from `@sapporta/server/table`. Each factory picks storage and stamps
 `kind` (and `displayFormat` for money/percentage) in one declaration site.
+Raw Drizzle columns remain supported; Sapporta falls back to storage metadata
+when no factory has stamped a semantic kind.
 
 | Factory | Storage | Query returns | Insert / update accepts |
 |---|---|---|---|
@@ -213,9 +212,9 @@ interface ColumnMeta {
   displayFormat?: "currency" | "percentage";
   /** Presentation/editor hint for text columns. Does NOT change storage,
    *  validation, filtering, sorting, or text semantics. */
-  textPresentation?: "multiLine" | "markdown";
-  /** Custom column header for display */
-  header?: string;
+  textDisplay?: "multiLine" | "markdown";
+  /** Display label for the column */
+  label?: string;
   /** Hide column from grid and drawer (auto-set for created_at/updated_at) */
   visuallyHidden?: boolean;
   /** Fixed width in approximate character count */
@@ -228,18 +227,22 @@ interface ColumnMeta {
       from 0 (e.g. an optional assertion value). Suppresses the nullable-numeric
       checker warning. */
   additive?: boolean;
-  /** Numeric-ink hint for money/number columns.
-   *    "positive" — always greens non-zero values (debit, income, inflow)
-   *    "negative" — always reds non-zero values  (credit, expense, refund)
-   *    "signed"   — greens values > 0, reds values < 0 (net, delta, p&l)
+  /** Numeric color hint for money/number columns.
+   *    "positive" — positive coloring for non-zero values (debit, income, inflow)
+   *    "negative" — negative coloring for non-zero values (credit, expense, refund)
+   *    "signed"   — colors by sign (net, delta, p&l)
    *  Zero / null stays neutral in all variants. */
-  tone?: "positive" | "negative" | "signed";
-  /** When true, non-zero values in money/number columns render in foreground
-   *  ink at medium weight — marks the column as the reader's "answer"
-   *  (running balance, total, final amount). Overrides `tone`. */
-  emphasize?: boolean;
+  colorRule?: "positive" | "negative" | "signed";
+  /** How zero values render when a number is present. */
+  zeroDisplay?: "blank" | "dot";
+  /** When true, non-null values in money/number columns render in foreground
+   *  ink at medium weight — marks the column as the reader's answer
+   *  (running balance, total, final amount). */
+  strong?: boolean;
   /** Freeform notes describing the column's meaning, conventions, or formula */
   notes?: string;
+  /** Whether clients may edit this column through generated table APIs. */
+  clientEditable?: boolean;
 }
 ```
 
@@ -247,7 +250,7 @@ There is **no** `type: "money"` field. `money()` already stamps
 `displayFormat: "currency"`; downstream consumers read that, not a separate
 meta override.
 
-Use `textPresentation: "multiLine"` by default for long plain text columns
+Use `textDisplay: "multiLine"` by default for long plain text columns
 such as `description`, `notes`, `memo`, `comments`, `instructions`, `address`,
 `reason`, and `summary`. Use `"markdown"` only for user-authored formatted
 content such as `body`, `content`, `article`, `post`, `template`, or
