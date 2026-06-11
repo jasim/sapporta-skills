@@ -40,7 +40,9 @@ export function AccountPicker({
 }
 ```
 
-Inspect `packages/frontend/node_modules/@sapporta/ui` for exact declarations.
+Use the `Combobox` export from `@sapporta/ui`; when exact declarations are
+needed, inspect the generated app's installed `@sapporta/ui` package from its
+`packages/frontend` workspace.
 
 Facts:
 

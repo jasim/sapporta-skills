@@ -1,7 +1,9 @@
 # Table And Grid Views
 
-Use Sapporta table primitives from `@sapporta/frontend`. In an app, inspect
-`packages/frontend/node_modules/@sapporta/frontend` for exact props and types.
+Use Sapporta table primitives from `@sapporta/frontend`. In a generated app,
+use public exports first; when exact declarations are needed, inspect the
+installed `@sapporta/frontend` package from that app's `packages/frontend`
+workspace.
 
 ## Choose The Surface
 
@@ -31,7 +33,10 @@ Use the loaded schema metadata to find the table the page renders. `table` is a
 ```tsx
 import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { SchemaTableGridView } from "@sapporta/frontend";
+import {
+  SchemaTableGridView,
+  type SchemaTableGridViewSource,
+} from "@sapporta/frontend";
 import { useSchemaStore } from "@sapporta/frontend/schema";
 
 export function InvoicesGridRoute() {
@@ -45,12 +50,16 @@ export function InvoicesGridRoute() {
     () => Object.fromEntries(tables.map((schema) => [schema.name, schema])),
     [tables],
   );
+  const source = useMemo<SchemaTableGridViewSource | null>(
+    () => (table ? { table, tablesByName } : null),
+    [table, tablesByName],
+  );
 
-  if (!table) return null;
+  if (!source) return null;
 
   return (
     <SchemaTableGridView
-      source={{ table, tablesByName }}
+      source={source}
       route={{ path: "/invoices", searchParams, navigate }}
       registerAs="invoices"
       onNewRecord={() => navigate("/invoices/new")}
@@ -112,10 +121,10 @@ export function DraftInvoicesGridRoute() {
     });
 
     config.levels.invoices.columns = (columns) => [
-      columns.table("customer_id", { header: "Customer" }),
-      columns.table("invoice_date", { header: "Date", editable: false }),
+      columns.table("customer_id", { label: "Customer" }),
+      columns.table("invoice_date", { label: "Date", editable: false }),
       columns.table("status", {
-        header: "Payment",
+        label: "Payment",
         renderCell: PaymentStatusCell,
       }),
       columns.remainingTable({
@@ -216,8 +225,11 @@ const ROW_LIST_WITH_SINGLE_PINNED_SELECTION = {
 Valid configs use one of two modes:
 
 - `cell-grid`: `activeCell` is enabled; `selectedCells` may be `range` or
-  `none`; `activeRow` may derive from the active cell; `selectedRows` may be
-  disabled, follow the active row, or be independent.
+  `none`; `activeCell` includes
+  `keyboard: { arrows: { tabular, cards } }`, where each view chooses `"grid"`
+  or `"field-list"` arrow behavior; `activeRow` may derive from the active
+  cell; `selectedRows` may be disabled, follow the active row, or be
+  independent.
 - `row-list`: `activeCell` and `selectedCells` must both be `none`; the row
   cursor owns keyboard movement; row selection may follow the active row or be
   independent.

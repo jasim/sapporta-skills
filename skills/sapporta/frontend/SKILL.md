@@ -10,11 +10,10 @@ description: >
 # Custom Frontend Views
 
 Build the app's own screens under `packages/frontend/src/`: dashboards, import
-wizards, multi-table forms, and custom table/grid workflows. Use the installed
-Sapporta packages for exact props and exports:
-`packages/frontend/node_modules/@sapporta/frontend`,
-`packages/frontend/node_modules/@sapporta/ui`, and
-`packages/frontend/node_modules/@sapporta/shared`.
+wizards, multi-table forms, and custom table/grid workflows. Use public exports
+from `@sapporta/frontend`, `@sapporta/ui`, and `@sapporta/shared`; when a
+generated app's local declarations are needed, inspect them from that app's
+`packages/frontend` workspace.
 
 In auth-enabled apps, let the existing app boot load the session and
 `/api/auth-context` before rendering screens that need tables or reports.
@@ -29,8 +28,9 @@ table/report routes or typed custom endpoints whose server handlers resolve
 auth and apply `scopedRows()` or `rowSecurity`.
 
 Follow the current app convention: `packages/frontend/src/App.tsx` exports
-`appNavigation`, `appHomeRoute`, and `appRoutes`. Add one file per screen, then
-add a route and a matching navigation item:
+`appNavigation`, `appHomeRoute`, `appPublicRoutes`, and `appProtectedRoutes`.
+Add one file per screen, then add a route and, for protected screens, a
+matching navigation item:
 
 ```tsx
 import { Route, Navigate } from "react-router-dom";
@@ -51,13 +51,22 @@ export const appHomeRoute = (
   <Route index element={<Navigate to={importsPath} replace />} />
 );
 
-export const appRoutes = <Route path="imports" element={<Imports />} />;
+export const appPublicRoutes = (
+  <>
+    {/* Public pages go here only when their data is intentionally public. */}
+  </>
+);
+
+export const appProtectedRoutes = (
+  <>
+    <Route path="imports" element={<Imports />} />
+  </>
+);
 ```
 
 `AppShell` receives `navigation={appNavigation}`. Tables and reports appear
-automatically when `showFrameworkNavigation` is true. Do not use older
-`sidebarContent`, `AppSidebar`, `SidebarNavItem`, or `SidebarSectionLabel`
-patterns.
+automatically when `showFrameworkNavigation` is true. Keep app navigation in
+the `Navigation` array instead of wiring legacy sidebar components by hand.
 
 ## Primitives
 
@@ -92,10 +101,10 @@ Three touchpoints, in order: declare the contract in
 `packages/api/app/<feature>.ts` (and mount it in `loadApp()`), then add one
 entry to `packages/frontend/src/api.ts` so a typed client method exists for it.
 
-Don't write `fetch("/api/foo")` by hand. The typed client exists
-precisely so request and response shapes are checked against the
-contract at compile time. Hand-rolled fetches re-introduce the drift
-the shared package was built to prevent.
+For custom app endpoints, prefer the typed client over hand-written
+`fetch("/api/foo")`. The typed client keeps request and response shapes checked
+against the contract at compile time. Use lower-level fetch only for platform
+plumbing or an endpoint that intentionally has no shared contract.
 
 Typed clients still call server code; they do not make a route auth-safe by
 themselves. When adding a frontend call that mutates or reveals scoped data,
