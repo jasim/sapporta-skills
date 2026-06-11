@@ -40,9 +40,14 @@ Prefer the project-local CLI:
 pnpm exec sapporta ...
 ```
 
-The CLI is both a discovery tool and a local data console. It can inspect
-endpoints, list and describe tables, sample rows, run reports, insert/update
-rows, execute raw SQL fallback commands, sync schema, and run checks.
+The CLI is both a discovery tool and a data console for a selected running app.
+It can inspect endpoints, list and describe tables, sample rows, run reports,
+insert/update rows, execute raw SQL fallback commands, sync schema, and run
+checks.
+
+For protected or non-local apps, keep the top-level context small and read the
+CLI access details only when needed:
+[data-console/references/cli-server-access.md](data-console/references/cli-server-access.md).
 
 ## Choose The Right Mode
 
@@ -67,8 +72,10 @@ inspect numbers with `data-console`.
 - Prefer `pnpm exec sapporta ...` over a global `sapporta` binary.
 - Use `sapporta describe` to discover existing endpoints before adding code or
   composing requests.
+- For API-backed commands, set `SAPPORTA_API_URL` when the app is not on
+  `http://localhost:3000`; set `SAPPORTA_API_TOKEN` when the app is protected.
 - The CLI cannot invoke user-defined HTTP endpoints directly; call them with
-  localhost `curl`.
+  `curl` or another HTTP client against the selected app URL.
 - Raw SQL is a fallback, not the default mutation path.
 
 ## Direct Dispatch
@@ -77,7 +84,7 @@ inspect numbers with `data-console`.
   custom endpoints, auth-scoped workflows -> read
   [app-framework/SKILL.md](app-framework/SKILL.md)
 - Existing records, business questions, table samples, report output, built-in
-  row commands, local SQL fallback -> read
+  row commands, SQL fallback -> read
   [data-console/SKILL.md](data-console/SKILL.md)
 - Native module binding failures, `better-sqlite3`, install/dev-server errors
   -> read [troubleshooting/SKILL.md](troubleshooting/SKILL.md)

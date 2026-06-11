@@ -19,6 +19,9 @@ predicates before client filters, search, sort, pagination, lookup, count, and
 export. Do not add raw workspace filters to compensate; use the endpoint's
 normal filters for product-level criteria only.
 
+For protected or non-local apps, first read the concise CLI access reference:
+[../data-console/references/cli-server-access.md](../data-console/references/cli-server-access.md).
+
 ## Filters — `filter[col][op]=value`
 
 Every filter must name an operator. `filter[col]=value` (no op) is a
@@ -73,24 +76,28 @@ Always read `body.data` — never treat the response as a bare array.
 ## Examples
 
 ```bash
+API_URL="${SAPPORTA_API_URL:-http://localhost:3000}"
+
 # Exact match on an enum column
-curl 'http://localhost:3000/api/tables/accounts?filter[account_type][eq]=Expense'
+curl "$API_URL/api/tables/accounts?filter[account_type][eq]=Expense"
 
 # Substring match on a text column (replaces the old `like` op)
-curl 'http://localhost:3000/api/tables/accounts?filter[name][contains]=groceries'
+curl "$API_URL/api/tables/accounts?filter[name][contains]=groceries"
 
 # Prefix match — name starts with "expenses:"
-curl 'http://localhost:3000/api/tables/accounts?filter[name][startswith]=expenses:'
+curl "$API_URL/api/tables/accounts?filter[name][startswith]=expenses:"
 
 # Compound filter + sort + page
-curl 'http://localhost:3000/api/tables/journal_lines?filter[debit][gt]=0&sort=-created_at&page=2&limit=25'
+curl "$API_URL/api/tables/journal_lines?filter[debit][gt]=0&sort=-created_at&page=2&limit=25"
 
 # Null check
-curl 'http://localhost:3000/api/tables/accounts?filter[parent_id][is]=null'
+curl "$API_URL/api/tables/accounts?filter[parent_id][is]=null"
 
 # Search (requires meta.search on the table) composed with a filter
-curl 'http://localhost:3000/api/tables/accounts?q=cash&filter[account_type][eq]=Asset'
+curl "$API_URL/api/tables/accounts?q=cash&filter[account_type][eq]=Asset"
 ```
+
+For protected apps, add `-H "Authorization: Bearer ${SAPPORTA_API_TOKEN}"`.
 
 URL-encode `[` and `]` as `%5B` and `%5D` if your client doesn't accept
 raw brackets (curl does).

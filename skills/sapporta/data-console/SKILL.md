@@ -3,14 +3,14 @@ name: data-console
 description: >
   Use when the user wants to inspect existing Sapporta data, answer questions
   from records, sample tables, run reports, insert or update rows, call existing
-  endpoints with curl, or use `sapporta` CLI commands as a local app console.
+  endpoints with curl, or use `sapporta` CLI commands against a running app.
 ---
 
 ## Use When
 
 Use this skill when the user wants to work with records in an existing Sapporta
-app rather than change the app's code. The Sapporta CLI acts as a local console
-over the running app and database: it can discover endpoints, list tables,
+app rather than change the app's code. The Sapporta CLI acts as a console over
+the selected running app and database: it can discover endpoints, list tables,
 sample data, run reports, insert or update rows through built-in row commands,
 and run raw SQL only as a fallback.
 
@@ -22,19 +22,25 @@ pnpm exec sapporta ...
 
 ## Required Preflight
 
-For API-backed CLI commands in an existing project, verify that the app server
-is reachable. `check` and `init` are local commands; `describe` reads the live
-OpenAPI document, and table/report/row commands talk to the local app API.
+For API-backed CLI commands in an existing project, verify that the selected app
+server is reachable. `check` and `init` are local commands; `describe` reads the
+live OpenAPI document, and table/report/row commands talk to the app API.
 
 ```bash
-curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/openapi.json" >/dev/null
-pnpm exec sapporta tables
 pnpm exec sapporta describe
+pnpm exec sapporta tables
 ```
 
-If the OpenAPI probe fails, stop and ask the user to start the dev server, or
-ask for confirmation to start it yourself. If the project uses a non-default
-port, set `SAPPORTA_API_URL` consistently or pass `--api-url`.
+If `sapporta describe` fails because the server is unreachable, stop and ask the
+user to start the dev server, or ask for confirmation to start it yourself. If
+the project uses a non-default port, set `SAPPORTA_API_URL` consistently or pass
+`--api-url`. If the app is protected, set `SAPPORTA_API_TOKEN` or pass
+`--api-token`.
+
+For remote apps, protected apps, token failures, and custom-endpoint `curl`
+patterns, read
+[references/cli-server-access.md](references/cli-server-access.md) only when the
+task needs that detail.
 
 ## Discover Before Acting
 
@@ -51,9 +57,9 @@ pnpm exec sapporta reports show <report-name>
 ```
 
 `sapporta describe` is the source of truth for endpoint schemas, including
-built-ins and user-defined routes from `packages/api/app/`. The CLI cannot invoke
-user-defined HTTP endpoints directly; after describing them, call those routes
-with localhost `curl`.
+built-ins and user-defined routes from `packages/api/app/`. The CLI cannot
+invoke user-defined HTTP endpoints directly; after describing them, call those
+routes with `curl` or another HTTP client against the selected app URL.
 
 ## Answer Data Questions
 
