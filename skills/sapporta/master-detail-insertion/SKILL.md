@@ -20,6 +20,10 @@ sapporta rows insert <parent_table> --data '{"field":"value","$details":{"table"
 
 Runs in a single transaction: inserts master -> gets its `id` -> backfills `fk` on each detail row -> inserts details. Rolls back on any failure.
 
+`$details.table` and `$details.fk` are accepted by the row insert path. For
+generated request schemas and API docs to show the child branch, declare the
+relationship in the parent table's `meta.children`.
+
 In auth-enabled projects, trusted scope fields are propagated by the server for
 both master and detail rows. Do not include `workspace_id`, `workspaceId`,
 `scoped_to_user_id`, or `scopedToUserId`; do not include server-managed
@@ -46,7 +50,7 @@ references marked `clientCanSet: false`.
 ## Example
 
 ```bash
-sapporta rows insert orders --data '{"customer_name":"Alice","status":"draft","$details":{"table":"order_items","fk":"order_id","rows":[{"product_name":"Widget","quantity":3,"unit_price":"29.99"},{"product_name":"Gadget","quantity":1,"unit_price":"49.99"}]}}'
+sapporta rows insert orders --data '{"customer_name":"Alice","status":"draft","$details":{"table":"order_items","fk":"order_id","rows":[{"product_name":"Widget","quantity":3,"unit_price":29.99},{"product_name":"Gadget","quantity":1,"unit_price":49.99}]}}'
 ```
 
 ## Multi-Level Hierarchies

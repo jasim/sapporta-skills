@@ -3,7 +3,8 @@ name: table-creation
 description: >
   Use when the user wants to define or change Sapporta database tables in
   TypeScript. Covers table modeling, creating or renaming tables, columns,
-  foreign keys, indexes, search config, display metadata, and schema sync.
+  foreign keys, indexes, search config, display metadata, and Drizzle
+  migration workflow.
 ---
 
 # Table Creation
@@ -93,6 +94,9 @@ Need a stricter shape than `$inferInsert` offers? Narrow with `Pick` / `Required
 
 ## Naming Conventions
 
+These names are conventions for readable app code and generated UI output; they
+are not enforced by Sapporta.
+
 | Thing | Convention | Example |
 |-------|-----------|---------|
 | Table name (SQL) | Plural, snake_case | `order_items` |
@@ -103,17 +107,25 @@ Need a stricter shape than `$inferInsert` offers? Narrow with `Pick` / `Required
 
 ## Primary Key
 
-Every table must have: `id: integer("id").primaryKey({ autoIncrement: true })`
+Most app tables should use a single primary key. The default pattern is:
 
-Never use composite keys, natural keys, or UUIDs as primary key. Always `integer("id").primaryKey({ autoIncrement: true })`.
+```typescript
+id: integer("id").primaryKey({ autoIncrement: true })
+```
+
+Sapporta also supports non-integer primary keys when the domain needs them
+(for example UUID or text IDs). Use the integer `id` pattern unless the app has
+a concrete reason to expose a different stable identifier as the primary key.
 
 ## Column Types
 
-Use the **Sapporta column factories** from `@sapporta/server/table` — not raw
-Drizzle `real`/`text`/`integer` — for every semantic column. Each factory picks
-the right SQLite storage type and stamps semantic metadata (`kind`,
-`displayFormat`) in one move, so query/parse/display behavior falls out of the
-column declaration with no second site that can drift.
+Prefer the **Sapporta column factories** from `@sapporta/server/table` for
+semantic columns. Each factory picks the right SQLite storage type and stamps
+semantic metadata (`kind`, `displayFormat`) in one move, so query, parse, and
+display behavior follows the column declaration. Raw Drizzle columns still
+work, but Sapporta has to infer their kind from storage metadata, so use them
+mainly for primary keys, foreign keys, or columns with no Sapporta semantic
+factory.
 
 | Factory (import) | SQLite storage | Query returns | Insert / update accepts | Use for |
 |---|---|---|---|---|
@@ -146,7 +158,7 @@ compare and sort the same as any other `number`. The only difference is how
 they render. There is no `type: "money"` on `ColumnMeta` any more — the
 factory has already stamped `displayFormat: "currency"`.
 
-**`textPresentation` is presentation, not semantics.** Use it only on `text()`
+**`textDisplay` is presentation, not semantics.** Use it only on `text()`
 columns when the UI should treat the value as longer-form text. Supported
 values are `"multiLine"` and `"markdown"`. It does not change storage,
 validation, filtering, sorting, or query behavior.
@@ -371,47 +383,48 @@ meta: {
   ],
 
   columns: {                               // Per-column display metadata
-    total: { header: "Total Amount", width: 12 },
+    total: { label: "Total Amount", width: 12 },
     quantity: { notes: "Actual amount in the food's serving_unit (e.g. 40 for 40gm)" },
-    description: { textPresentation: "multiLine", maxWidth: 60 },
-    body: { textPresentation: "markdown" },
+    description: { textDisplay: "multiLine", maxWidth: 60 },
+    body: { textDisplay: "markdown" },
     internal_notes: { visuallyHidden: true },
 
     // Numeric ink — only for money/number columns. Zero/null stays neutral.
     // `money()` already stamps displayFormat: "currency" — no `type` needed.
-    debit:   { tone: "positive" },         // always greens non-zero values
-    credit:  { tone: "negative" },         // always reds non-zero values
-    net:     { tone: "signed" },           // greens positives, reds negatives
-    balance: { emphasize: true },          // fg ink + medium weight ("answer" column)
+    debit:   { colorRule: "positive" },    // always greens non-zero values
+    credit:  { colorRule: "negative" },    // always reds non-zero values
+    net:     { colorRule: "signed" },      // greens positives, reds negatives
+    balance: { strong: true },             // medium-weight answer column
   },
 }
 ```
 
 Only include metadata fields you actually need. `label` is recommended for all tables.
 
-### When to use `textPresentation`
+### When to use `textDisplay`
 
-Use `textPresentation` on text columns whose values are naturally longer than
+Use `textDisplay` on text columns whose values are naturally longer than
 one line:
 
-- `textPresentation: "multiLine"` — default for long plain text such as
+- `textDisplay: "multiLine"` — default for long plain text such as
   `description`, `notes`, `memo`, `comments`, `instructions`, `address`,
   `reason`, and `summary`.
-- `textPresentation: "markdown"` — use only when users are expected to author
+- `textDisplay: "markdown"` — use only when users are expected to author
   formatted markdown, such as `body`, `content`, `article`, `post`,
   `template`, or `message`.
 
-Do not add `textPresentation` for short labels, names, codes, SKUs, email or
+Do not add `textDisplay` for short labels, names, codes, SKUs, email or
 reference fields, enum/select columns, or other one-line text identifiers.
 
-### When to use `tone` and `emphasize`
+### When to use `colorRule`, `zeroDisplay`, and `strong`
 
 Apply to a money/number column so the grid reads correctly at a glance:
 
-- `tone: "positive"` — non-zero values in forest green. Use for columns that are always-positive by convention (debit, income, inflow).
-- `tone: "negative"` — non-zero values in brick red. Use for always-positive columns that represent outflows (credit, expense, refund).
-- `tone: "signed"` — greens positives, reds negatives, neutral at zero. Use for columns where the sign carries meaning (net, delta, p&l).
-- `emphasize: true` — foreground ink at medium weight. Use for the "answer" column the reader's eye should land on (running balance, total, final amount).
+- `colorRule: "positive"` — non-zero values use positive coloring. Use for columns that are always-positive by convention (debit, income, inflow).
+- `colorRule: "negative"` — non-zero values use negative coloring. Use for always-positive columns that represent outflows (credit, expense, refund).
+- `colorRule: "signed"` — positives and negatives color by sign. Use for columns where the sign carries meaning (net, delta, p&l).
+- `zeroDisplay: "blank"` or `"dot"` — changes how numeric zero values render without changing the stored value.
+- `strong: true` — medium-weight foreground ink. Use for the answer column the reader's eye should land on (running balance, total, final amount).
 
 These are display-only hints — the underlying values are stored verbatim and participate in aggregations normally.
 
@@ -427,9 +440,9 @@ These are display-only hints — the underlying values are stored verbatim and p
   or navigate from the target row. This powers nested grids, drill-into links,
   and master-detail create payloads.
 - **Self hierarchy**: use a nullable self-FK such as `parent_id` for drill-up
-  and filtering. Self-FKs are supported for lookup and filtering, but recursive
-  `children` metadata is not supported by the schema-driven table grid. Use a
-  report for recursive hierarchy views.
+  and filtering. Avoid a self `children` entry unless you have verified the
+  target UI handles the recursive shape; use a report for recursive hierarchy
+  views.
 - **Many-to-many**: use a join table with two FKs. Add `children` from each
   endpoint table to the join table when users should browse assignments from
   either side. Do not model endpoint tables as direct children of each other
@@ -461,31 +474,22 @@ Before finishing table schema work, make a relationship pass over every table:
 
 ## After Creating a Table
 
-1. Run `sapporta schema sync` to apply the migration
-2. Verify with `sapporta tables show <table_name>`
+1. In the app's API package, run the generated Drizzle migration flow:
+   `pnpm --filter <api-package> db:generate`, then
+   `pnpm --filter <api-package> db:migrate`.
+2. Run `sapporta check` to validate table definitions that Sapporta can check.
+3. Verify with `sapporta tables show <table_name>`.
 
 ## Modifying Existing Tables
 
-### Renaming UI-managed tables
-
-Tables created through the browser UI are stored in `_sapporta_tables` metadata. Rename them with:
-
-```bash
-sapporta tables update <old_name> --data '{"name":"<new_name>"}'
-# Optionally update label too:
-sapporta tables update <old_name> --data '{"name":"<new_name>","label":"Display Label"}'
-```
-
-This atomically renames the SQLite table, updates all metadata rows, and fixes FK references.
-
-### Modifying file-managed tables
-
-Tables defined as TypeScript files in `packages/api/schema/` are file-managed. To rename:
+Tables defined as TypeScript files in `packages/api/schema/` are changed in
+code and migrated with Drizzle. To rename a table:
 
 1. Change the `sqliteTable("old_name", ...)` first argument to the new name
 2. Rename the file (e.g., `old-name.ts` → `new-name.ts`)
 3. Update imports in any files that reference the old table
-4. Run `sapporta schema sync` to apply the migration
+4. Generate and apply the Drizzle migration from the app's API package
+5. Verify with `sapporta tables show <new_name>`
 
 ## Reference Files
 

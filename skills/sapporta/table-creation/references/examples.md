@@ -62,9 +62,8 @@ export const accounts = table({
 ```
 
 Do not add a self `children` entry for `accounts.parent_id`. The FK gives
-account rows drill-up behavior to their parent, but recursive table-child graphs
-are not supported by the schema-driven grid. Use a report when the app needs an
-expandable account hierarchy.
+account rows drill-up behavior to their parent. Use a report when the app
+needs a recursive or expandable account hierarchy.
 
 ### journal-entries.ts — Immutable journal entries
 
@@ -93,7 +92,7 @@ export const journalEntries = table({
     columns: {
       workspace_id: { visuallyHidden: true },
       scoped_to_user_id: { visuallyHidden: true },
-      description: { textPresentation: "multiLine" },
+      description: { textDisplay: "multiLine" },
     },
     children: [
       {
@@ -141,12 +140,12 @@ export const journalLines = table({
     columns: {
       workspace_id: { visuallyHidden: true },
       scoped_to_user_id: { visuallyHidden: true },
-      // tone greens debits / reds credits so the grid reads the accounting
+      // colorRule colors debits and credits so the grid reads the accounting
       // convention at a glance — zero stays neutral either way. No `type`
       // needed — `money()` already stamped displayFormat: "currency".
-      debit: { tone: "positive" },
-      credit: { tone: "negative" },
-      memo: { textPresentation: "multiLine" },
+      debit: { colorRule: "positive" },
+      credit: { colorRule: "negative" },
+      memo: { textDisplay: "multiLine" },
     },
   },
 });
