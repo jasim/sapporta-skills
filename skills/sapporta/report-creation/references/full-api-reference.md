@@ -55,6 +55,13 @@ type ReportSource = {
 };
 ```
 
+Report sources are raw SQL declarations. In auth-enabled projects, source SQL
+that reads scoped tables must not rely on client-supplied workspace or user
+parameters. Keep `workspace_id` and `scoped_to_user_id` server-controlled, use
+the project's auth-aware report execution pattern when available, and do not
+ship reports over scoped tables if the active report route cannot enforce the
+same row visibility as the table APIs.
+
 ## ColumnSchema
 
 ```typescript

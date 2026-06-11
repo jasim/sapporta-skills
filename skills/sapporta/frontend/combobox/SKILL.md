@@ -47,6 +47,9 @@ Facts:
 - `value: string | null`; `onChange` receives the picked string id or `null`.
 - Source option rows from the page's existing data path: built-in table APIs,
   a typed app endpoint, or already-loaded parent data.
+- In auth-enabled apps, source options through scoped APIs or already-scoped
+  parent data. Do not populate a picker from raw SQL that can expose rows from
+  another workspace/user.
 - `options: Record<string, string>`; build with
   `Object.fromEntries(rows.map((r) => [String(r.id), r.label]))`.
 - Convert numeric ids at the boundary. Parse only if the submit API needs a

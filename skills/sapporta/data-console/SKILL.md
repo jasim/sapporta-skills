@@ -90,6 +90,8 @@ For data changes, use the highest fitting option:
 
 Raw SQL writes bypass application behavior and normal row-save validation, so
 use them only when no endpoint, row command, report, or action fits.
+In auth-enabled projects, raw SQL also bypasses normal row-access helpers; read
+[../meta-sql/SKILL.md](../meta-sql/SKILL.md) before using it for scoped tables.
 
 ## Core CLI Commands
 
@@ -118,6 +120,8 @@ also expose route-specific shorthand such as `--data`.
 - Omit generated columns such as `id`, `created_at`, and `updated_at`.
 - In auth-enabled projects, omit system-managed `workspace_id`, `workspaceId`,
   `scoped_to_user_id`, and `scopedToUserId`.
+- Do not use raw SQL to simulate another workspace/user's visibility; use an
+  appropriate token, built-in endpoint, report, or scoped custom endpoint.
 - Prefer built-in row commands for ordinary row creation because they run the
   app's normal save behavior.
 - Keep writes scoped to the specific records the user asked to change.

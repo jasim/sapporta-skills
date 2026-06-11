@@ -1,5 +1,11 @@
 # Report Creation — Worked Examples
 
+These examples show the report tree, bind, rollup, and formatting patterns.
+For auth-enabled projects, reports over scoped tables must use the project's
+server-side row-security pattern for report SQL. Do not add `workspace_id` or
+`scoped_to_user_id` as user-editable report parameters to make these examples
+"work"; scope is trusted server data.
+
 ## Trial Balance
 
 Single-level report showing all accounts with their total debits and credits, plus a grand total footer.

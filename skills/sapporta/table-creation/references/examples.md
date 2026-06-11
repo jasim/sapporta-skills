@@ -4,6 +4,12 @@ All examples use the Sapporta column factories (`money`, `date`, `timestamp`,
 `bool`, `text`) from `@sapporta/server/table`. See SKILL.md §"Column Types"
 for what each factory returns at query time.
 
+The examples model user-owned tables in an auth-enabled project, so each table
+uses `meta.rowScope: "workspaceUserScoped"` and includes both `workspace_id`
+and `scoped_to_user_id`. Sapporta manages those columns; keep them out of
+insert/update payloads and hide them from generated CRUD screens with
+`meta.columns`.
+
 ## Double-Entry Bookkeeping
 
 ### accounts.ts — Chart of Accounts (self-referential hierarchy)
@@ -17,6 +23,8 @@ const accountTypeOptions = ["Asset", "Liability", "Equity", "Revenue", "Expense"
 
 export const accountsTable = sqliteTable("accounts", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  workspace_id: text("workspace_id").notNull(),
+  scoped_to_user_id: text("scoped_to_user_id").notNull(),
   name: text("name").notNull(),
   account_type: text("account_type").notNull(),
   parent_id: integer("parent_id").references((): AnySQLiteColumn => accountsTable.id),
@@ -29,6 +37,7 @@ export const accounts = table({
   drizzle: accountsTable,
   meta: {
     label: "Accounts",
+    rowScope: "workspaceUserScoped",
     selects: [
       { type: "select", column: "account_type", options: accountTypeOptions },
     ],
@@ -44,6 +53,10 @@ export const accounts = table({
         columns: ["debit", "credit", "memo"],
       },
     ],
+    columns: {
+      workspace_id: { visuallyHidden: true },
+      scoped_to_user_id: { visuallyHidden: true },
+    },
   },
 });
 ```
@@ -62,6 +75,8 @@ import { Temporal } from "@sapporta/shared/temporal";
 
 export const journalEntriesTable = sqliteTable("journal_entries", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  workspace_id: text("workspace_id").notNull(),
+  scoped_to_user_id: text("scoped_to_user_id").notNull(),
   date: date("date").notNull(),
   description: text("description").notNull(),
   reference: text("reference"),
@@ -73,8 +88,11 @@ export const journalEntries = table({
   drizzle: journalEntriesTable,
   meta: {
     label: "Journal Entries",
+    rowScope: "workspaceUserScoped",
     immutable: true,
     columns: {
+      workspace_id: { visuallyHidden: true },
+      scoped_to_user_id: { visuallyHidden: true },
       description: { textPresentation: "multiLine" },
     },
     children: [
@@ -99,6 +117,8 @@ import { accountsTable } from "./accounts.js";
 
 export const journalLinesTable = sqliteTable("journal_lines", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  workspace_id: text("workspace_id").notNull(),
+  scoped_to_user_id: text("scoped_to_user_id").notNull(),
   journal_entry_id: integer("journal_entry_id")
     .notNull()
     .references(() => journalEntriesTable.id, { onDelete: "cascade" }),
@@ -116,8 +136,11 @@ export const journalLines = table({
   drizzle: journalLinesTable,
   meta: {
     label: "Journal Lines",
+    rowScope: "workspaceUserScoped",
     immutable: true,
     columns: {
+      workspace_id: { visuallyHidden: true },
+      scoped_to_user_id: { visuallyHidden: true },
       // tone greens debits / reds credits so the grid reads the accounting
       // convention at a glance — zero stays neutral either way. No `type`
       // needed — `money()` already stamped displayFormat: "currency".
@@ -153,6 +176,8 @@ import { Temporal } from "@sapporta/shared/temporal";
 
 export const productsTable = sqliteTable("products", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  workspace_id: text("workspace_id").notNull(),
+  scoped_to_user_id: text("scoped_to_user_id").notNull(),
   name: text("name").notNull(),
   sku: text("sku").notNull().unique(),
   unit_cost: money("unit_cost"),
@@ -165,8 +190,11 @@ export const products = table({
   drizzle: productsTable,
   meta: {
     label: "Products",
+    rowScope: "workspaceUserScoped",
     search: { columns: ["name", "sku"] },
     columns: {
+      workspace_id: { visuallyHidden: true },
+      scoped_to_user_id: { visuallyHidden: true },
       unit_cost: {
         additive: false,
         notes: "Cost per unit from supplier, excluding tax",

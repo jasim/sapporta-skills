@@ -1,6 +1,7 @@
 # Table Creation — Full API Reference
 
-Source: `packages/core/src/table.ts`
+Source: `packages/core/src/schema/table.ts`,
+`packages/core/src/auth/row-scope.ts`
 
 ## `table(options: TableOptions): TableDef`
 
@@ -12,8 +13,8 @@ Creates a Sapporta table definition wrapping a Drizzle sqliteTable.
 interface TableOptions {
   /** The Drizzle sqliteTable definition */
   drizzle: SQLiteTableWithColumns<any>;
-  /** Optional sapporta metadata */
-  meta?: SapportaMeta;
+  /** Optional author-provided sapporta metadata */
+  meta?: SapportaTableInputMeta;
 }
 ```
 
@@ -32,16 +33,40 @@ interface TableDef {
 
 ## SapportaMeta
 
+`table()` accepts sparse `SapportaTableInputMeta`, then returns a `TableDef`
+with normalized `SapportaMeta`. `rowScope` is optional at the authoring
+boundary, but the normalized metadata always has one; omitted `rowScope`
+defaults to `"workspaceUserScoped"`.
+
 ```typescript
+type RowScope = "workspaceUserScoped" | "workspaceGlobal" | "systemGlobal";
+
+type SapportaTableInputMeta = Omit<
+  SapportaMeta,
+  "label" | "selects" | "immutable" | "rowScope" | "references" | "children" | "columns"
+> & {
+  label?: string;
+  selects?: SelectMeta[];
+  immutable?: boolean;
+  references?: Record<string, ReferenceRule>;
+  children?: ChildMeta[];
+  columns?: Record<string, ColumnMeta>;
+  /** Defaults to "workspaceUserScoped" */
+  rowScope?: RowScope;
+};
+
 interface SapportaMeta {
   /** Display label for the table in UI sidebar */
-  label?: string;
+  label: string;
+
+  /** Row ownership model used by auth-aware table APIs */
+  rowScope: RowScope;
 
   /** Select/enum column definitions — renders as dropdowns in UI */
-  selects?: SelectMeta[];
+  selects: SelectMeta[];
 
   /** Whether records are immutable (disables update/delete — append-only) */
-  immutable?: boolean;
+  immutable: boolean;
 
   /** User-provided Zod validation schema (overrides auto-inferred from Drizzle) */
   validation?: z.ZodObject<any>;
@@ -49,11 +74,14 @@ interface SapportaMeta {
   /** Custom save function (overrides default insert/update) */
   save?: (record: Record<string, unknown>, db: any) => Promise<any>;
 
+  /** Explicit reference rules keyed by source SQL column name */
+  references: Record<string, ReferenceRule>;
+
   /** Has-many child relationships for nested grid display */
-  children?: ChildMeta[];
+  children: ChildMeta[];
 
   /** Per-column metadata keyed by column name */
-  columns?: Record<string, ColumnMeta>;
+  columns: Record<string, ColumnMeta>;
 
   /** Cross-column search configuration. When set, the list endpoint
    *  accepts ?q=<term> and OR-s a case-insensitive LIKE match across
@@ -61,6 +89,39 @@ interface SapportaMeta {
    *  when this is declared. Omit for tables that are not worth
    *  searching — ?q= against such a table returns 400. */
   search?: SearchMeta;
+}
+```
+
+`rowScope` controls the predicates used by auth-aware table APIs:
+
+- `workspaceUserScoped` requires `workspace_id` and `scoped_to_user_id`.
+- `workspaceGlobal` requires `workspace_id`.
+- `systemGlobal` is for installation-wide reference data and requires neither
+  scope column.
+
+Prefer declaring `rowScope` explicitly in table files even though `table()`
+defaults omitted values to `workspaceUserScoped`; the explicit field makes
+intent reviewable and avoids accidentally treating shared workspace data as
+per-user data.
+
+Scope columns are system-managed. Do not accept them from clients in insert or
+update payloads, and hide them in generated CRUD screens with
+`columns: { workspace_id: { visuallyHidden: true }, scoped_to_user_id: { visuallyHidden: true } }`.
+
+## ReferenceRule
+
+Use `meta.references` only for logical references that cannot be proven from
+Drizzle `.references()` metadata, or to mark a proven FK as server-managed with
+`clientCanSet: false`.
+
+```typescript
+interface ReferenceRule {
+  /** Registered Sapporta target table SQL name */
+  table: string;
+  /** Target SQL column name. Defaults to the target table primary key. */
+  column?: string;
+  /** When false, clients may not submit this FK column on create/update. */
+  clientCanSet?: boolean;
 }
 ```
 

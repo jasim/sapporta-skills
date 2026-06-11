@@ -40,6 +40,12 @@ sapporta db exec-sql "SELECT ..."
 sapporta db exec-sql --input-body-json '{"sql": "SELECT ...", "limit": 100}'
 ```
 
+Read-only SQL is still raw database access. In auth-enabled projects it does
+not represent a workspace user's table/report visibility unless the query
+explicitly follows the same server-side row-security rules. Prefer existing
+reports and table endpoints for user-facing answers; use ad-hoc SQL as
+admin/debug inspection and say so in the answer.
+
 This skill is about reads. For mutations, use the relevant mutation skill (e.g. [row-insertion](../row-insertion/SKILL.md), [master-detail-insertion](../master-detail-insertion/SKILL.md)) or the raw SQL fallback only when the user has explicitly asked for that kind of data change.
 
 ## When to suggest a report

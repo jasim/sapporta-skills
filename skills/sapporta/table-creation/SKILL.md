@@ -20,7 +20,8 @@ import { Temporal } from "@sapporta/shared/temporal";
 // Always export the raw Drizzle table so other schema files can reference its columns in .references()
 export const ordersTable = sqliteTable("orders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  workspace_id: integer("workspace_id").notNull(),
+  workspace_id: text("workspace_id").notNull(),
+  scoped_to_user_id: text("scoped_to_user_id").notNull(),
   customer_name: text("customer_name").notNull(),
   status: text("status").notNull(),
   total: money("total").notNull().default(0),
@@ -33,7 +34,7 @@ export const orders = table({
   drizzle: ordersTable,
   meta: {
     label: "Orders",
-    rowScope: "workspaceGlobal",
+    rowScope: "workspaceUserScoped",
     selects: [
       {
         type: "select",
@@ -41,6 +42,10 @@ export const orders = table({
         options: ["draft", "confirmed", "shipped", "delivered", "cancelled"],
       },
     ],
+    columns: {
+      workspace_id: { visuallyHidden: true },
+      scoped_to_user_id: { visuallyHidden: true },
+    },
   },
 });
 ```
@@ -199,6 +204,10 @@ created_at: timestamp("created_at").$defaultFn(() => Temporal.Now.instant()).not
 updated_at: timestamp("updated_at").$defaultFn(() => Temporal.Now.instant()).notNull(),
 ```
 
+Auth-enabled tables also need the scope columns required by their
+`meta.rowScope`: `workspace_id` for workspace-scoped tables, plus
+`scoped_to_user_id` for `workspaceUserScoped` tables.
+
 ## Foreign Keys
 
 Import the **raw Drizzle table** (e.g. `ordersTable`), not the Sapporta `table()` wrapper. The wrapper types `drizzle` as generic `SQLiteTableWithColumns<any>`, which loses column type info and causes `.id` to not typecheck.
@@ -208,6 +217,8 @@ import { ordersTable } from "./orders.js";
 
 export const orderItemsTable = sqliteTable("order_items", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  workspace_id: text("workspace_id").notNull(),
+  scoped_to_user_id: text("scoped_to_user_id").notNull(),
   order_id: integer("order_id").notNull().references(() => ordersTable.id),
   product_name: text("product_name").notNull(),
   quantity: integer("quantity").notNull(),
@@ -242,6 +253,8 @@ const orderStatusOptions = ["draft", "confirmed", "shipped", "delivered", "cance
 
 export const ordersTable = sqliteTable("orders", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  workspace_id: text("workspace_id").notNull(),
+  scoped_to_user_id: text("scoped_to_user_id").notNull(),
   status: text("status").notNull(),
   created_at: timestamp("created_at").$defaultFn(() => Temporal.Now.instant()).notNull(),
   updated_at: timestamp("updated_at").$defaultFn(() => Temporal.Now.instant()).notNull(),
@@ -251,9 +264,14 @@ export const orders = table({
   drizzle: ordersTable,
   meta: {
     label: "Orders",
+    rowScope: "workspaceUserScoped",
     selects: [
       { type: "select", column: "status", options: orderStatusOptions },
     ],
+    columns: {
+      workspace_id: { visuallyHidden: true },
+      scoped_to_user_id: { visuallyHidden: true },
+    },
   },
 });
 ```
@@ -268,6 +286,8 @@ import { text } from "@sapporta/server/table";
 
 export const orderItemsTable = sqliteTable("order_items", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  workspace_id: text("workspace_id").notNull(),
+  scoped_to_user_id: text("scoped_to_user_id").notNull(),
   order_id: integer("order_id").notNull(),
   sku: text("sku").notNull(),
 }, (t) => [

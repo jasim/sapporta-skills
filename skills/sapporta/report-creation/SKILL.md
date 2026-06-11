@@ -108,6 +108,21 @@ The display value shown in the dropdown is controlled by the target table's `met
 
 Use `$name` syntax for bind variables (params and parent binds). The engine converts `$name` variables to `?` positional parameters for SQLite execution.
 
+### Auth and scoped tables
+
+Report sources are SQL. In auth-enabled projects, do not expose
+`workspace_id`, `workspaceId`, `scoped_to_user_id`, or `scopedToUserId` as
+report parameters and do not trust client-supplied scope values. A report that
+reads scoped tables must preserve the same workspace/user visibility as the
+table APIs. Use the project's auth-aware report execution pattern when
+available; if the project version only supports plain SQL sources, do not ship
+reports over scoped tables until the report route applies server-side row
+security for those sources.
+
+Lookups declared with `param.lookup` should point at scoped tables normally;
+the lookup endpoint applies the active user's visibility. Do not replace lookup
+visibility with raw SQL that lists IDs from other workspaces.
+
 ### Bind variable syntax
 
 SQLite does not need type casts — all parameters are bound directly. Most aggregation functions (`SUM`, `AVG`, `COUNT`) handle type coercion automatically.
