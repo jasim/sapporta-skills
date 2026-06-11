@@ -26,13 +26,13 @@ things from one declaration:
 2. **Typed handler.** `request.params`, `request.query`,
    `request.body` are the inferred output of the schemas. No `c.req.valid(...)` ceremony, no casts.
 3. **OpenAPI emission.** The same `AppRoute` object is walked by
-   `@ts-rest/open-api` into the served spec — so `sapporta describe` and
-   `/api/openapi.json` report the route's exact API shape with no extra
+   `@sapporta/rest-open-api` into the served spec — so `sapporta describe`
+   and `/api/openapi.json` report the route's exact API shape with no extra
    annotations.
 4. **Typed frontend client.** The same `AppRoute` becomes a typed client
-   method via `createApiClient(contract)` in `packages/frontend/src/api.ts`.
-   Request and response shapes can never drift between client and server
-   because there is one declaration.
+   method via `createApiClient(contract, { baseUrl })` in
+   `packages/frontend/src/api.ts`. Request and response shapes can never drift
+   between client and server because there is one declaration.
 
 `TsRestApi` IS a Hono app (it extends `Hono`), so plain `api.get(...)`
 and middleware (`api.use(...)`) remain available for the rare cases that
@@ -67,31 +67,35 @@ broadly and filter row ownership in JavaScript.
 
 ## Mounting: don't forget this step
 
-The project template's `boot.ts` already has the two calls that turn a sub-app
-into a discoverable route. You don't edit `boot.ts`; you edit `loadApp()` in
-`packages/api/app.ts`. The two calls are:
+The project template's `boot.ts` already has the calls that turn sub-apps into
+discoverable routes. You normally don't edit `boot.ts`; you edit `loadApp()`
+in `packages/api/app.ts`.
 
-- `app.route("/api", apiApp)` in `boot.ts` — makes the `TsRestApi`
-  reachable at runtime under `/api/*`.
-- `mountOpenApi(app, sapporta, apiApp)` in `boot.ts` — pulls `apiApp`'s
-  contracts into `/api/openapi.json` so `sapporta describe` can see
-  them.
+- `mountSapportaFramework(...)` mounts Sapporta's built-in table, report,
+  metadata, and SQL-tool APIs and returns `sapportaApi` for OpenAPI discovery.
+- `app.route("/api", apiApp)` makes your custom `TsRestApi` reachable at
+  runtime under `/api/*`.
+- `app.route("/api", projectAuth.routes)` mounts the generated auth routes.
+- `mountOpenApi(app, sapporta, sapportaApi, apiApp, projectAuth.routes)` pulls
+  the built-in, custom, and auth contracts into `/api/openapi.json` so
+  `sapporta describe` can see them.
 
 `loadApp()` is the single place where project sub-apps are wired onto
 that `apiApp`:
 
 ```typescript
-import type { ProjectDbConnection, SapportaEnv, TsRestApi } from "@sapporta/server";
+import type { SapportaEnv, TsRestApi } from "@sapporta/server";
 import bankApp from "./app/bank.js";
 
-export function loadApp(app: TsRestApi<SapportaEnv>, _conn: ProjectDbConnection) {
+export function loadApp(app: TsRestApi<SapportaEnv>, _options: LoadAppOptions) {
   app.route("/", bankApp);
 }
 ```
 
-`app` here is already scoped to `/api`, so `app.route("/", bankApp)`
-serves bankApp's `path: "/transfers"` at `/api/transfers`. Do not repeat
-`/api` in your route paths.
+The generated scaffold defines `LoadAppOptions` with the project connection
+and mailer. `app` here is already scoped to `/api`, so
+`app.route("/", bankApp)` serves bankApp's `path: "/transfers"` at
+`/api/transfers`. Do not repeat `/api` in your route paths.
 
 An unmounted sub-app silently does nothing — it won't appear in
 `/api/openapi.json` or `sapporta describe`. After creating or
@@ -118,14 +122,27 @@ The trio for any feature `<feature>`:
 - `packages/frontend/src/api.ts` — one entry adding the contract to the typed
   client.
 
+In `packages/frontend/src/api.ts`, follow the generated client pattern:
+
+```typescript
+import { createApiClient } from "@sapporta/shared/client";
+import { getApiBase } from "@sapporta/frontend/platform";
+import { accountsContract } from "__SLUG__-shared";
+
+export const accountsApi = createApiClient(accountsContract, {
+  baseUrl: getApiBase,
+});
+```
+
 Grouping contracts in `packages/shared/src/contracts/` (rather than mixing them
 with other shared helpers) mirrors Sapporta's own
 `packages/shared/src/contracts/` layout: the directory's purpose is
 obvious at a glance.
 
-Shared is a leaf package — no React, Hono, Drizzle, or better-sqlite3
-imports. Only `zod` and `@ts-rest/core` are allowed runtime deps. See
-`packages/shared/CLAUDE.md` for the full constraints.
+Shared is a leaf package — no React, Hono, Drizzle, better-sqlite3, I/O, HTTP
+handlers, or database access. The generated shared package allows only `zod`,
+`@sapporta/rest-core`, and `@js-temporal/polyfill` as runtime dependencies.
+See `packages/shared/AGENTS.md` for the full boundary.
 
 ## Backend organization
 
@@ -261,7 +278,7 @@ writes. Prefer Sapporta scoped APIs.
 ```typescript
 // packages/shared/src/contracts/hello.ts
 import { z } from "zod";
-import { initContract } from "@ts-rest/core";
+import { initContract } from "@sapporta/rest-core";
 
 const c = initContract();
 
@@ -313,7 +330,7 @@ Notes:
 ```typescript
 // packages/shared/src/contracts/accounts.ts
 import { z } from "zod";
-import { initContract } from "@ts-rest/core";
+import { initContract } from "@sapporta/rest-core";
 
 const c = initContract();
 
@@ -360,6 +377,10 @@ export default api;
 Each `status` you return must be declared in `responses` — TypeScript
 enforces this. If you genuinely need to return a status that isn't part
 of the API contract, see the `Response` escape hatch below.
+
+Response contracts are enforced at author time and used for OpenAPI output.
+The adapter intentionally does not validate response bodies again at runtime,
+so return the declared shape from the handler or service boundary.
 
 For uniqueness checks or other domain rules, keep the query inside the same
 row-security boundary, preferably in a module store. Do not replace
@@ -411,7 +432,7 @@ separate, typed `files` argument on the handler:
 ```typescript
 // packages/shared/src/contracts/import.ts
 import { z } from "zod";
-import { initContract } from "@ts-rest/core";
+import { initContract } from "@sapporta/rest-core";
 
 const c = initContract();
 
@@ -565,7 +586,8 @@ api.register("exportCsv", exportCsv, ({ c }) => {
 ```
 
 The declared `{ status, body }` shape is still enforced by TypeScript at
-author time; this only relaxes runtime.
+author time for ordinary returns; this escape hatch lets you deliberately
+return a raw Hono response.
 
 **Plain Hono routes.** `TsRestApi` IS a Hono instance, so
 `api.get("/healthz", ...)` works — but such routes do **not** appear in

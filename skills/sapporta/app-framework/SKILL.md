@@ -10,9 +10,10 @@ description: >
 ## Use When
 
 Use this mode when the user wants to build or change how a Sapporta project
-behaves. Sapporta is an application framework, not just a CLI: project code
-defines tables, reports, backend workflows, frontend pages, and auth-aware data
-access. Read the narrow skill for the specific thing the user wants to change.
+behaves. A Sapporta app is project-owned TypeScript code built on Sapporta
+library primitives and generated entry points: project code defines tables,
+reports, backend workflows, frontend pages, and auth-aware data access. Read
+the narrow skill for the specific thing the user wants to change.
 
 ## Where To Make Changes
 
@@ -46,9 +47,11 @@ Then change the narrowest part of the app:
   `packages/frontend/src/`
 
 After changes, validate the thing you touched. Use `sapporta check` for report
-and table/report consistency, `sapporta schema sync` when table changes must be
-applied, and `sapporta describe "METHOD /api/path"` to confirm custom endpoints
-are visible through OpenAPI. Run app tests when the project has relevant tests.
+and table/report consistency, `pnpm --filter ./packages/api db:generate` after
+table definition changes, `pnpm --filter ./packages/api db:migrate` when the
+generated migration must be applied, and
+`sapporta describe "METHOD /api/path"` to confirm custom endpoints are visible
+through OpenAPI. Run app tests when the project has relevant tests.
 
 Prefer the project's existing style over introducing a parallel code shape.
 Small apps can keep thin route files directly in `packages/api/app/`; larger
@@ -92,7 +95,8 @@ Use the smallest validation loop that proves the change:
 
 ```bash
 pnpm exec sapporta check
-pnpm exec sapporta schema sync
+pnpm --filter ./packages/api db:generate
+pnpm --filter ./packages/api db:migrate
 pnpm exec sapporta describe "METHOD /api/path"
 ```
 
@@ -102,7 +106,7 @@ failures, read troubleshooting before trying broad dependency changes.
 
 ## Read The Narrow Skill
 
-- Tables, columns, relations, indexes, search config, schema sync -> read
+- Tables, columns, relations, indexes, search config, schema migration -> read
   [../table-creation/SKILL.md](../table-creation/SKILL.md)
 - Hierarchical reports, summaries, ledgers, report validation -> read
   [../report-creation/SKILL.md](../report-creation/SKILL.md)
