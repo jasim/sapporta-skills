@@ -1,257 +1,230 @@
-# Report Creation — Worked Examples
+# Route-Based Report Examples
 
-These examples show the report tree, bind, rollup, and display metadata patterns.
-For auth-enabled projects, reports over scoped tables must use the project's
-server-side row-security pattern for report SQL. Do not add `workspace_id` or
-`scoped_to_user_id` as user-editable report parameters to make these examples
-"work"; scope is trusted server data.
+These examples show report contracts, handlers, pure mappers, and frontend
+screens. Keep real app code aligned with the project's existing module layout.
 
 ## Trial Balance
 
-Single-level report showing all accounts with their total debits and credits, plus a grand total footer.
+Shared contract:
 
-```typescript
-import { report } from "@sapporta/server/report";
+```ts
+import { z } from "zod";
+import { initContract } from "@sapporta/rest-core";
+import { gridReportResultSchema } from "@sapporta/shared/report-grid";
+import { errorBodySchema } from "@sapporta/shared/contracts";
 
-export default report({
-  name: "trial-balance",
-  label: "Trial Balance",
+const c = initContract();
 
-  params: [
-    { name: "as_of_date", type: "date", required: true, label: "As of Date" },
-  ],
-
-  sources: {
-    accounts: {
-      query: `
-        SELECT
-          a.id,
-          a.name,
-          a.account_type,
-          COALESCE(SUM(jl.debit), 0) AS total_debit,
-          COALESCE(SUM(jl.credit), 0) AS total_credit
-        FROM accounts a
-        LEFT JOIN journal_lines jl ON jl.account_id = a.id
-        LEFT JOIN journal_entries je ON je.id = jl.journal_entry_id
-          AND je.date <= $as_of_date
-        GROUP BY a.id, a.name, a.account_type
-        HAVING COALESCE(SUM(jl.debit), 0) != 0
-            OR COALESCE(SUM(jl.credit), 0) != 0
-        ORDER BY a.name
-      `,
+export const reportsContract = c.router({
+  trialBalance: c.query({
+    method: "GET",
+    path: "/reports/trial-balance",
+    query: z.object({ asOfDate: z.string() }),
+    responses: {
+      200: gridReportResultSchema,
+      400: errorBodySchema,
+      403: errorBodySchema,
     },
-  },
-
-  tree: {
-    source: "accounts",
-    levelName: "account",
-    columns: [
-      { name: "name", label: "Account" },
-      { name: "account_type", label: "Type" },
-      { name: "total_debit", label: "Debit", kind: "number", displayFormat: "currency" },
-      { name: "total_credit", label: "Credit", kind: "number", displayFormat: "currency" },
-    ],
-    footer: [
-      {
-        label: "Grand Total",
-        compute: (nodes) => ({
-          total_debit: nodes.reduce(
-            (sum, n) => sum + (Number(n.columns.total_debit) || 0), 0,
-          ),
-          total_credit: nodes.reduce(
-            (sum, n) => sum + (Number(n.columns.total_credit) || 0), 0,
-          ),
-        }),
-      },
-    ],
-  },
+  }),
 });
 ```
 
-## General Ledger
+Backend handler:
 
-Two-level report: accounts at the top level, transactions as children. Includes rollup for totals and transform for running balance.
+```ts
+import { TsRestApi, type SapportaEnv } from "@sapporta/server";
+import { reportsContract } from "my-app-shared/contracts";
 
-```typescript
-import { report } from "@sapporta/server/report";
+const api = new TsRestApi<SapportaEnv>();
 
-export default report({
-  name: "general-ledger",
-  label: "General Ledger",
+api.register("trialBalance", reportsContract.trialBalance, async ({ c, request }) => {
+  const auth = c.get("auth");
+  auth.requireCan("read", "reports:trial-balance");
 
-  params: [
-    { name: "start_date", type: "date", required: true, label: "Start Date" },
-    { name: "end_date", type: "date", required: true, label: "End Date" },
-  ],
+  const rows = await readTrialBalanceRows({
+    db: c.get("db"),
+    auth,
+    asOfDate: request.query.asOfDate,
+  });
 
-  sources: {
-    accounts: {
-      query: `
-        SELECT a.id, a.name, a.account_type
-        FROM accounts a
-        WHERE EXISTS (
-          SELECT 1 FROM journal_lines jl
-          JOIN journal_entries je ON je.id = jl.journal_entry_id
-          WHERE jl.account_id = a.id
-            AND je.date BETWEEN $start_date AND $end_date
-        )
-        ORDER BY a.name
-      `,
-    },
-    // NOTE: $account_id comes from bind below — it MUST appear in the WHERE clause
-    // or this query will return ALL transactions regardless of parent account
-    transactions: {
-      query: `
-        SELECT
-          je.date,
-          je.description,
-          je.reference,
-          jl.debit,
-          jl.credit,
-          jl.memo
-        FROM journal_lines jl
-        JOIN journal_entries je ON je.id = jl.journal_entry_id
-        WHERE jl.account_id = $account_id
-          AND je.date BETWEEN $start_date AND $end_date
-        ORDER BY je.date, je.id
-      `,
-    },
-  },
+  return { status: 200, body: toTrialBalanceResult(rows) };
+});
 
-  tree: {
-    source: "accounts",
-    levelName: "account",
-    columns: [
-      { name: "name", label: "Account" },
-      { name: "account_type", label: "Type" },
+export default api;
+```
+
+Pure mapper:
+
+```ts
+import type { GridReportResult } from "@sapporta/shared/report-grid";
+
+type TrialBalanceRow = {
+  accountId: number;
+  account: string;
+  debit: number;
+  credit: number;
+};
+
+export function toTrialBalanceResult(rows: TrialBalanceRow[]): GridReportResult {
+  const levelColumns = {
+    account: [
+      { name: "accountId", label: "Account ID", visuallyHidden: true },
+      { name: "account", label: "Account" },
+      { name: "debit", label: "Debit", kind: "number", displayFormat: "currency" },
+      { name: "credit", label: "Credit", kind: "number", displayFormat: "currency" },
     ],
+  };
 
-    // Compute totals from child transactions
-    rollup: (children) => {
-      const txns = children.transaction || [];
-      return {
-        total_debit: txns.reduce((s, n) => s + (Number(n.columns.debit) || 0), 0),
-        total_credit: txns.reduce((s, n) => s + (Number(n.columns.credit) || 0), 0),
-      };
-    },
-
-    children: [
+  return {
+    name: "trial-balance",
+    label: "Trial Balance",
+    columns: levelColumns.account,
+    levelColumns,
+    data: rows.map((row) => ({ levelName: "account", columns: row })),
+    footerRows: [
       {
-        source: "transactions",
-        levelName: "transaction",
-        columns: [
-          { name: "date", label: "Date", kind: "date" },
-          { name: "description", label: "Description" },
-          { name: "reference", label: "Ref" },
-          { name: "debit", label: "Debit", kind: "number", displayFormat: "currency" },
-          { name: "credit", label: "Credit", kind: "number", displayFormat: "currency" },
-          { name: "running_balance", label: "Balance", kind: "number", displayFormat: "currency" },
-          { name: "memo", label: "Memo" },
-        ],
-
-        // Bind parent account ID into the child query
-        bind: { account_id: "$parent.id" },
-
-        // Sort by date ascending
-        sort: [{ key: "date", direction: "asc" }],
-
-        // Add running balance via transform
-        transform: (nodes) => {
-          let balance = 0;
-          return nodes.map((node) => {
-            balance += (Number(node.columns.debit) || 0) - (Number(node.columns.credit) || 0);
-            return {
-              ...node,
-              columns: { ...node.columns, running_balance: balance },
-            };
-          });
+        label: "Grand Total",
+        columns: {
+          debit: rows.reduce((sum, row) => sum + row.debit, 0),
+          credit: rows.reduce((sum, row) => sum + row.credit, 0),
         },
       },
     ],
-  },
-});
+  };
+}
 ```
 
-## Parameterized Report with Lookup and Optional Filter
+Frontend screen:
 
-Report with a lookup dropdown, date range, and optional text filter.
+```tsx
+import { useEffect, useState } from "react";
+import { ReportGridResult, ReportScreenFrame } from "@sapporta/frontend/report";
+import type { GridReportResult } from "@sapporta/shared/report-grid";
+import { reportsApi } from "../api";
 
-```typescript
-import { report } from "@sapporta/server/report";
+export function TrialBalanceReport() {
+  const [result, setResult] = useState<GridReportResult | null>(null);
 
-export default report({
-  name: "account-activity",
-  label: "Account Activity Summary",
+  useEffect(() => {
+    void reportsApi
+      .trialBalance({ query: { asOfDate: "2026-06-12" } })
+      .then(setResult);
+  }, []);
 
-  params: [
-    { name: "start_date", type: "date", required: true, label: "Start Date" },
-    { name: "end_date", type: "date", required: true, label: "End Date" },
-    // lookup renders a dropdown populated from the accounts table
-    { name: "account_id", type: "integer", required: true, label: "Account", lookup: "accounts" },
-    {
-      name: "account_type",
-      type: "string",
-      required: false,
-      default: null,
-      label: "Account Type (optional)",
-    },
-  ],
+  return (
+    <ReportScreenFrame title="Trial Balance">
+      {result ? (
+        <ReportGridResult
+          result={result}
+          links={{
+            account: {
+              cell: {
+                account: ({ node }) => [
+                  {
+                    label: "Open ledger",
+                    href: `/reports/account-ledger?accountId=${node.columns.accountId}`,
+                    kind: "route",
+                    icon: "drill-into",
+                  },
+                ],
+              },
+            },
+          }}
+        />
+      ) : null}
+    </ReportScreenFrame>
+  );
+}
+```
 
-  sources: {
-    summary: {
-      query: `
-        SELECT
-          a.id,
-          a.name,
-          a.account_type,
-          COUNT(jl.id) AS transaction_count,
-          COALESCE(SUM(jl.debit), 0) AS total_debit,
-          COALESCE(SUM(jl.credit), 0) AS total_credit,
-          COALESCE(SUM(jl.debit), 0) - COALESCE(SUM(jl.credit), 0) AS net
-        FROM accounts a
-        LEFT JOIN journal_lines jl ON jl.account_id = a.id
-        LEFT JOIN journal_entries je ON je.id = jl.journal_entry_id
-          AND je.date BETWEEN $start_date AND $end_date
-        WHERE a.id = $account_id
-          AND ($account_type IS NULL OR a.account_type = $account_type)
-        GROUP BY a.id, a.name, a.account_type
-        HAVING COUNT(jl.id) > 0
-        ORDER BY a.name
-      `,
-    },
-  },
+## Account Ledger
 
-  tree: {
-    source: "summary",
-    levelName: "account",
-    columns: [
-      { name: "id", visuallyHidden: true },
-      { name: "name", label: "Account" },
-      { name: "account_type", label: "Type" },
-      { name: "transaction_count", label: "# Transactions", kind: "number" },
-      { name: "total_debit", label: "Total Debit", kind: "number", displayFormat: "currency" },
-      { name: "total_credit", label: "Total Credit", kind: "number", displayFormat: "currency" },
-      { name: "net", label: "Net", kind: "number", displayFormat: "currency" },
+Use a top-level account row with child line rows when the report needs a
+running balance.
+
+```ts
+type AccountRow = {
+  accountId: number;
+  account: string;
+  openingBalance: number;
+};
+
+type LedgerLineRow = {
+  accountId: number;
+  journalEntryId: number;
+  date: string;
+  memo: string | null;
+  debit: number;
+  credit: number;
+};
+
+export function toAccountLedgerResult(
+  account: AccountRow,
+  lines: LedgerLineRow[],
+): GridReportResult {
+  const levelColumns = {
+    account: [
+      { name: "accountId", label: "Account ID", visuallyHidden: true },
+      { name: "account", label: "Account" },
+      { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
     ],
-    footer: [
+    line: [
+      { name: "journalEntryId", label: "Journal Entry ID", visuallyHidden: true },
+      { name: "date", label: "Date", kind: "date" },
+      { name: "memo", label: "Memo" },
+      { name: "debit", label: "Debit", kind: "number", displayFormat: "currency" },
+      { name: "credit", label: "Credit", kind: "number", displayFormat: "currency" },
+      { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
+    ],
+  };
+
+  let balance = account.openingBalance;
+  const lineNodes = lines.map((line) => {
+    balance += line.debit - line.credit;
+    return {
+      levelName: "line",
+      columns: { ...line, balance },
+    };
+  });
+
+  return {
+    name: "account-ledger",
+    label: "Account Ledger",
+    columns: levelColumns.account,
+    levelColumns,
+    data: [
       {
-        label: "Totals",
-        compute: (nodes) => ({
-          transaction_count: nodes.reduce(
-            (s, n) => s + (Number(n.columns.transaction_count) || 0), 0,
-          ),
-          total_debit: nodes.reduce(
-            (s, n) => s + (Number(n.columns.total_debit) || 0), 0,
-          ),
-          total_credit: nodes.reduce(
-            (s, n) => s + (Number(n.columns.total_credit) || 0), 0,
-          ),
-          net: nodes.reduce(
-            (s, n) => s + (Number(n.columns.net) || 0), 0,
-          ),
-        }),
+        levelName: "account",
+        columns: { accountId: account.accountId, account: account.account },
+        rollup: { balance },
+        children: {
+          line: [
+            {
+              levelName: "line",
+              kind: "opening",
+              columns: { memo: "Opening balance", balance: account.openingBalance },
+            },
+            ...lineNodes,
+          ],
+        },
       },
     ],
-  },
+  };
+}
+```
+
+## Route Test
+
+```ts
+import { gridReportResultSchema } from "@sapporta/shared/report-grid";
+
+it("returns a grid report result", async () => {
+  const response = await app.request(
+    "/api/reports/trial-balance?asOfDate=2026-06-12",
+  );
+
+  expect(response.status).toBe(200);
+  const body = gridReportResultSchema.parse(await response.json());
+  expect(body.name).toBe("trial-balance");
 });
 ```

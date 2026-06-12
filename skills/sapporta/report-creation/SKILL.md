@@ -1,352 +1,309 @@
 ---
 name: report-creation
 description: >
-  Use when the user wants to create or change Sapporta reports. Covers report
-  definitions, summaries, financial statements, trial balances, ledgers,
-  structured data views, and `sapporta check` validation.
+  Use when the user wants to create or change Sapporta reports. Covers
+  route-based report APIs, shared report contracts, GridReportResult mappers,
+  report screens, summaries, financial statements, trial balances, ledgers, and
+  route/result validation.
 ---
 
 # Report Creation
 
-Reports are declarative: SQL data sources + a tree structure that assembles results into hierarchical output.
+Build a report as an API route that returns grid-renderable data, plus a React
+screen that displays it. Choose the URL, parameters, permission check, query,
+screen route, and navigation entry for the report you are adding.
 
-> **Also read [report-linking](../report-linking/SKILL.md).** Reports that expose entity IDs, FKs, or summary rows should almost always declare `rowLinks` and/or per-column `links` so users can drill through. It's a huge quality-of-life win and easy to forget — treat it as part of authoring, not a follow-up.
+Use this shape:
 
-## File Location
+1. Define a shared route contract in `packages/shared/src/contracts/`.
+2. Implement a thin `TsRestApi` handler under `packages/api/app/`.
+3. Put query logic in a domain store/service when it is more than trivial.
+4. Map rows to `GridReportResult` in a pure function.
+5. Build a React screen under `packages/frontend/src/` and render
+   `ReportGridResult`.
 
-`<project-dir>/packages/api/reports/<name>.ts` — export a report definition from each file. The usual template is `export default report({...})`; named exports that are report definitions are also loaded.
+Do not create report files in `packages/api/reports/`, use `report({...})`, or
+run `sapporta reports`. Put report work in the shared contract, API route, and
+frontend screen instead.
 
-## File Template
+## Backend Contract
 
-```typescript
-import { report } from "@sapporta/server/report";
+Declare reports as normal ts-rest routes. Prefer `GET` query parameters for
+simple report inputs and `POST` bodies for larger filters.
 
-export default report({
-  name: "trial-balance",       // URL-safe identifier
-  label: "Trial Balance",      // Human-readable title
+```ts
+import { z } from "zod";
+import { initContract } from "@sapporta/rest-core";
+import { gridReportResultSchema } from "@sapporta/shared/report-grid";
+import { errorBodySchema } from "@sapporta/shared/contracts";
 
-  // User-supplied parameters (rendered as UI form)
-  // Fields: name, type ("date"|"string"|"integer"|"float"|"daterange"),
-  // required, default?, label?, lookup?, fromBind?, toBind?
-  params: [
-    { name: "as_of_date", type: "date", required: true, label: "As of Date" },
-  ],
+const c = initContract();
 
-  // Named SQL data sources — use $param_name for bind variables
-  sources: {
-    accounts: {
-      query: `
-        SELECT
-          a.id, a.name, a.account_type,
-          COALESCE(SUM(jl.debit), 0) AS total_debit,
-          COALESCE(SUM(jl.credit), 0) AS total_credit
-        FROM accounts a
-        LEFT JOIN journal_lines jl ON jl.account_id = a.id
-        LEFT JOIN journal_entries je ON je.id = jl.journal_entry_id
-          AND je.date <= $as_of_date
-        GROUP BY a.id, a.name, a.account_type
-        HAVING COALESCE(SUM(jl.debit), 0) != 0
-            OR COALESCE(SUM(jl.credit), 0) != 0
-        ORDER BY a.name
-      `,
-    },
-  },
-
-  // Tree structure — assembles query results into hierarchy
-  tree: {
-    source: "accounts",       // references a key in sources
-    levelName: "account",     // key for this level in parent's children map
-    columns: [
-      { name: "name", label: "Account" },
-      { name: "account_type", label: "Type" },
-      { name: "total_debit", label: "Debit", kind: "number", displayFormat: "currency" },
-      { name: "total_credit", label: "Credit", kind: "number", displayFormat: "currency" },
-    ],
-    footer: [
-      {
-        label: "Grand Total",
-        compute: (nodes) => ({
-          total_debit: nodes.reduce((s, n) => s + (Number(n.columns.total_debit) || 0), 0),
-          total_credit: nodes.reduce((s, n) => s + (Number(n.columns.total_credit) || 0), 0),
-        }),
-      },
-    ],
+export const trialBalanceRoute = c.query({
+  method: "GET",
+  path: "/reports/trial-balance",
+  summary: "Trial Balance",
+  metadata: { tags: ["reports"] },
+  query: z.object({
+    asOfDate: z.string(),
+  }),
+  responses: {
+    200: gridReportResultSchema,
+    400: errorBodySchema,
+    403: errorBodySchema,
   },
 });
 ```
 
-## Parameters
+Re-export the contract through `packages/shared/src/contracts/index.ts` and add
+a typed frontend client in `packages/frontend/src/api.ts`.
 
-Each param becomes a form field in the UI and a `$name` bind variable in SQL sources.
+## Backend Handler
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | `string` | Bind variable name. Used as `$name` in SQL sources. Must be unique. |
-| `type` | `"date" \| "string" \| "integer" \| "float" \| "daterange"` | Data type. Scalar string inputs are parsed before SQL binding. |
-| `required` | `boolean` | If true, execution throws when this param is not supplied. |
-| `default?` | `unknown` | Used when the param is not supplied. Only relevant if `required: false`. |
-| `label?` | `string` | Display label for the UI parameter form. Falls back to `name` if omitted. |
-| `lookup?` | `string` | Table name. Renders a dropdown populated from the table's `_lookup` endpoint — shows the table's display column as labels, submits the row's primary key as the value. |
-| `fromBind?` | `string` | Required for `type: "daterange"`. SQL bind name for the resolved start date. |
-| `toBind?` | `string` | Required for `type: "daterange"`. SQL bind name for the resolved end date. |
+Resolve auth and request input at the route edge, read rows with scoped data
+access, and return a plain object satisfying `GridReportResult`.
 
-### Lookup params
+```ts
+import { sql } from "drizzle-orm";
+import { TsRestApi, type SapportaEnv } from "@sapporta/server";
+import type { GridReportResult } from "@sapporta/shared/report-grid";
+import { accounts, journals, journalEntries } from "../schema/index";
+import { trialBalanceRoute } from "my-app-shared/contracts";
 
-When a param references a row in another table, set `lookup` to the table name. The UI renders a dropdown instead of a text input:
+const api = new TsRestApi<SapportaEnv>();
 
-```typescript
-params: [
-  // Date param — renders as date picker
-  { name: "as_of_date", type: "date", required: true, label: "As of Date" },
-  // Lookup param — renders as dropdown with account names
-  { name: "account_id", type: "integer", required: true, label: "Account", lookup: "accounts" },
-  // Optional string param with default
-  { name: "account_type", type: "string", required: false, default: null, label: "Account Type" },
-]
-```
+api.register("trialBalance", trialBalanceRoute, async ({ c, request }) => {
+  const db = c.get("db");
+  const auth = c.get("auth");
+  auth.requireCan("read", "reports:trial-balance");
 
-The display value shown in the dropdown is controlled by the target table's `meta.rowLabelColumns` — an array of column names whose values are concatenated with a space (or heuristic: first text column that isn't a PK or FK).
+  const rows = await db
+    .select({
+      accountId: accounts.drizzle.id,
+      account: accounts.drizzle.name,
+      debit: sql<number>`max(coalesce(sum(${journalEntries.drizzle.debit}), 0) - coalesce(sum(${journalEntries.drizzle.credit}), 0), 0)`,
+      credit: sql<number>`max(coalesce(sum(${journalEntries.drizzle.credit}), 0) - coalesce(sum(${journalEntries.drizzle.debit}), 0), 0)`,
+    })
+    .from(accounts.drizzle)
+    .leftJoin(
+      journalEntries.drizzle,
+      sql`${journalEntries.drizzle.accountId} = ${accounts.drizzle.id}`,
+    )
+    .leftJoin(
+      journals.drizzle,
+      sql`${journals.drizzle.id} = ${journalEntries.drizzle.journalId}`,
+    )
+    .where(sql`${journals.drizzle.date} <= ${request.query.asOfDate}`)
+    .groupBy(accounts.drizzle.id, accounts.drizzle.name)
+    .all();
 
-### Date range params
+  return { status: 200, body: toTrialBalanceResult(rows) };
+});
 
-Use `type: "daterange"` when the UI should capture a period as one parameter while SQL receives separate lower and upper bounds:
+export default api;
 
-```typescript
-params: [
-  {
-    name: "period",
-    type: "daterange",
-    required: false,
-    label: "Period",
-    fromBind: "start_date",
-    toBind: "end_date",
-    default: { type: "all_time" },
-  },
-],
-sources: {
-  entries: {
-    query: `
-      SELECT *
-      FROM journal_entries
-      WHERE ($start_date IS NULL OR date >= $start_date)
-        AND ($end_date IS NULL OR date <= $end_date)
-    `,
-  },
-},
-```
-
-## Sources
-
-Use `$name` syntax for bind variables (params and parent binds). The engine converts `$name` variables to `?` positional parameters for SQLite execution.
-
-### Auth and scoped tables
-
-Report sources are SQL. In auth-enabled projects, do not expose
-`workspace_id`, `workspaceId`, `scoped_to_user_id`, or `scopedToUserId` as
-report parameters and do not trust client-supplied scope values. A report that
-reads scoped tables must preserve the same workspace/user visibility as the
-table APIs. Use the project's auth-aware report execution pattern when
-available; if the project version only supports plain SQL sources, do not ship
-reports over scoped tables until the report route applies server-side row
-security for those sources.
-
-Lookups declared with `param.lookup` should point at scoped tables normally;
-the lookup endpoint applies the active user's visibility. Do not replace lookup
-visibility with raw SQL that lists IDs from other workspaces.
-
-### Bind variable syntax
-
-SQLite does not need type casts — all parameters are bound directly. Most aggregation functions (`SUM`, `AVG`, `COUNT`) handle type coercion automatically.
-
-```sql
-COALESCE(SUM(amount), 0) AS total
-```
-
-**Optional parameter pattern:**
-
-```sql
--- Works: SQLite handles NULL comparison without casts
-WHERE ($account_type IS NULL OR a.account_type = $account_type)
-
--- Works: date comparison with ISO 8601 text strings
-WHERE ($start_date IS NULL OR je.date >= $start_date)
-```
-
-If you need explicit type conversion, use SQLite's `CAST()`:
-
-```sql
-CAST(amount AS REAL)   -- convert text to floating-point
-CAST(count AS INTEGER) -- convert to integer
-```
-
-However, explicit casts are rarely needed — SQLite's type affinity handles most cases automatically.
-
-## Tree Structure
-
-### Core fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `source` | `string` | Name of source in `sources` map |
-| `levelName` | `string` | Key for this level in parent's children map |
-| `columns` | `ColumnSchema[]` | Fields from SQL result to include in output |
-| `children` | `ReportTreeNode[]` | Child nodes (processed per parent row) |
-
-### Columns
-
-Only declared columns appear in `node.columns` and in the report's emitted column metadata. Omitted `label` values are filled from the column name, so use `visuallyHidden: true` for helper values that must be present for links or transforms but should not be displayed.
-
-```typescript
-columns: [
-  { name: "name", label: "Account Name" },
-  { name: "amount", label: "Amount", kind: "number", displayFormat: "currency" },
-  // Sizing: width (fixed), minWidth, maxWidth (in character counts)
-  { name: "memo", label: "Memo", minWidth: 20, maxWidth: 60 },
-  { name: "account_id", visuallyHidden: true },
-]
-```
-
-### Parent-child binding
-
-Bind passes values from a parent row into the child source's SQL query as parameters. **The child source query MUST reference bind keys as `$key` in its WHERE clause** — otherwise the bind values are ignored and the child query returns unfiltered results for every parent row.
-
-```typescript
-// Object form — $parent.col references parent row columns
-bind: { account_id: "$parent.id" },
-
-// Function form
-bind: (parent, params) => ({ account_id: parent.id, start_date: params.start_date }),
-```
-
-**CRITICAL:** The child source SQL must filter using the bind key. Without it, every parent gets the same unfiltered child rows:
-
-```typescript
-// WRONG — bind provides account_id but the query doesn't use it
-//         Every account will show ALL journal lines, not just its own
-sources: {
-  lines: {
-    query: `SELECT * FROM journal_lines WHERE date >= $start_date`,
-  },
-},
-children: [{
-  source: "lines",
-  bind: { account_id: "$parent.id" },  // ← this does nothing without $account_id in the query!
-}]
-
-// CORRECT — query filters by $account_id so each parent gets only its own children
-sources: {
-  lines: {
-    query: `SELECT * FROM journal_lines WHERE account_id = $account_id AND date >= $start_date`,
-  },
-},
-children: [{
-  source: "lines",
-  bind: { account_id: "$parent.id" },  // ← now $account_id in the query gets this value
-}]
-```
-
-### Conditional execution and singular children
-
-```typescript
-when: (parent) => parent.account_type === "Asset",  // skip child based on parent
-singular: true,  // child produces one result (or null) instead of array
-```
-
-## Post-Processing
-
-### Rollup — compute values on parent from its children
-
-```typescript
-rollup: (children) => {
-  const lines = children.line || [];
-  return {
-    total_debit: lines.reduce((s, n) => s + (Number(n.columns.debit) || 0), 0),
-    total_credit: lines.reduce((s, n) => s + (Number(n.columns.credit) || 0), 0),
+function toTrialBalanceResult(
+  rows: {
+    accountId: number;
+    account: string;
+    debit: number;
+    credit: number;
+  }[],
+): GridReportResult {
+  const levelColumns = {
+    account: [
+      { name: "accountId", label: "Account ID", visuallyHidden: true },
+      { name: "account", label: "Account" },
+      {
+        name: "debit",
+        label: "Debit",
+        kind: "number",
+        displayFormat: "currency",
+        zeroDisplay: "blank",
+      },
+      {
+        name: "credit",
+        label: "Credit",
+        kind: "number",
+        displayFormat: "currency",
+        zeroDisplay: "blank",
+      },
+    ],
   };
-},
+
+  return {
+    name: "trial-balance",
+    label: "Trial Balance",
+    columns: levelColumns.account,
+    levelColumns,
+    data: rows.map((row) => ({
+      levelName: "account",
+      columns: row,
+    })),
+    footerRows: [
+      {
+        label: "Grand Total",
+        columns: {
+          debit: rows.reduce((sum, row) => sum + row.debit, 0),
+          credit: rows.reduce((sum, row) => sum + row.credit, 0),
+        },
+      },
+    ],
+  };
+}
 ```
 
-Rollup values appear in `node.rollup` (separate from `node.columns`).
+For auth-enabled projects, do not accept `workspace_id`, `workspaceId`,
+`scoped_to_user_id`, or `scopedToUserId` from the client. Use the route's auth
+context plus `scopedRows()` or `auth.rowSecurity.forTable(table)` in Drizzle
+queries. For raw SQL, make visible base tables explicit with CTEs before
+composing the report query.
 
-### Transform — post-process assembled nodes
+## Grid Result Shape
 
-```typescript
-transform: (nodes, { parent, siblings, params }) => {
-  let balance = 0;
-  return nodes.map(node => {
-    balance += (Number(node.columns.debit) || 0) - (Number(node.columns.credit) || 0);
-    return { ...node, columns: { ...node.columns, running_balance: balance } };
+The shared response type lives at `@sapporta/shared/report-grid`.
+
+`GridReportResult` contains:
+
+- `name` and `label` for the dataset.
+- `columns` for the top-level grid.
+- `levelColumns` keyed by each node level name.
+- `data`, an array of `GridReportNode`.
+- optional `footerRows`, `levelOptions`, `stats`, and `errors`.
+
+`GridReportResult` is the response format rendered by `ReportGridResult`. Keep
+querying, permissions, route state, and navigation in the surrounding route and
+screen code.
+
+Declare hidden identifiers when the frontend needs them for links:
+
+```ts
+const levelColumns = {
+  account: [
+    { name: "accountId", label: "Account ID", visuallyHidden: true },
+    { name: "name", label: "Account" },
+    { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
+  ],
+};
+```
+
+## Hierarchical Results
+
+Return parent nodes with child groups. Keep the mapper pure so it can be tested
+without a database.
+
+```ts
+function toBalanceSheetResult(
+  sections: { section: string }[],
+  accounts: { section: string; account: string; balance: number }[],
+): GridReportResult {
+  const levelColumns = {
+    section: [
+      { name: "section", label: "Section" },
+      { name: "sectionTotal", label: "Total", kind: "number", displayFormat: "currency" },
+    ],
+    account: [
+      { name: "account", label: "Account" },
+      { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
+    ],
+  };
+
+  const data = sections.map((section) => {
+    const childRows = accounts.filter((row) => row.section === section.section);
+    const sectionTotal = childRows.reduce((sum, row) => sum + row.balance, 0);
+
+    return {
+      levelName: "section",
+      columns: { section: section.section },
+      rollup: { sectionTotal },
+      children: {
+        account: childRows.map((row) => ({
+          levelName: "account",
+          columns: { account: row.account, balance: row.balance },
+        })),
+      },
+    };
   });
-},
+
+  return {
+    name: "balance-sheet",
+    label: "Balance Sheet",
+    columns: levelColumns.section,
+    levelColumns,
+    data,
+  };
+}
 ```
 
-### Sort
+Use `rollup` for parent totals, `footerRows` for top-level synthetic totals,
+`childFooterRows` for child-level totals, and node `kind` for opening,
+closing, or subtotal rows.
 
-```typescript
-sort: [{ key: "date", direction: "asc" }, { key: "name", direction: "asc" }],
+## Date Ranges
+
+Use the shared flat URL shape:
+
+- `period_relative=30d`
+- `period_from=2026-01-01&period_to=2026-01-31`
+
+Resolve bounds once at the API boundary:
+
+```ts
+import { resolveDateRangeQueryBounds } from "@sapporta/shared";
+
+const period = resolveDateRangeQueryBounds("period", request.query);
 ```
 
-### Footer — synthetic rows after all data nodes
+`from` and `to` are ISO date strings or `null`; `null` means unbounded.
 
-```typescript
-footer: [
-  {
-    label: "Grand Total",
-    compute: (nodes) => ({
-      total_debit: nodes.reduce((s, n) => s + (Number(n.columns.total_debit) || 0), 0),
-    }),
-  },
-],
+## Frontend Screen
+
+Render report results in a report screen. Keep query state, navigation, and
+link behavior in that screen.
+
+```tsx
+import { useEffect, useState } from "react";
+import { ReportGridResult, ReportScreenFrame } from "@sapporta/frontend/report";
+import type { GridReportResult } from "@sapporta/shared/report-grid";
+import { reportsApi } from "../api";
+
+export function TrialBalanceReport() {
+  const [result, setResult] = useState<GridReportResult | null>(null);
+
+  useEffect(() => {
+    void reportsApi
+      .trialBalance({ query: { asOfDate: "2026-06-12" } })
+      .then(setResult);
+  }, []);
+
+  return (
+    <ReportScreenFrame title="Trial Balance">
+      {result ? <ReportGridResult result={result} /> : null}
+    </ReportScreenFrame>
+  );
+}
 ```
 
-## Critical: Column Declaration Rules
-
-The engine only copies declared SQL fields into `node.columns`. Transforms receive `context.rawRows`, so they can read undeclared SQL fields, but any value that should appear in output columns, rollups, footers, links, or UI metadata must be declared in `columns[]`.
-
-### Rollup and footer keys must be declared in `columns[]`
-
-```typescript
-// WRONG — rollup produces "total" but columns[] doesn't declare it
-columns: [{ name: "section", label: "Section" }],
-rollup: (children) => ({ total: children.items.reduce(...) }),
-
-// CORRECT — "total" is declared in columns[]
-columns: [
-  { name: "section", label: "Section" },
-  { name: "total", label: "Total", kind: "number", displayFormat: "currency" },
-],
-```
-
-The same applies to footer `compute` — returned keys must match declared column names.
-
-### Transform needs columns declared too
-
-If your transform needs SQL fields only for computation, prefer `context.rawRows`. If a computed value should be returned in `node.columns`, declare it:
-
-```typescript
-columns: [
-  { name: "id", visuallyHidden: true }, // needed for links but not displayed
-  { name: "name", label: "Account" },
-  { name: "running_balance", label: "Balance", kind: "number", displayFormat: "currency" },
-],
-```
+Add the screen to the app's React Router routes and navigation.
 
 ## Validation
 
-After creating or modifying any report:
+Use the smallest loop that proves the report:
 
 ```bash
-sapporta check
+pnpm exec sapporta describe "GET /api/reports/trial-balance"
+curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/reports/trial-balance?asOfDate=2026-06-12"
+pnpm exec sapporta check
 ```
 
-Validates report definitions and can check SQL planning when a database is available. It also validates source references and rollup/footer keys vs declared columns. Fix all issues before considering work complete.
+Also add route tests that parse the response with `gridReportResultSchema` and
+unit tests for pure row-to-result mappers when the report has hierarchy,
+rollups, or non-trivial totals.
 
-## Row & Cell Linking
+## References
 
-Reports can attach navigation metadata to rows (`rowLinks` on a tree node) and cells (`links` on a column). The report engine returns these as `levelLinks` and column `links` so report UIs can navigate to tables or other reports. **Almost every non-trivial report should declare some.** See [report-linking](../report-linking/SKILL.md) for the full guide.
-
-## Reference Files
-
-- [Report Linking](../report-linking/SKILL.md) — `rowLinks` and `column.links` for drill-through navigation
-- [Full API Reference](references/full-api-reference.md) — Complete TypeScript types
-- [Worked Examples](references/examples.md) — Trial balance, general ledger, parameterized reports
+- [Report Linking](../report-linking/SKILL.md) - frontend link resolvers for
+  row, cell, and footer navigation.
+- [Full API Reference](references/full-api-reference.md) - `GridReportResult`
+  and report renderer types.
+- [Worked Examples](references/examples.md) - route-based report examples.

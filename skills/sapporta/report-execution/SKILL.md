@@ -1,56 +1,79 @@
 ---
 name: report-execution
 description: >
-  Use when the user wants to run Sapporta reports, see report output, check
-  numbers, or answer questions from existing app data with reports, table
-  queries, or SQL inspection.
+  Use when the user wants to run Sapporta report routes, see report output,
+  check numbers, or answer questions from existing app data with report
+  endpoints, table queries, or SQL inspection.
 ---
 
 # Report Execution
 
-## Decision: existing report or ad-hoc query?
+Run reports by calling their API endpoints. Use `sapporta describe` to inspect
+the endpoint shape, then call the route with `curl`, the app's typed client, or
+another HTTP client. Do not use `sapporta reports`; report routes are described
+through OpenAPI like other app endpoints.
 
-1. **Check for an existing report** -- `sapporta reports`
-2. If a match exists, **execute it** with parameters.
-3. If not, **run SQL inspection** -- `sapporta db exec-sql "SELECT ..."`.
+## Decision: Report Route Or Ad-Hoc Query?
 
-## Running an existing report
+1. Use `pnpm exec sapporta describe` to inspect available routes.
+2. If a report endpoint matches, inspect it with
+   `pnpm exec sapporta describe "METHOD /api/reports/<path>"`.
+3. Call the report route with `curl`, the app's typed client, or another HTTP
+   client.
+4. If no endpoint answers the question, use table queries or read-only SQL
+   inspection.
+
+## Running A Report Route
 
 ```bash
-# 1. List reports
-sapporta reports
-# 2. Inspect params
-sapporta reports show <report-name>
-# 3. Execute
-sapporta reports run <report-name> --as_of_date 2024-12-31
+pnpm exec sapporta describe "GET /api/reports/trial-balance"
+
+curl -fsS \
+  -H "Authorization: Bearer ${SAPPORTA_API_TOKEN}" \
+  "${SAPPORTA_API_URL:-http://localhost:3000}/api/reports/trial-balance?asOfDate=2026-06-12"
 ```
 
-- Required params must be included; optional params use defaults.
-- Dates as ISO strings (`"2024-12-31"`).
-- In auth-enabled projects, the built-in report route authenticates the
-  request, but report SQL must still be written or wrapped to preserve the
-  same workspace/user visibility as the table APIs.
+- Use the route schema from `sapporta describe` to choose query parameters or
+  request body fields.
+- Dates should use the route's documented shape. New date ranges usually use
+  flat query fields such as `period_from`, `period_to`, or `period_relative`.
+- For `POST` report routes, send JSON with `-H "Content-Type: application/json"`
+  and `-d '{"field":"value"}'`.
+- In protected apps, set `SAPPORTA_API_TOKEN`; the token selects the workspace.
 
-## Ad-hoc queries
+Report responses should parse as `GridReportResult`. For data questions, cite
+the report endpoint and parameters used, especially date range, workspace, or
+filters.
 
-When no report covers the question, use `SELECT` or `WITH` SQL against the current local Sapporta project:
+## Ad-Hoc Queries
+
+When no report route covers the question, use the highest-level available data
+surface:
+
+1. Built-in table list endpoints through `sapporta tables sample` or
+   `/api/tables/<name>` filters.
+2. Existing domain endpoints from `sapporta describe`.
+3. Read-only SQL through `sapporta db exec-sql`.
 
 ```bash
-sapporta db exec-sql "SELECT ..."
-# or, to pass a row cap:
-sapporta db exec-sql --input-body-json '{"sql": "SELECT ...", "limit": 100}'
+pnpm exec sapporta db exec-sql "SELECT ..."
+pnpm exec sapporta db exec-sql --input-body-json '{"sql": "SELECT ...", "limit": 100}'
 ```
 
 `sapporta db exec-sql` is raw database access and can execute writes. For this
 skill, use it only for inspection queries unless the user explicitly asks for a
 data change. In auth-enabled projects it does not represent a workspace user's
-table/report visibility unless the query explicitly follows the same
-server-side row-security rules. Prefer existing reports and table endpoints for
-user-facing answers; use SQL inspection as admin/debug work and say so in the
-answer.
+route visibility unless the query explicitly follows the same server-side
+row-security rules. Prefer report routes and table endpoints for user-facing
+answers; use SQL inspection as admin/debug work and say so in the answer.
 
-This skill is about reads. For mutations, use the relevant mutation skill (e.g. [row-insertion](../row-insertion/SKILL.md), [master-detail-insertion](../master-detail-insertion/SKILL.md)) or the raw SQL fallback only when the user has explicitly asked for that kind of data change.
+This skill is about reads. For mutations, use the relevant mutation skill
+([row-insertion](../row-insertion/SKILL.md),
+[master-detail-insertion](../master-detail-insertion/SKILL.md)) or the raw SQL
+fallback only when the user explicitly asks for that kind of data change.
 
-## When to suggest a report
+## When To Suggest A Report
 
-If the user repeatedly asks for the same kind of summary, suggest creating a report definition -- see [report-creation](../report-creation/SKILL.md).
+If the user repeatedly asks for the same kind of summary, suggest creating a
+route-based report endpoint and screen; see
+[report-creation](../report-creation/SKILL.md).

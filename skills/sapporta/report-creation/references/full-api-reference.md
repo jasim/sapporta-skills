@@ -1,282 +1,175 @@
-# Report Creation — Full API Reference
+# Route-Based Report API Reference
 
-Source: report authoring types in the Sapporta core package, plus the shared report and metadata contracts consumed by app frontends.
+Use this reference when a report needs exact shared result and renderer types.
 
-## `report(definition: ReportDefinition): ReportDefinition`
+## Backend Route Contract
 
-Creates a report definition with type checking.
+Declare report routes with `@sapporta/rest-core` contracts. Use
+`gridReportResultSchema` for the success response.
 
-## ReportDefinition
+```ts
+import { z } from "zod";
+import { initContract } from "@sapporta/rest-core";
+import { gridReportResultSchema } from "@sapporta/shared/report-grid";
+import { errorBodySchema } from "@sapporta/shared/contracts";
 
-```typescript
-type ReportDefinition = {
-  /** URL-safe identifier. Used in API routes: /api/reports/:name/results (GET) or /api/reports/:name/execute (POST) */
+const c = initContract();
+
+export const reportRoute = c.query({
+  method: "GET",
+  path: "/reports/example",
+  query: z.object({ asOfDate: z.string() }),
+  responses: {
+    200: gridReportResultSchema,
+    400: errorBodySchema,
+    403: errorBodySchema,
+  },
+});
+```
+
+## `GridReportResult`
+
+```ts
+type GridReportResult = {
   name: string;
-  /** Human-readable title */
   label: string;
-  /** Parameter definitions */
-  params: ReportParam[];
-  /** Named SQL data sources */
-  sources: Record<string, ReportSource>;
-  /** The tree structure defining how to assemble query results */
-  tree: ReportTreeNode;
+  columns: GridColumn[];
+  levelColumns: Record<string, GridColumn[]>;
+  data: GridReportNode[];
+  levelOptions?: Record<string, { defaultCollapsed?: boolean }>;
+  footerRows?: GridFooterRow[];
+  errors?: { path: string; message: string }[];
+  stats?: GridReportStat[];
 };
 ```
 
-## ReportParam
+`columns` is the top-level grid's columns. `levelColumns` must include entries
+for every `GridReportNode.levelName` used in `data` or nested `children`.
 
-```typescript
-type ParamType = "date" | "string" | "integer" | "float" | "daterange";
+## `GridColumn`
 
-type ReportParam = {
-  /** Bind variable name. Used as $name in SQL sources. Must be unique. */
-  name: string;
-  /** Data type. Scalar string inputs are parsed before SQL binding. */
-  type: ParamType;
-  /** If true, execution throws when this param is not supplied. */
-  required: boolean;
-  /** Used when the param is not supplied. Only relevant if required=false. */
-  default?: unknown;
-  /** Display label for the UI parameter form. Falls back to name if omitted. */
-  label?: string;
-  /** Table to look up options from. Renders a dropdown populated from the
-   *  table's _lookup endpoint (display column as labels, PK as values). */
-  lookup?: string;
-  /** For daterange params: SQL bind name for the resolved start date. */
-  fromBind?: string;
-  /** For daterange params: SQL bind name for the resolved end date. */
-  toBind?: string;
-};
-```
-
-For `type: "daterange"`, declare distinct `fromBind` and `toBind` values and reference those names in SQL. The incoming parameter uses the report parameter name, while the SQL receives the two resolved date values.
-
-## ReportSource
-
-```typescript
-type ReportSource = {
-  /** Raw SQL query. Use $name for bind variables (params and parent binds).
-   *  The engine converts $name to ? positional parameters for SQLite execution. */
-  query: string;
-};
-```
-
-Report sources are raw SQL declarations. In auth-enabled projects, source SQL
-that reads scoped tables must not rely on client-supplied workspace or user
-parameters. Keep `workspace_id` and `scoped_to_user_id` server-controlled, use
-the project's auth-aware report execution pattern when available, and do not
-ship reports over scoped tables if the active report route cannot enforce the
-same row visibility as the table APIs.
-
-## ColumnSchema
-
-```typescript
-interface ColumnSchema {
+```ts
+type GridColumn = {
   name: string;
   label: string;
   kind?: "text" | "number" | "boolean" | "date" | "timestamp";
   displayFormat?: "currency" | "percentage";
   textDisplay?: "multiLine" | "markdown";
-
-  // Sizing hints (character counts) — control CSS grid column widths
-  width?: number;     // Fixed width
-  minWidth?: number;  // Flexible with minimum
-  maxWidth?: number;  // Flexible with maximum
-
-  // DB-derived and UI metadata — all optional, default to inert values
-  dataType?: string;
-  primary?: boolean;
-  isUnique?: boolean;
-  notNull?: boolean;
-  hasDefault?: boolean;
-  foreignKey?: { table: string; column: string } | null;
-  select?: { options: string[] } | null;
   visuallyHidden?: boolean;
+  width?: number;
+  minWidth?: number;
+  maxWidth?: number;
   colorRule?: "positive" | "negative" | "signed";
   zeroDisplay?: "blank" | "dot";
   strong?: boolean;
   notes?: string;
   clientEditable?: boolean;
-  links?: ReportLink[];
-}
-```
-
-When authoring report columns, only `name` is required. The engine normalizes each report column to `ColumnSchema` and supplies a default `label` when omitted.
-
-```typescript
-type ReportColumn = Omit<ColumnSchema, "label"> & {
-  label?: string;
-  display?: (data: Record<string, unknown>) => string | number | null;
 };
 ```
 
-`display` is an authoring-time helper. The engine applies it before returning results, but the function itself is not sent to the client.
+Use `visuallyHidden: true` for IDs or helper fields that link resolvers need but
+users should not see as normal columns.
 
-## ReportLink
+## `GridReportNode`
 
-```typescript
-type ReportLink =
-  | { kind: "table"; table: string; bind: LinkBind; label?: string; icon?: LinkIcon }
-  | { kind: "report"; report: string; bind: LinkBind; label?: string; icon?: LinkIcon };
-
-type LinkBind = Record<string, string>;
-type LinkIcon = "drill-up" | "drill-into" | "report";
-```
-
-## ReportTreeNode
-
-```typescript
-type ReportTreeNode = {
-  /** Name of the source in the report's sources map */
-  source: string;
-  /** Name for this tree level. Used as the key in the parent's children map. */
+```ts
+type GridReportNode = {
   levelName: string;
-  /** Columns to extract from each source row into the output node */
-  columns: ReportColumn[];
-
-  // --- Parent-child binding ---
-
-  /** How to pass values from the parent row into this node's SQL query */
-  bind?:
-    | Record<string, string>           // { sql_var: "$parent.col" }
-    | ((parent: Record<string, unknown>, params: Record<string, unknown>) => Record<string, unknown>);
-
-  /** Conditional execution. If returns false, the child is skipped. */
-  when?: (parent: Record<string, unknown>) => boolean;
-
-  /** If true, this child produces a single object (or null) instead of an array */
-  singular?: boolean;
-
-  // --- Post-processing ---
-
-  /** Compute values on a parent node from its materialized children */
-  rollup?: (children: Record<string, ReportOutputNode[]>) => Record<string, unknown>;
-
-  /** Post-process assembled output nodes for this tree level */
-  transform?: (nodes: ReportOutputNode[], context: TransformContext) => ReportOutputNode[];
-
-  /** Sort specification. Applied after transform. */
-  sort?: ReportSort[];
-
-  /** Footer rows. Computed after all data nodes are finalized. */
-  footer?: ReportFooter[];
-
-  /** When true, this level's children start collapsed in UIs that honor it. */
-  defaultCollapsed?: boolean;
-
-  /** Child tree nodes. Processed in declaration order for each parent row. */
-  children?: ReportTreeNode[];
-
-  /** Row-level navigation metadata collected into ReportResult.levelLinks. */
-  rowLinks?: ReportLink[];
-};
-```
-
-## ReportSort
-
-```typescript
-type ReportSort = {
-  /** Column key or rollup key to sort by */
-  key: string;
-  /** Sort direction. The TypeScript type requires an explicit value. */
-  direction: "asc" | "desc";
-};
-```
-
-## ReportFooter
-
-```typescript
-type ReportFooter = {
-  /** Label for the footer row */
-  label: string;
-  /** Compute footer values from the assembled sibling nodes at this level */
-  compute: (nodes: ReportOutputNode[]) => Record<string, unknown>;
-};
-```
-
-## TransformContext
-
-```typescript
-type TransformContext = {
-  /** The parent output node */
-  parent: ReportOutputNode;
-  /** Children of the parent processed before the current child, keyed by level name.
-   *  Singular children: single ReportOutputNode or null.
-   *  List children: ReportOutputNode[]. */
-  siblings: Record<string, ReportOutputNode | ReportOutputNode[] | null>;
-  /** The resolved global params */
-  params: Record<string, unknown>;
-  /** Full SQL rows, parallel to the nodes array passed to transform. */
-  rawRows: Record<string, unknown>[];
-};
-```
-
-## Output Types
-
-### ReportOutputNode
-
-```typescript
-type ReportOutputNode = {
-  /** Level name from the tree node definition */
-  levelName: string;
-  /** Column values extracted from the source row */
   columns: Record<string, unknown>;
-  /** Values computed by the rollup function */
   rollup?: Record<string, unknown>;
-  /** Materialized children, keyed by level name */
-  children?: Record<string, ReportOutputNode[] | ReportOutputNode | null>;
-  /** Footer rows for each child level, keyed by levelName */
-  childFooterRows?: Record<string, ReportFooterRow[]>;
-  /** Optional structural row marker for opening, closing, or subtotal rows. */
+  children?: Record<string, GridReportNode[] | GridReportNode | null>;
+  childFooterRows?: Record<string, GridFooterRow[]>;
   kind?: "opening" | "closing" | "subtotal";
 };
 ```
 
-### ReportFooterRow
+`columns` holds source row values. `rollup` holds computed values for the same
+display row. The renderer reads `node.columns[column.name]` first and then
+falls back to `node.rollup?.[column.name]`.
 
-```typescript
-type ReportFooterRow = {
+`children` is keyed by child level name. `childFooterRows` is keyed the same
+way and renders after that child group.
+
+## `GridFooterRow`
+
+```ts
+type GridFooterRow = {
   label: string;
   columns: Record<string, unknown>;
 };
 ```
 
-### ReportResult
+Top-level footer rows live on `GridReportResult.footerRows`. Child group
+footers live on `GridReportNode.childFooterRows`.
 
-```typescript
-type ReportResult = {
-  /** Report name */
-  name: string;
-  /** Report label */
-  label: string;
-  /** Parameter definitions (so the UI can render a form) */
-  params: ReportParam[];
-  /** Column definitions from the root tree level */
-  columns: ColumnSchema[];
-  /** Column definitions for each tree level, keyed by levelName */
-  levelColumns: Record<string, ColumnSchema[]>;
-  /** The assembled tree data */
-  data: ReportOutputNode[];
-  /** Per-level UI options, keyed by levelName. */
-  levelOptions?: Record<string, { defaultCollapsed?: boolean }>;
-  /** Per-level row navigation metadata, keyed by levelName. */
-  levelLinks?: Record<string, ReportLink[]>;
-  /** Root-level footer rows (e.g. "Grand Total") */
-  footerRows?: ReportFooterRow[];
-  /** Non-fatal errors collected during execution */
-  errors?: { path: string; message: string }[];
-  /** Optional summary stats in the wire schema. The built-in executeReport path does not populate this today. */
-  stats?: SerializedReportStat[];
-};
-```
+## `GridReportStat`
 
-### SerializedReportStat
-
-```typescript
-type SerializedReportStat = {
+```ts
+type GridReportStat = {
   label: string;
   value: string;
   tone?: "fg" | "positive" | "negative" | "brand" | "muted";
   strong?: boolean;
 };
 ```
+
+Use stats for compact summary values that sit outside the grid.
+
+## Frontend Renderer
+
+```tsx
+import {
+  ReportGridResult,
+  ReportScreenFrame,
+  ReportToolbar,
+  ReportRunButton,
+  DateRangeField,
+  EntitySelectField,
+  buildSearchParams,
+  createSnapshotUrl,
+  useUrlQueryState,
+} from "@sapporta/frontend/report";
+```
+
+`ReportGridResult` props:
+
+```ts
+type ReportGridResultProps<TInput = unknown> = {
+  result: GridReportResult;
+  links?: ReportGridLinkResolvers<TInput>;
+  linkContext?: { input: TInput };
+};
+```
+
+## Link Resolvers
+
+```ts
+type ReportGridLink = {
+  label: string;
+  href: string;
+  kind?: "drill-down" | "record" | "route" | "external";
+  icon?: "drill-up" | "drill-into" | "report" | "external";
+  target?: "_self" | "_blank";
+};
+
+type ReportGridLinkResolvers<TInput = unknown> = Record<
+  string,
+  {
+    row?: (context: ReportGridLinkContext<TInput>) => ReportGridLink[];
+    cell?: Record<
+      string,
+      (context: ReportGridLinkContext<TInput>) => ReportGridLink[]
+    >;
+    footer?: (context: ReportGridFooterLinkContext<TInput>) => ReportGridLink[];
+  }
+>;
+```
+
+Links are frontend-only. Do not put link metadata in `GridReportResult`.
+
+## Validation
+
+- `pnpm exec sapporta describe "GET /api/reports/<name>"` confirms OpenAPI
+  discovery for the route.
+- Route tests should parse successful responses with `gridReportResultSchema`.
+- Mapper tests should assert hierarchy, rollups, footers, and hidden IDs.

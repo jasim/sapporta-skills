@@ -9,23 +9,23 @@ description: >
 
 # Custom Frontend Views
 
-Build the app's own screens under `packages/frontend/src/`: dashboards, import
-wizards, multi-table forms, and custom table/grid workflows. Use public exports
-from `@sapporta/frontend`, `@sapporta/ui`, and `@sapporta/shared`; when a
-generated app's local declarations are needed, inspect them from that app's
-`packages/frontend` workspace.
+Build screens under `packages/frontend/src/`: dashboards, import wizards,
+multi-table forms, report pages, and custom table/grid workflows. Use public
+exports from `@sapporta/frontend`, `@sapporta/ui`, and `@sapporta/shared`;
+when local app declarations are needed, inspect the app's `packages/frontend`
+workspace.
 
 In auth-enabled apps, let the existing app boot load the session and
-`/api/auth-context` before rendering screens that need tables or reports.
-Non-owner workspace users should not see owner-only table, report, or metadata
-links. Forms must omit system-managed scope fields and columns marked
+`/api/auth-context` before rendering screens that need scoped tables or report
+routes. Non-owner workspace users should not see owner-only table, report, or
+metadata links. Forms must omit system-managed scope fields and columns marked
 `clientEditable: false`.
 
 Client code does not enforce row ownership. Do not add hidden
 `workspace_id`, `workspaceId`, `scoped_to_user_id`, or `scopedToUserId` inputs,
 and do not rely on `fixedFilters` or URL params as authorization. Use built-in
-table/report routes or typed custom endpoints whose server handlers resolve
-auth and apply `scopedRows()` or `rowSecurity`.
+table routes or typed custom endpoints whose server handlers resolve auth and
+apply `scopedRows()` or `rowSecurity`.
 
 Follow the current app convention: `packages/frontend/src/App.tsx` exports
 `appNavigation`, `appHomeRoute`, `appPublicRoutes`, and `appProtectedRoutes`.
@@ -64,9 +64,9 @@ export const appProtectedRoutes = (
 );
 ```
 
-`AppShell` receives `navigation={appNavigation}`. Tables and reports appear
-automatically when `showFrameworkNavigation` is true. Keep app navigation in
-the `Navigation` array instead of wiring legacy sidebar components by hand.
+`AppShell` receives `navigation={appNavigation}`. Add report screens to the
+`Navigation` array so users can find them alongside table and workflow pages.
+Keep app navigation there instead of wiring legacy sidebar components by hand.
 
 ## Primitives
 

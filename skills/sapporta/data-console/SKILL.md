@@ -2,8 +2,9 @@
 name: data-console
 description: >
   Use when the user wants to inspect existing Sapporta data, answer questions
-  from records, sample tables, run reports, insert or update rows, call existing
-  endpoints with curl, or use `sapporta` CLI commands against a running app.
+  from records, sample tables, call report routes, insert or update rows, call
+  existing endpoints with curl, or use `sapporta` CLI commands against a
+  running app.
 ---
 
 ## Use When
@@ -11,8 +12,9 @@ description: >
 Use this skill when the user wants to work with records in an existing Sapporta
 app rather than change the app's code. The Sapporta CLI acts as a console over
 the selected running app and database: it can discover endpoints, list tables,
-sample data, run reports, insert, update, or delete rows through built-in row
-commands, and run raw SQL only as a fallback.
+sample data, insert, update, or delete rows through built-in row commands, and
+run raw SQL only as a fallback. Discover report routes with `sapporta describe`
+and call them with `curl` or another HTTP client.
 
 Prefer the project-local command form:
 
@@ -24,7 +26,7 @@ pnpm exec sapporta ...
 
 For API-backed CLI commands in an existing project, verify that the selected app
 server is reachable. `check` and `init` are local commands; `describe` reads the
-live OpenAPI document, and table/report/row commands talk to the app API.
+live OpenAPI document, and table/row commands talk to the app API.
 
 ```bash
 pnpm exec sapporta describe
@@ -52,26 +54,24 @@ pnpm exec sapporta describe "METHOD /api/path"
 pnpm exec sapporta tables
 pnpm exec sapporta tables show <name>
 pnpm exec sapporta tables sample <name>
-pnpm exec sapporta reports
-pnpm exec sapporta reports show <report-name>
 ```
 
 `sapporta describe` is the source of truth for endpoint schemas, including
-built-ins and user-defined routes from `packages/api/app/`. The CLI cannot
-invoke user-defined HTTP endpoints directly; after describing them, call those
-routes with `curl` or another HTTP client against the selected app URL.
+table routes and app routes from `packages/api/app/`. The CLI cannot invoke app
+HTTP endpoints directly; after describing them, call those routes with `curl`
+or another HTTP client against the selected app URL.
 
 ## Answer Data Questions
 
 Prefer the highest-level app feature that answers the question:
 
-1. Run a relevant existing report.
+1. Call a relevant existing report endpoint.
 2. Query the built-in table list endpoint when filters/search/pagination fit.
 3. Use read-only SQL through `sapporta db exec-sql` when no report or table
    endpoint answers the question cleanly.
 
-When repeated ad-hoc SQL would be useful to users, suggest creating a report
-instead of leaving the workflow as one-off SQL.
+When repeated ad-hoc SQL would be useful to users, suggest creating a
+route-based report instead of leaving the workflow as one-off SQL.
 
 Report results back with enough provenance for the user to trust the answer:
 name the report, table endpoint, domain endpoint, or SQL query path used. If a
@@ -85,11 +85,11 @@ For data changes, use the highest fitting option:
 
 1. Existing project/domain endpoint from `sapporta describe`
 2. Built-in row commands: `sapporta rows insert/update/delete`
-3. Existing reports or custom endpoints when they match the workflow
+3. Existing report/domain endpoints when they match the workflow
 4. Raw SQL fallback after reading [../meta-sql/SKILL.md](../meta-sql/SKILL.md)
 
 Raw SQL writes bypass application behavior and normal row-save validation, so
-use them only when no endpoint, row command, or report fits.
+use them only when no endpoint or row command fits.
 In auth-enabled projects, raw SQL also bypasses normal row-access helpers; read
 [../meta-sql/SKILL.md](../meta-sql/SKILL.md) before using it for scoped tables.
 
@@ -102,9 +102,6 @@ pnpm exec sapporta tables
 pnpm exec sapporta tables show <name>
 pnpm exec sapporta tables sample <name>
 pnpm exec sapporta rows insert <table> --data '[{...}]'
-pnpm exec sapporta reports
-pnpm exec sapporta reports show <report-name>
-pnpm exec sapporta reports run <report-name> --as_of_date 2026-05-25
 pnpm exec sapporta db exec-sql "SELECT ..."
 ```
 
@@ -121,7 +118,7 @@ also expose route-specific shorthand such as `--data`.
 - In auth-enabled projects, omit system-managed `workspace_id`, `workspaceId`,
   `scoped_to_user_id`, and `scopedToUserId`.
 - Do not use raw SQL to simulate another workspace/user's visibility; use an
-  appropriate token, built-in endpoint, report, or scoped custom endpoint.
+  appropriate token, built-in endpoint, report route, or scoped custom endpoint.
 - Prefer built-in row commands for ordinary row creation because they run the
   app's normal save behavior.
 - Keep writes scoped to the specific records the user asked to change.
@@ -132,7 +129,7 @@ also expose route-specific shorthand such as `--data`.
   [../row-insertion/SKILL.md](../row-insertion/SKILL.md)
 - Insert parent and child records atomically -> read
   [../master-detail-insertion/SKILL.md](../master-detail-insertion/SKILL.md)
-- Run existing reports or answer data questions -> read
+- Call existing report routes or answer data questions -> read
   [../report-execution/SKILL.md](../report-execution/SKILL.md)
 - Compose `/api/tables/<name>` filters, search, sort, and pagination -> read
   [../table-querying/SKILL.md](../table-querying/SKILL.md)

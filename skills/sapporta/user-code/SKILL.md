@@ -8,13 +8,13 @@ description: >
 
 # User Code Patterns
 
-Sapporta generates plumbing (tables, CRUD, reports). Business logic,
-workflows, and domain invariants are code you write — these patterns collect
-the recurring craft decisions for that layer.
+Sapporta provides table and CRUD plumbing. Write reports, business logic,
+workflows, and domain invariants as app code. Use these patterns when that code
+needs to stay testable and easy to change.
 
 ## Auth-Aware Workflow Code
 
-Route adapters own auth resolution. They should call the narrowest project
+Resolve auth in the route handler. Call the narrowest project
 ability/data-authority helper once, pass a typed `{ db, auth }` context into
 services/stores, and keep domain code independent of Hono request objects.
 

@@ -2,18 +2,18 @@
 name: meta-sql
 description: >
   Use only when no Sapporta endpoint, built-in row command, table query, or
-  report covers the user's data task. Runs raw SQL directly against the app
-  database with `sapporta db exec-sql "<sql>"`.
+  report route covers the user's data task. Runs raw SQL directly against the
+  app database with `sapporta db exec-sql "<sql>"`.
 ---
 
 # Meta SQL — Fallback Direct SQL Access
 
 This skill is a **fallback**. Reach for it only after confirming that no
-endpoint, row command, report, or table query covers the task:
+endpoint, row command, report route, or table query covers the task:
 
 1. Discovered project/domain endpoints (`sapporta describe`).
 2. Built-in row CRUD (`sapporta rows insert/update/delete`).
-3. Built-in reports (`sapporta reports run ...`).
+3. Existing report/domain endpoints discovered with `sapporta describe`.
 
 If one of the above fits, use it. Raw SQL is the last rung of the ladder.
 
@@ -25,12 +25,12 @@ authority helpers, table save hooks, or row-security predicates.
 
 In auth-enabled projects:
 
-- Prefer reports, table endpoints, row commands, or custom endpoints for
+- Prefer report routes, table endpoints, row commands, or custom endpoints for
   user-facing reads and writes.
 - Treat raw SQL results as database-admin inspection, not as the visibility a
   workspace user would see.
 - Do not use raw SQL to compensate for missing auth filters in product code.
-  Fix the table `rowScope`, report, or endpoint instead.
+  Fix the table `rowScope`, report route, or endpoint instead.
 - Never accept `workspace_id`, `workspaceId`, `scoped_to_user_id`, or
   `scopedToUserId` from a client payload and pass them through raw SQL.
 - For emergency writes to scoped tables, explicitly document why no scoped API
@@ -85,10 +85,8 @@ pipeline.
 
 ## Limitations
 
-- Treat the command as a one-statement escape hatch. The current implementation
-  delegates to `sqlite.prepare(rawSql)` and does not provide an app-level
-  multi-statement transaction wrapper for `BEGIN; ...; COMMIT;` workflows. For
-  atomic multi-step inserts, use
+- Treat the command as a one-statement escape hatch. Do not use it for
+  `BEGIN; ...; COMMIT;` workflows. For atomic multi-step inserts, use
   [master-detail-insertion](../master-detail-insertion/SKILL.md) or app code.
 - Dangerous statements (`DROP DATABASE`, `TRUNCATE`, `DROP SCHEMA`) are rejected.
 

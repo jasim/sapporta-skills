@@ -9,18 +9,18 @@ description: >
 
 ## Use When
 
-Use this mode when the user wants to build or change how a Sapporta project
-behaves. A Sapporta app is project-owned TypeScript code built on Sapporta
-library primitives and generated entry points: project code defines tables,
-reports, backend workflows, frontend pages, and auth-aware data access. Read
-the narrow skill for the specific thing the user wants to change.
+Use this mode when the user wants to build or change how a Sapporta app
+behaves. App code defines tables, report routes, frontend report pages,
+backend workflows, and auth-aware data access. Read the narrow skill for the
+specific thing the user wants to change.
 
 ## Where To Make Changes
 
 Use the path that matches the application builder's goal:
 
 - Define or change tables -> `packages/api/schema/`
-- Add a report -> report definitions, then validate with `sapporta check`
+- Add a report -> shared contract, backend route, frontend screen, navigation,
+  and route tests
 - Add a backend workflow or endpoint -> `packages/shared/src/contracts/` plus
   `packages/api/app/`
 - Keep larger backend workflows readable -> `packages/api/modules/<domain>/`
@@ -32,23 +32,23 @@ Before writing code, inspect the existing app:
 
 ```bash
 pnpm exec sapporta tables
-pnpm exec sapporta reports
 pnpm exec sapporta describe
 ```
 
 Then change the narrowest part of the app:
 
 - table changes -> `packages/api/schema/`
-- report definitions -> `packages/api/reports/`
+- report routes and screens -> `packages/shared/src/contracts/`,
+  `packages/api/app/`, and `packages/frontend/src/`
 - custom backend endpoints -> `packages/shared/src/contracts/` plus
   `packages/api/app/`
 - substantial backend workflows -> `packages/api/modules/<domain>/`
 - custom frontend views, including table/grid workflow pages ->
   `packages/frontend/src/`
 
-After changes, validate the thing you touched. Use `sapporta check` for report
-and table/report consistency, `pnpm --filter ./packages/api db:generate` after
-table definition changes, `pnpm --filter ./packages/api db:migrate` when the
+After changes, validate the thing you touched. Use `sapporta check` for local
+project consistency, `pnpm --filter ./packages/api db:generate` after table
+definition changes, `pnpm --filter ./packages/api db:migrate` when the
 generated migration must be applied, and
 `sapporta describe "METHOD /api/path"` to confirm custom endpoints are visible
 through OpenAPI. Run app tests when the project has relevant tests.
@@ -56,15 +56,16 @@ through OpenAPI. Run app tests when the project has relevant tests.
 Prefer the project's existing style over introducing a parallel code shape.
 Small apps can keep thin route files directly in `packages/api/app/`; larger
 features should move workflow and persistence into domain modules. Do not create
-custom code for behavior already covered by built-in table APIs, reports, or
-existing domain endpoints unless the product workflow needs it.
+custom code for behavior already covered by built-in table APIs or existing
+domain endpoints unless the product workflow needs it.
 
 ## Built-In APIs Or Custom Code
 
-Sapporta's built-in APIs cover ordinary table browsing, row creation and edits,
-and report execution. Prefer those when they fit. Write custom app code when
-the product needs domain behavior: multi-table workflows, custom validation,
-file uploads, custom response shapes, or business transactions.
+Sapporta's built-in APIs cover ordinary table browsing and row creation/edits.
+Build reports with the same contract, route, and frontend patterns used for
+custom endpoints. Write custom app code when the product needs domain behavior:
+reports, multi-table workflows, custom validation, file uploads, custom
+response shapes, or business transactions.
 
 Custom endpoints should use shared ts-rest contracts rather than inline route
 schemas in `packages/api/app/`. The same contract drives request validation,
@@ -77,10 +78,10 @@ services and database reads/writes in module `db/` stores under
 
 ## Auth And Row Scope
 
-Auth-enabled Sapporta projects keep Better Auth integration in generated project
-code and adapt sessions into Sapporta's generic auth context. Sapporta core
-exports row-scope metadata, row-access predicates, guards, and workspace-safe
-table handlers; it does not import Better Auth.
+In auth-enabled projects, resolve the current user and workspace before reading
+or mutating scoped rows. Use Sapporta's row-scope metadata, row-access
+predicates, guards, and workspace-safe table handlers instead of wiring
+workspace filters by hand.
 
 Application code should resolve auth at the route edge with the narrowest
 ability/data-authority helper for the workflow, then use scoped row APIs or
@@ -108,7 +109,7 @@ failures, read troubleshooting before trying broad dependency changes.
 
 - Tables, columns, relations, indexes, search config, schema migration -> read
   [../table-creation/SKILL.md](../table-creation/SKILL.md)
-- Hierarchical reports, summaries, ledgers, report validation -> read
+- Route-based reports, summaries, ledgers, route/result validation -> read
   [../report-creation/SKILL.md](../report-creation/SKILL.md)
 - Row links, cell links, drill-through, cross-report navigation -> read
   [../report-linking/SKILL.md](../report-linking/SKILL.md)

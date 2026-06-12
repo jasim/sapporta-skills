@@ -9,11 +9,10 @@ description: >
 
 # Application code (`packages/api/app/`)
 
-`packages/api/app/` is where the project's domain code lives. Each `.ts` file
-default-exports a `TsRestApi` instance — Sapporta's Hono sub-app with
-ts-rest contracts wired in. These sub-apps are peers of Sapporta's
-built-in table and report endpoints; the same Hono tree serves all of them
-under `/api/`.
+Put domain routes in `packages/api/app/`. Each route file should
+default-export a `TsRestApi` instance with ts-rest contracts registered on it.
+Routes in this folder are served under `/api/`; report endpoints use the same
+pattern as other product routes.
 
 ## Why contracts (and not plain Hono)?
 
@@ -34,9 +33,9 @@ things from one declaration:
    `packages/frontend/src/api.ts`. Request and response shapes can never drift
    between client and server because there is one declaration.
 
-`TsRestApi` IS a Hono app (it extends `Hono`), so plain `api.get(...)`
-and middleware (`api.use(...)`) remain available for the rare cases that
-fall outside ts-rest — see "Escape hatches" below.
+Use `api.register(...)` for typed product routes. Use plain `api.get(...)` or
+middleware only for cases that do not fit a shared contract; see "Escape
+hatches" below.
 
 ## Auth Boundary
 
@@ -67,21 +66,7 @@ broadly and filter row ownership in JavaScript.
 
 ## Mounting: don't forget this step
 
-The project template's `boot.ts` already has the calls that turn sub-apps into
-discoverable routes. You normally don't edit `boot.ts`; you edit `loadApp()`
-in `packages/api/app.ts`.
-
-- `mountSapportaFramework(...)` mounts Sapporta's built-in table, report,
-  metadata, and SQL-tool APIs and returns `sapportaApi` for OpenAPI discovery.
-- `app.route("/api", apiApp)` makes your custom `TsRestApi` reachable at
-  runtime under `/api/*`.
-- `app.route("/api", projectAuth.routes)` mounts the generated auth routes.
-- `mountOpenApi(app, sapporta, sapportaApi, apiApp, projectAuth.routes)` pulls
-  the built-in, custom, and auth contracts into `/api/openapi.json` so
-  `sapporta describe` can see them.
-
-`loadApp()` is the single place where project sub-apps are wired onto
-that `apiApp`:
+After creating a route file, wire it from `loadApp()` in `packages/api/app.ts`:
 
 ```typescript
 import type { SapportaEnv, TsRestApi } from "@sapporta/server";
@@ -92,14 +77,12 @@ export function loadApp(app: TsRestApi<SapportaEnv>, _options: LoadAppOptions) {
 }
 ```
 
-The generated scaffold defines `LoadAppOptions` with the project connection
-and mailer. `app` here is already scoped to `/api`, so
-`app.route("/", bankApp)` serves bankApp's `path: "/transfers"` at
-`/api/transfers`. Do not repeat `/api` in your route paths.
+`app` here is already scoped to `/api`, so `app.route("/", bankApp)` serves
+bankApp's `path: "/transfers"` at `/api/transfers`. Do not repeat `/api` in
+your route paths.
 
-An unmounted sub-app silently does nothing — it won't appear in
-`/api/openapi.json` or `sapporta describe`. After creating or
-modifying a file, confirm with:
+If a route is not mounted, it will not appear in `sapporta describe`. After
+creating or modifying a route, confirm with:
 
 ```bash
 sapporta describe "METHOD /api/your/path"
@@ -107,12 +90,11 @@ sapporta describe "METHOD /api/your/path"
 
 ## Where contracts live
 
-Contracts live in the `__SLUG__-shared` workspace package, under
+Put contracts in the app's shared workspace package, under
 `packages/shared/src/contracts/` — one file per feature, re-exported from
-`packages/shared/src/contracts/index.ts`, which `packages/shared/src/index.ts`
-re-exports in turn. Handlers live in `packages/api/app/`. The contract file is
-the single source of truth for the wire shape — the server registers a handler
-against it, and the frontend builds a typed client from the same export.
+`packages/shared/src/contracts/index.ts`. Put handlers in `packages/api/app/`.
+Use the same contract for the backend handler and frontend client so request
+and response shapes stay in sync.
 
 The trio for any feature `<feature>`:
 
@@ -122,7 +104,7 @@ The trio for any feature `<feature>`:
 - `packages/frontend/src/api.ts` — one entry adding the contract to the typed
   client.
 
-In `packages/frontend/src/api.ts`, follow the generated client pattern:
+In `packages/frontend/src/api.ts`, follow the app's client pattern:
 
 ```typescript
 import { createApiClient } from "@sapporta/shared/client";
@@ -134,15 +116,9 @@ export const accountsApi = createApiClient(accountsContract, {
 });
 ```
 
-Grouping contracts in `packages/shared/src/contracts/` (rather than mixing them
-with other shared helpers) mirrors Sapporta's own
-`packages/shared/src/contracts/` layout: the directory's purpose is
-obvious at a glance.
-
-Shared is a leaf package — no React, Hono, Drizzle, better-sqlite3, I/O, HTTP
-handlers, or database access. The generated shared package allows only `zod`,
-`@sapporta/rest-core`, and `@js-temporal/polyfill` as runtime dependencies.
-See `packages/shared/AGENTS.md` for the full boundary.
+Keep the shared package browser-safe: no React, Hono, Drizzle, better-sqlite3,
+I/O, HTTP handlers, or database access. See `packages/shared/AGENTS.md` when
+you need the exact dependency boundary.
 
 ## Backend organization
 
@@ -233,7 +209,7 @@ in one place. Preserve that property with Sapporta primitives.
 - Route files are adapters: resolve auth, read `c.get("db")`, call a service,
   and return the typed response.
 - Services orchestrate domain workflows and call the module store.
-- `db/` modules own all database reads and writes.
+- Keep database reads and writes in `db/` modules.
 - Store functions accept `db` plus `auth`, or a small typed context object such
   as `{ db, auth }`.
 - Store functions use `scopedRows()` for ordinary table operations.

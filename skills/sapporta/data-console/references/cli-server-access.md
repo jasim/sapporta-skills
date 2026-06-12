@@ -33,7 +33,6 @@ export SAPPORTA_API_TOKEN="spat_..."
 
 pnpm exec sapporta describe
 pnpm exec sapporta tables
-pnpm exec sapporta reports
 ```
 
 For one command, pass `--api-token`. Do not invent, transform, or store tokens
@@ -60,8 +59,10 @@ curl -fsS \
   "${SAPPORTA_API_URL}/api/invoices/123/void"
 ```
 
-The CLI can call built-in table, report, row, SQL, and metadata commands. It
-does not directly invoke arbitrary user-defined endpoints.
+The CLI can call built-in table, row, SQL, and metadata commands. Reports are
+app-owned routes, so inspect them with `sapporta describe` and call them with
+`curl` or another HTTP client. The CLI does not directly invoke arbitrary
+user-defined endpoints.
 
 ## Auth Failures
 
@@ -72,5 +73,5 @@ does not directly invoke arbitrary user-defined endpoints.
   membership.
 - `forbidden`: the user or token cannot perform that action.
 
-Fix auth failures before composing more table, report, SQL, or custom endpoint
-requests.
+Fix auth failures before composing more table, report route, SQL, or custom
+endpoint requests.

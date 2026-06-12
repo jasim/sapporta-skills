@@ -3,32 +3,33 @@ name: sapporta
 description: >
   Use when the user is working in a Sapporta project or asks to change tables,
   add reports, add endpoints, build frontend views, organize backend workflows,
-  inspect data, enter records, run reports, troubleshoot better-sqlite3, or use
-  the `sapporta` CLI. Start here to choose between changing the app's code and
-  working with records.
+  inspect data, enter records, call report routes, troubleshoot better-sqlite3,
+  or use the `sapporta` CLI. Start here to choose between changing the app's
+  code and working with records.
 ---
 
 ## What Sapporta Gives The App Builder
 
-Sapporta is a TypeScript library and framework-style scaffold for
-database-backed apps. A Sapporta project gives the application builder:
+Sapporta is a TypeScript library for database-backed apps. A Sapporta project
+gives the application builder:
 
 - TypeScript files for defining database tables, columns, relationships,
   display metadata, search behavior, and row ownership.
 - Built-in table APIs for listing, filtering, creating, updating, and deleting
   records.
-- Hierarchical reports for ledgers, summaries, statements, and structured data
-  views.
+- Route-based report APIs and React report screens for ledgers, summaries,
+  statements, and structured data views.
 - Custom endpoints for product workflows that need business rules, file
   uploads, atomic database changes, or custom response shapes.
-- Custom React views layered on top of the built-in admin UI.
+- Custom React views that fit alongside the built-in admin UI.
 - An OpenAPI document that `sapporta describe`, the frontend client, and API
   tooling use to see the current app.
 
 The usual places to work are:
 
 - `packages/api/schema/` for table definitions.
-- `packages/api/reports/` for report definitions.
+- `packages/shared/src/contracts/`, `packages/api/app/`, and
+  `packages/frontend/src/` for report routes and screens.
 - `packages/api/app/` for custom backend endpoints.
 - `packages/shared/src/contracts/` for request/response contracts shared by
   backend, OpenAPI, and frontend code.
@@ -41,7 +42,7 @@ pnpm exec sapporta ...
 ```
 
 The CLI is both a discovery tool and a data console for a selected running app.
-It can inspect endpoints, list and describe tables, sample rows, run reports,
+It can inspect endpoints, list and describe tables, sample rows,
 insert/update/delete rows, execute raw SQL fallback commands, and run checks.
 
 For protected or non-local apps, keep the top-level context small and read the
@@ -60,16 +61,16 @@ Decide what the user is trying to do before loading detailed context.
   answer questions from records already in the app -> read
   [data-console/SKILL.md](data-console/SKILL.md).
 
-Some tasks touch both: build a report with `app-framework`, then run it and
-inspect numbers with `data-console`.
+Some tasks touch both: build a report route and screen with `app-framework`,
+then call the report endpoint and inspect numbers with `data-console`.
 
 ## Rules That Prevent Wrong Work
 
 - Work in the local Sapporta project rooted at `cwd` or the nearest
   `sapporta.json`.
-- Framework table/report/meta APIs and custom app APIs are served under
-  `/api/...`; health checks and frontend/static routes can live outside
-  `/api`.
+- Framework table/meta APIs and custom app APIs, including report routes, are
+  served under `/api/...`; health checks and frontend/static routes can live
+  outside `/api`.
 - Prefer `pnpm exec sapporta ...` over a global `sapporta` binary.
 - Use `sapporta describe` to discover existing endpoints before adding code or
   composing requests.
@@ -77,9 +78,9 @@ inspect numbers with `data-console`.
   `http://localhost:3000`; set `SAPPORTA_API_TOKEN` when the app is protected.
 - The CLI cannot invoke user-defined HTTP endpoints directly; call them with
   `curl` or another HTTP client against the selected app URL.
-- Auth scope is server-owned. Built-in endpoints apply row visibility; custom
-  code must choose the route's ability/data authority and then use scoped row
-  helpers; raw SQL bypasses those helpers and is only a fallback.
+- Apply auth scope on the server. Built-in endpoints apply row visibility;
+  custom code must choose the route's ability/data authority and then use
+  scoped row helpers; raw SQL bypasses those helpers and is only a fallback.
 - Raw SQL is a fallback, not the default mutation path.
 
 ## Direct Dispatch
@@ -100,7 +101,7 @@ inspect numbers with `data-console`.
 - Tables, columns, relations, indexes, search config, and generated schema
   metadata -> read
   [table-creation/SKILL.md](table-creation/SKILL.md)
-- Hierarchical reports, summaries, ledgers, report validation -> read
+- Route-based reports, summaries, ledgers, route/result validation -> read
   [report-creation/SKILL.md](report-creation/SKILL.md)
 - Row links, cell links, drill-through, cross-report navigation -> read
   [report-linking/SKILL.md](report-linking/SKILL.md)
@@ -120,9 +121,9 @@ inspect numbers with `data-console`.
   [row-insertion/SKILL.md](row-insertion/SKILL.md)
 - Atomic parent-child data entry, detail rows, line items -> read
   [master-detail-insertion/SKILL.md](master-detail-insertion/SKILL.md)
-- Run reports, inspect report output, answer data questions -> read
+- Call report routes, inspect report output, answer data questions -> read
   [report-execution/SKILL.md](report-execution/SKILL.md)
 - Compose `/api/tables/<name>` URLs, filters, search, sort, pagination -> read
   [table-querying/SKILL.md](table-querying/SKILL.md)
-- Raw SQL fallback when no endpoint, CRUD, or report fits -> read
+- Raw SQL fallback when no endpoint, CRUD, or report route fits -> read
   [meta-sql/SKILL.md](meta-sql/SKILL.md)
