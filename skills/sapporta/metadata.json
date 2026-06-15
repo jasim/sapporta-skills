@@ -3,5 +3,5 @@
   "author": "Jasim A Basheer (https://x.com/jasim_ab)",
   "repository": "https://github.com/jasim/sapporta",
   "date": "May 2026",
-  "abstract": "Build and modify Sapporta applications: discover project tables and endpoints, create schema-as-code tables, insert and query data safely, write Hono/ts-rest domain endpoints, build custom frontend and table/grid views, author route-based report APIs and screens, configure report link resolvers, and troubleshoot common Sapporta native-module issues."
+  "abstract": "Create fresh Sapporta projects and build or modify Sapporta applications: discover project tables and endpoints, create schema-as-code tables, insert and query data safely, write Hono/ts-rest domain endpoints, build custom frontend and table/grid views, author route-based report APIs and screens, configure report link resolvers, and troubleshoot common Sapporta native-module issues."
 }

@@ -19,8 +19,10 @@ Local commands do not need a server:
 
 ```bash
 pnpm exec sapporta check
-pnpm exec sapporta init my-app
 ```
+
+For creating a new Sapporta project from scratch, use the main project creation
+workflow instead of this server-access reference.
 
 ## Authenticate Protected Apps
 

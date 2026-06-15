@@ -3,9 +3,9 @@ name: sapporta
 description: >
   Use when the user is working in a Sapporta project or asks to change tables,
   add reports, add endpoints, build frontend views, organize backend workflows,
-  inspect data, enter records, call report routes, troubleshoot better-sqlite3,
-  or use the `sapporta` CLI. Start here to choose between changing the app's
-  code and working with records.
+  inspect data, enter records, call report routes, create a new Sapporta project
+  from scratch, troubleshoot better-sqlite3, or use the `sapporta` CLI. Start
+  here to choose between changing the app's code and working with records.
 ---
 
 ## What Sapporta Gives The App Builder
@@ -83,8 +83,15 @@ then call the report endpoint and inspect numbers with `data-console`.
   scoped row helpers; raw SQL bypasses those helpers and is only a fallback.
 - Raw SQL is a fallback, not the default mutation path.
 
+## Creating New Projects
+
+When the user asks to create or scaffold a new Sapporta project, follow
+[references/project-creation.md](references/project-creation.md).
+
 ## Direct Dispatch
 
+- Create, scaffold, or initialize a new Sapporta project from scratch -> read
+  [references/project-creation.md](references/project-creation.md)
 - Define/change tables, domain code, reports, report links, frontend routes,
   custom endpoints, auth-scoped workflows -> read
   [app-framework/SKILL.md](app-framework/SKILL.md)
