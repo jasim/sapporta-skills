@@ -37,6 +37,13 @@ directory that may not already have Sapporta installed. Do not hand-write
 boilerplate, copy templates, or guess at project structure. Always use the
 initializer.
 
+Framework authors sometimes create projects against a local Sapporta checkout
+instead of the published package. If `SAPPORTA_DEV_MODE_PACKAGE_ROOT` is set
+or the user asks to use a `mise.toml` whose `[env]` sets it, read
+[project-creation-dev-mode.md](project-creation-dev-mode.md) and use that
+local initializer path. This is an uncommon framework-development path; keep
+the `pnpm dlx` flow above as the default for ordinary projects.
+
 If Sapporta is already available in the current repo or project, this local form
 is also valid:
 
