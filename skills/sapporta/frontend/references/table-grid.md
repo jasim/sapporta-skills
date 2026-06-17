@@ -16,6 +16,12 @@ workspace.
    `useTableGridUrlState`, `useTableToolbarProps`, `useTablePaginationProps`,
    and `TableGridSurface` only when the visible surface itself is custom.
 
+If the data is not table-shaped and the screen owns its own loading behavior,
+hierarchy, editing rules, side panels, or toolbar behavior, use BaseGrid
+instead. Follow `docs/BASEGRID-GUIDE.md#build-a-custom-grid-screen`: create the
+live grid from an effect-backed hook, render after it exists, and dispose it
+when the screen unmounts.
+
 Preserve search, filters, sort, pagination, CSV export, lookup labels, URL
 state, loading states, and error states unless the user asks for less.
 

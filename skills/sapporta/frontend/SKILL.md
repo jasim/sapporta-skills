@@ -76,6 +76,11 @@ Keep app navigation there instead of wiring legacy sidebar components by hand.
   Sapporta table primitives instead of a bespoke `<table>` with local `fetch`
   state. For custom table/grid routes, read
   [references/table-grid.md](references/table-grid.md).
+- **Custom non-table grid screens** — when the screen owns its row shape,
+  loading behavior, hierarchy, editing rules, side panels, or toolbar behavior,
+  use BaseGrid. Create the live grid from an effect-backed hook, render after it
+  exists, and dispose it when the screen unmounts. Read
+  `docs/BASEGRID-GUIDE.md#build-a-custom-grid-screen` in the Sapporta repo.
 
 ## Backend APIs
 

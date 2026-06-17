@@ -279,6 +279,12 @@ const period = resolveDateRangeQueryBounds("period", request.query);
 Render report results in a report screen. Keep query state, navigation, and
 link behavior in that screen.
 
+Use the report component for normal reports. Do not copy report grid internals
+to build a different grid-like screen. When a screen owns its own row shape,
+loading behavior, hierarchy, editing rules, side panels, or toolbar behavior,
+read the frontend custom-grid guidance and
+`docs/BASEGRID-GUIDE.md#build-a-custom-grid-screen`.
+
 ```tsx
 import { useEffect, useState } from "react";
 import { ReportGridResult, ReportScreenFrame } from "@sapporta/frontend/report";
