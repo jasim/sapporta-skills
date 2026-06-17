@@ -26,6 +26,24 @@ Do not create report files in `packages/api/reports/`, use `report({...})`, or
 run `sapporta reports`. Put report work in the shared contract, API route, and
 frontend screen instead.
 
+## Report Module Organization
+
+Treat one report as one backend module. Keep the report's `api.register(...)`,
+report-specific row types, read/query orchestration, and `GridReportResult`
+mapper together in one `.ts` file unless the query or shared domain logic is
+large enough to move into a store/service.
+
+For multiple reports, keep `packages/api/app/reports.ts` as a thin aggregator
+that imports and mounts individual report modules, such as:
+
+- `packages/api/app/reports/trial-balance.ts`
+- `packages/api/app/reports/balance-sheet.ts`
+- `packages/api/app/reports/account-ledger.ts`
+
+Do not collect many unrelated report queries, row types, handlers, and mappers
+in one large `reports.ts`. Shared contract routers and frontend clients may
+still aggregate reports when that keeps client usage simple.
+
 ## Backend Contract
 
 Declare reports as normal ts-rest routes. Prefer `GET` query parameters for
