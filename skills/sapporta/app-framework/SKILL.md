@@ -46,10 +46,10 @@ Then change the narrowest part of the app:
 - custom frontend views, including table/grid workflow pages ->
   `packages/frontend/src/`
 
-After changes, validate the thing you touched. Use `sapporta check` for local
-project consistency, `pnpm --filter ./packages/api db:generate` after table
-definition changes, `pnpm --filter ./packages/api db:migrate` when the
-generated migration must be applied, and
+After changes, validate the thing you touched. Use
+`pnpm --filter ./packages/api db:generate` after table definition changes,
+`pnpm --filter ./packages/api db:migrate` when the generated migration must be
+applied, start the server so Sapporta can validate table definitions at boot, and
 `sapporta describe "METHOD /api/path"` to confirm custom endpoints are visible
 through OpenAPI. Run app tests when the project has relevant tests.
 
@@ -95,9 +95,9 @@ fetch broadly and filter row ownership in JavaScript.
 Use the smallest validation loop that proves the change:
 
 ```bash
-pnpm exec sapporta check
 pnpm --filter ./packages/api db:generate
 pnpm --filter ./packages/api db:migrate
+pnpm dev
 pnpm exec sapporta describe "METHOD /api/path"
 ```
 

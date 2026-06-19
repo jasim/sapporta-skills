@@ -317,7 +317,6 @@ Use the smallest loop that proves the report:
 ```bash
 pnpm exec sapporta describe "GET /api/reports/trial-balance"
 curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/reports/trial-balance?asOfDate=2026-06-12"
-pnpm exec sapporta check
 ```
 
 Also add route tests that parse the response with `gridReportResultSchema` and

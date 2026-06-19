@@ -43,7 +43,7 @@ pnpm exec sapporta ...
 
 The CLI is both a discovery tool and a data console for a selected running app.
 It can inspect endpoints, list and describe tables, sample rows,
-insert/update/delete rows, execute raw SQL fallback commands, and run checks.
+insert/update/delete rows, and execute raw SQL fallback commands.
 
 For protected or non-local apps, keep the top-level context small and read the
 CLI access details only when needed:

@@ -15,12 +15,6 @@ pnpm exec sapporta describe
 If `SAPPORTA_API_URL` is unset, the CLI uses `http://localhost:3000`. For a
 single command, pass `--api-url`; command flags override environment variables.
 
-Local commands do not need a server:
-
-```bash
-pnpm exec sapporta check
-```
-
 For creating a new Sapporta project from scratch, use the main project creation
 workflow instead of this server-access reference.
 

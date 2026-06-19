@@ -175,7 +175,7 @@ operator-applicability matrix and boundary-parse contract.
 
 ### Nullable numeric columns — three categories
 
-**1. FK columns** (e.g. `parent_id`) — nullable because the relationship is optional. Auto-detected by `sapporta check` — no annotation needed.
+**1. FK columns** (e.g. `parent_id`) — nullable because the relationship is optional. Auto-detected by Sapporta schema validation at server boot — no annotation needed.
 
 ```typescript
 parent_id: integer("parent_id").references((): AnySQLiteColumn => accountsTable.id),
@@ -204,7 +204,7 @@ columns: {
 
 Ask: **could this column ever be aggregated?** If yes → `.notNull().default(0)`. If NULL is distinct from 0 → `additive: false`.
 
-`sapporta check` flags nullable numerics that are not FK columns and not marked `additive: false`.
+Sapporta boot validation flags nullable numerics that are not FK columns and not marked `additive: false`.
 
 ## Standard Columns
 
@@ -477,7 +477,7 @@ Before finishing table schema work, make a relationship pass over every table:
 1. In the app's API package, run the generated Drizzle migration flow:
    `pnpm --filter <api-package> db:generate`, then
    `pnpm --filter <api-package> db:migrate`.
-2. Run `sapporta check` to validate table definitions that Sapporta can check.
+2. Start the app so Sapporta validates table definitions at boot.
 3. Verify with `sapporta tables show <table_name>`.
 
 ## Modifying Existing Tables
