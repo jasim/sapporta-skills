@@ -345,5 +345,7 @@ does not want those controls.
 ```
 
 Schema grid primitives read `table.label`, column labels,
-`table.search.columns`, `table.children`, child `foreignKey`, child `columns`,
-and child `defaultSort`.
+`table.search.columns`, `table.children`, child `foreignKey`, and child
+`defaultSort`. `ChildMeta.columns` and `ChildMeta.width` are serialized in table
+metadata for consumers, but the current schema-driven TGrid builds child columns
+from the child table schema rather than applying that subset directly.

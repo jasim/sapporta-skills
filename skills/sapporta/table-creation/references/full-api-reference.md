@@ -13,8 +13,8 @@ Creates a Sapporta table definition wrapping a Drizzle sqliteTable.
 interface TableOptions {
   /** The Drizzle sqliteTable definition */
   drizzle: SQLiteTableWithColumns<any>;
-  /** Optional author-provided sapporta metadata */
-  meta?: SapportaTableInputMeta;
+  /** Author-provided sapporta metadata */
+  meta: SapportaTableInputMeta;
 }
 ```
 
@@ -33,10 +33,10 @@ interface TableDef {
 
 ## SapportaMeta
 
-`table()` accepts sparse `SapportaTableInputMeta`, then returns a `TableDef`
-with normalized `SapportaMeta`. `rowScope` is optional at the authoring
-boundary, but the normalized metadata always has one; omitted `rowScope`
-defaults to `"workspaceUserScoped"`.
+`table()` accepts `SapportaTableInputMeta`, then returns a `TableDef` with
+normalized `SapportaMeta`. `rowLabelColumns` is required. `rowScope` is optional
+at the authoring boundary, but the normalized metadata always has one; omitted
+`rowScope` defaults to `"workspaceUserScoped"`.
 
 ```typescript
 type RowScope = "workspaceUserScoped" | "workspaceGlobal" | "systemGlobal";
@@ -59,6 +59,9 @@ interface SapportaMeta {
   /** Display label for the table in UI sidebar */
   label: string;
 
+  /** Columns used to build a row's human-readable label in lookup/FK controls */
+  rowLabelColumns: readonly [string, ...string[]];
+
   /** Row ownership model used by auth-aware table APIs */
   rowScope: RowScope;
 
@@ -74,6 +77,9 @@ interface SapportaMeta {
   /** Explicit reference rules keyed by source SQL column name */
   references: Record<string, ReferenceRule>;
 
+  /** Server-only fallback ordering for generated list/export endpoints */
+  defaultSort?: SQL;
+
   /** Has-many child relationships for nested grid display */
   children: ChildMeta[];
 
@@ -88,6 +94,15 @@ interface SapportaMeta {
   search?: SearchMeta;
 }
 ```
+
+`rowLabelColumns` must name existing columns on the same table. Lookup endpoints
+and foreign-key controls concatenate non-empty values from these columns with a
+space, falling back to the primary key when all label values are empty.
+
+`defaultSort` accepts a Drizzle order expression such as
+`asc(accountsTable.name)` or `desc(journalEntriesTable.posted_at)`. It is used
+only by generated list/export endpoints when the request does not include
+`sort=...`; it does not serialize to `/api/meta/tables`.
 
 `rowScope` controls the predicates used by auth-aware table APIs:
 
@@ -257,4 +272,11 @@ content such as `body`, `content`, `article`, `post`, `template`, or
 `message`. Do not add it for short labels, names, codes, SKUs, email/reference
 fields, enums, or other one-line identifiers.
 
-AI tools should read `notes` when generating code that references the column, and should write `notes` when the column has non-obvious semantics (domain meaning, units, conventions, or formulas).
+`clientEditable: false` is consumed by generated frontend forms, and auth boot
+validation rejects `clientEditable: true` on system-managed scope fields. For
+server-managed references, prefer `meta.references` with `clientCanSet: false`;
+that is the generated write-path policy.
+
+AI tools should read `notes` when generating code that references the column,
+and should write `notes` when the column has non-obvious semantics (domain
+meaning, units, conventions, or formulas).

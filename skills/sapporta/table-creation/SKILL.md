@@ -35,6 +35,7 @@ export const orders = table({
   drizzle: ordersTable,
   meta: {
     label: "Orders",
+    rowLabelColumns: ["customer_name"],
     rowScope: "workspaceUserScoped",
     selects: [
       {
@@ -276,6 +277,7 @@ export const orders = table({
   drizzle: ordersTable,
   meta: {
     label: "Orders",
+    rowLabelColumns: ["status"],
     rowScope: "workspaceUserScoped",
     selects: [
       { type: "select", column: "status", options: orderStatusOptions },
@@ -362,6 +364,8 @@ The `meta` object in `table()` controls UI behavior:
 meta: {
   label: "Order Items",                    // UI sidebar label
 
+  rowLabelColumns: ["product"],            // Human label for lookup/FK controls
+
   selects: [                               // Dropdown columns
     { type: "select", column: "status", options: ["active", "inactive"] },
   ],
@@ -400,6 +404,14 @@ meta: {
 ```
 
 Only include metadata fields you actually need. `label` is recommended for all tables.
+`rowLabelColumns` is required; choose the stable human-readable columns lookup
+fields should show instead of raw IDs.
+
+For table-level default ordering, use `defaultSort` with a Drizzle `asc(...)` or
+`desc(...)` expression in `meta`. This affects generated list/export endpoints
+when the request does not provide `sort=...`; it is server-only and is not
+serialized to the frontend schema API. Child `defaultSort` is separate and uses
+the string form shown in `children` above.
 
 ### When to use `textDisplay`
 
