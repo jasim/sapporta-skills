@@ -33,11 +33,18 @@ pnpm exec sapporta describe
 pnpm exec sapporta tables
 ```
 
-If `sapporta describe` fails because the server is unreachable, stop and ask the
-user to start the dev server, or ask for confirmation to start it yourself. If
-the project uses a non-default port, set `SAPPORTA_API_URL` consistently or pass
-`--api-url`. If the app is protected, set `SAPPORTA_API_TOKEN` or pass
-`--api-token`.
+If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message: check
+the resolved URL, server state, and network permission before treating it as an
+app, auth, or schema failure. If the project uses a non-default API port, set
+`SAPPORTA_API_URL` consistently or pass `--api-url`.
+
+If the preflight or any API-backed data command returns `unauthenticated`,
+`token_expired`, `token_revoked`, or `workspace_required`, read
+[references/cli-server-access.md](references/cli-server-access.md), stop data
+work, and ask the user to create or replace the agent access token. Include the
+actual account profile link where they can create the token. Do not silently
+bypass protected app APIs with direct SQLite or raw local database access for
+workspace-user data answers or mutations.
 
 For remote apps, protected apps, token failures, and custom-endpoint `curl`
 patterns, read
@@ -92,6 +99,11 @@ Raw SQL writes bypass application behavior and normal row-save validation, so
 use them only when no endpoint or row command fits.
 In auth-enabled projects, raw SQL also bypasses normal row-access helpers; read
 [../meta-sql/SKILL.md](../meta-sql/SKILL.md) before using it for scoped tables.
+
+Direct local database inspection is acceptable for app-development or debugging
+tasks where you are acting as a developer with repository access. For
+data-console answers, treat the running app API as the user's workspace boundary
+unless the user explicitly asks for admin/debug inspection.
 
 ## Core CLI Commands
 

@@ -12,16 +12,28 @@ export SAPPORTA_API_URL="http://localhost:3000"
 pnpm exec sapporta describe
 ```
 
+If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message. It
+includes the resolved request URL and tells whether to check the app server or
+rerun with network permission in a sandboxed coding-agent environment.
+
 If `SAPPORTA_API_URL` is unset, the CLI uses `http://localhost:3000`. For a
 single command, pass `--api-url`; command flags override environment variables.
 
 For creating a new Sapporta project from scratch, use the main project creation
 workflow instead of this server-access reference.
 
+Token creation is in the browser-facing app at `/account/profile`, not
+necessarily on the API origin. Prefer `SAPPORTA_PUBLIC_BASE_URL` from the
+environment or `.env.development`; otherwise use `FRONTEND_DEV_PORT` with
+`http://localhost`, same-origin `SAPPORTA_API_URL`, or the default
+`http://localhost:5173`. Example:
+`http://localhost:5173/account/profile`.
+
 ## Authenticate Protected Apps
 
-Protected apps need an agent access token created from the app's account profile
-screen. The raw token is shown once. Use it as `SAPPORTA_API_TOKEN`:
+Protected data-management work needs an agent access token created from the
+app's account profile screen while signed in to the target workspace. The raw
+token is shown once. Use it as `SAPPORTA_API_TOKEN`:
 
 ```bash
 export SAPPORTA_API_URL="https://app.example.com"
@@ -31,8 +43,8 @@ pnpm exec sapporta describe
 pnpm exec sapporta tables
 ```
 
-For one command, pass `--api-token`. Do not invent, transform, or store tokens
-in the project repository.
+For one command, pass `--api-token`. Do not invent, transform, print, or store
+tokens in the project repository.
 
 ## Workspace Scope
 
@@ -69,5 +81,12 @@ user-defined endpoints.
   membership.
 - `forbidden`: the user or token cannot perform that action.
 
+When one of these appears during data-console work, stop and tell the user the
+targeted API URL, the `/account/profile` token-creation link, and to expose the
+new active-workspace token as `SAPPORTA_API_TOKEN`.
+
 Fix auth failures before composing more table, report route, SQL, or custom
-endpoint requests.
+endpoint requests. Do not fall back to direct local SQLite/database access for
+workspace-user data answers or mutations unless the user explicitly asks for
+admin/debug inspection; if you do so, state that it is local developer
+inspection, not workspace-user API behavior.

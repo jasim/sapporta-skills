@@ -41,9 +41,13 @@ Prefer the project-local CLI:
 pnpm exec sapporta ...
 ```
 
-The CLI is both a discovery tool and a data console for a selected running app.
-It can inspect endpoints, list and describe tables, sample rows,
-insert/update/delete rows, and execute raw SQL fallback commands.
+The CLI is both a project initializer and a data console for a selected running
+app. Local project creation and app-development work do not need an agent
+token. API-backed data-management commands inspect endpoints, list and describe
+tables, sample rows, insert/update/delete rows, and execute raw SQL fallback
+commands against the running app. Follow structured CLI errors such as
+`APP_SERVER_UNREACHABLE` before diagnosing app, auth, or schema behavior.
+Protected apps need an agent access token.
 
 For protected or non-local apps, keep the top-level context small and read the
 CLI access details only when needed:
@@ -72,10 +76,14 @@ then call the report endpoint and inspect numbers with `data-console`.
   served under `/api/...`; health checks and frontend/static routes can live
   outside `/api`.
 - Prefer `pnpm exec sapporta ...` over a global `sapporta` binary.
-- Use `sapporta describe` to discover existing endpoints before adding code or
-  composing requests.
-- For API-backed commands, set `SAPPORTA_API_URL` when the app is not on
-  `http://localhost:3000`; set `SAPPORTA_API_TOKEN` when the app is protected.
+- For app-development work, inspect local contracts, route files, schema,
+  migrations, and the local database directly as needed; do not block on an
+  agent token. Use `sapporta describe` for live API discovery when acting
+  through the running app, especially in data-console mode.
+- For API-backed data-management commands, set `SAPPORTA_API_URL` when the app
+  API is not on `http://localhost:3000`; set `SAPPORTA_API_TOKEN` when the app
+  is protected. If a protected data command fails with an auth error, read the
+  CLI access reference and fix the token before continuing data work.
 - The CLI cannot invoke user-defined HTTP endpoints directly; call them with
   `curl` or another HTTP client against the selected app URL.
 - Apply auth scope on the server. Built-in endpoints apply row visibility;
