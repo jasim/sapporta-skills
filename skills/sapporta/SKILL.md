@@ -122,8 +122,8 @@ When the user asks to create or scaffold a new Sapporta project, follow
   [report-linking/SKILL.md](report-linking/SKILL.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
   atomic database changes, OpenAPI registration -> read [app/SKILL.md](app/SKILL.md)
-- Custom React routes, dashboards, forms, table/grid views, `@sapporta/ui`,
-  typed API client ->
+- Custom React routes, dashboards, forms, table/grid views, BaseGrid,
+  ColumnPreset, generic `@sapporta/ui` components, typed API client ->
   read [frontend/SKILL.md](frontend/SKILL.md)
 - Domain services, module organization, testable TypeScript workflow code ->
   read [user-code/SKILL.md](user-code/SKILL.md)

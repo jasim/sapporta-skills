@@ -2,9 +2,9 @@
 name: report-creation
 description: >
   Use when the user wants to create or change Sapporta reports. Covers
-  route-based report APIs, shared report contracts, GridReportResult mappers,
-  report screens, summaries, financial statements, trial balances, ledgers, and
-  route/result validation.
+  route-based report APIs, shared report contracts, GridDataset mappers, report
+  screens, summaries, financial statements, trial balances, ledgers, and
+  route/dataset validation.
 ---
 
 # Report Creation
@@ -18,9 +18,9 @@ Use this shape:
 1. Define a shared route contract in `packages/shared/src/contracts/`.
 2. Implement a thin `TsRestApi` handler under `packages/api/app/`.
 3. Put query logic in a domain store/service when it is more than trivial.
-4. Map rows to `GridReportResult` in a pure function.
+4. Map rows to `GridDataset` in a pure function.
 5. Build a React screen under `packages/frontend/src/` and render
-   `ReportGridResult`.
+   `ReportGridDataset`.
 
 Do not create report files in `packages/api/reports/`, use `report({...})`, or
 run `sapporta reports`. Put report work in the shared contract, API route, and
@@ -29,7 +29,7 @@ frontend screen instead.
 ## Report Module Organization
 
 Treat one report as one backend module. Keep the report's `api.register(...)`,
-report-specific row types, read/query orchestration, and `GridReportResult`
+report-specific row types, read/query orchestration, and `GridDataset`
 mapper together in one `.ts` file unless the query or shared domain logic is
 large enough to move into a store/service.
 
@@ -52,7 +52,7 @@ simple report inputs and `POST` bodies for larger filters.
 ```ts
 import { z } from "zod";
 import { initContract } from "@sapporta/rest-core";
-import { gridReportResultSchema } from "@sapporta/shared/report-grid";
+import { gridDatasetSchema } from "@sapporta/shared/grid-dataset";
 import { errorBodySchema } from "@sapporta/shared/contracts";
 
 const c = initContract();
@@ -66,7 +66,7 @@ export const trialBalanceRoute = c.query({
     asOfDate: z.string(),
   }),
   responses: {
-    200: gridReportResultSchema,
+    200: gridDatasetSchema,
     400: errorBodySchema,
     403: errorBodySchema,
   },
@@ -79,12 +79,12 @@ a typed frontend client in `packages/frontend/src/api.ts`.
 ## Backend Handler
 
 Resolve auth and request input at the route edge, read rows with scoped data
-access, and return a plain object satisfying `GridReportResult`.
+access, and return a plain object satisfying `GridDataset`.
 
 ```ts
 import { sql } from "drizzle-orm";
 import { TsRestApi, type SapportaEnv } from "@sapporta/server";
-import type { GridReportResult } from "@sapporta/shared/report-grid";
+import type { GridDataset } from "@sapporta/shared/grid-dataset";
 import { accounts, journals, journalEntries } from "../schema/index";
 import { trialBalanceRoute } from "my-app-shared/contracts";
 
@@ -127,41 +127,44 @@ function toTrialBalanceResult(
     debit: number;
     credit: number;
   }[],
-): GridReportResult {
-  const levelColumns = {
-    account: [
-      { name: "accountId", label: "Account ID", visuallyHidden: true },
-      { name: "account", label: "Account" },
-      {
-        name: "debit",
-        label: "Debit",
-        kind: "number",
-        displayFormat: "currency",
-        zeroDisplay: "blank",
-      },
-      {
-        name: "credit",
-        label: "Credit",
-        kind: "number",
-        displayFormat: "currency",
-        zeroDisplay: "blank",
-      },
-    ],
-  };
-
+): GridDataset {
   return {
     name: "trial-balance",
     label: "Trial Balance",
-    columns: levelColumns.account,
-    levelColumns,
-    data: rows.map((row) => ({
+    rootLevel: "account",
+    levels: {
+      account: {
+        columns: [
+          { id: "accountId", label: "Account ID", kind: "text", visuallyHidden: true },
+          { id: "account", label: "Account", kind: "text" },
+          {
+            id: "debit",
+            label: "Debit",
+            kind: "number",
+            displayFormat: "currency",
+            zeroDisplay: "blank",
+          },
+          {
+            id: "credit",
+            label: "Credit",
+            kind: "number",
+            displayFormat: "currency",
+            zeroDisplay: "blank",
+          },
+        ],
+        childLevels: [],
+      },
+    },
+    nodes: rows.map((row) => ({
+      rowKey: String(row.accountId),
       levelName: "account",
       columns: row,
     })),
     footerRows: [
       {
-        label: "Grand Total",
+        rowKey: "grand-total",
         columns: {
+          account: "Grand Total",
           debit: rows.reduce((sum, row) => sum + row.debit, 0),
           credit: rows.reduce((sum, row) => sum + row.credit, 0),
         },
@@ -179,30 +182,28 @@ composing the report query.
 
 ## Grid Result Shape
 
-The shared response type lives at `@sapporta/shared/report-grid`.
+The shared response type lives at `@sapporta/shared/grid-dataset`.
 
-`GridReportResult` contains:
+`GridDataset` contains:
 
 - `name` and `label` for the dataset.
-- `columns` for the top-level grid.
-- `levelColumns` keyed by each node level name.
-- `data`, an array of `GridReportNode`.
-- optional `footerRows`, `levelOptions`, `stats`, and `errors`.
+- `rootLevel`, the level rendered at the root.
+- `levels`, keyed by each node level name.
+- `nodes`, an array of dataset nodes.
+- optional `footerRows`, `totalCount`, `stats`, and `errors`.
 
-`GridReportResult` is the response format rendered by `ReportGridResult`. Keep
+`GridDataset` is the response format rendered by `ReportGridDataset`. Keep
 querying, permissions, route state, and navigation in the surrounding route and
 screen code.
 
 Declare hidden identifiers when the frontend needs them for links:
 
 ```ts
-const levelColumns = {
-  account: [
-    { name: "accountId", label: "Account ID", visuallyHidden: true },
-    { name: "name", label: "Account" },
-    { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
-  ],
-};
+const columns = [
+  { id: "accountId", label: "Account ID", kind: "text", visuallyHidden: true },
+  { id: "name", label: "Account", kind: "text" },
+  { id: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
+];
 ```
 
 ## Hierarchical Results
@@ -214,28 +215,19 @@ without a database.
 function toBalanceSheetResult(
   sections: { section: string }[],
   accounts: { section: string; account: string; balance: number }[],
-): GridReportResult {
-  const levelColumns = {
-    section: [
-      { name: "section", label: "Section" },
-      { name: "sectionTotal", label: "Total", kind: "number", displayFormat: "currency" },
-    ],
-    account: [
-      { name: "account", label: "Account" },
-      { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
-    ],
-  };
-
-  const data = sections.map((section) => {
+): GridDataset {
+  const nodes = sections.map((section) => {
     const childRows = accounts.filter((row) => row.section === section.section);
     const sectionTotal = childRows.reduce((sum, row) => sum + row.balance, 0);
 
     return {
+      rowKey: section.section,
       levelName: "section",
       columns: { section: section.section },
       rollup: { sectionTotal },
       children: {
         account: childRows.map((row) => ({
+          rowKey: row.account,
           levelName: "account",
           columns: { account: row.account, balance: row.balance },
         })),
@@ -246,9 +238,24 @@ function toBalanceSheetResult(
   return {
     name: "balance-sheet",
     label: "Balance Sheet",
-    columns: levelColumns.section,
-    levelColumns,
-    data,
+    rootLevel: "section",
+    levels: {
+      section: {
+        columns: [
+          { id: "section", label: "Section", kind: "text" },
+          { id: "sectionTotal", label: "Total", kind: "number", displayFormat: "currency" },
+        ],
+        childLevels: ["account"],
+      },
+      account: {
+        columns: [
+          { id: "account", label: "Account", kind: "text" },
+          { id: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
+        ],
+        childLevels: [],
+      },
+    },
+    nodes,
   };
 }
 ```
@@ -287,22 +294,22 @@ read the frontend custom-grid guidance and
 
 ```tsx
 import { useEffect, useState } from "react";
-import { ReportGridResult, ReportScreenFrame } from "@sapporta/frontend/report";
-import type { GridReportResult } from "@sapporta/shared/report-grid";
+import { ReportGridDataset, ReportScreenFrame } from "@sapporta/frontend/report";
+import type { GridDataset } from "@sapporta/shared/grid-dataset";
 import { reportsApi } from "../api";
 
 export function TrialBalanceReport() {
-  const [result, setResult] = useState<GridReportResult | null>(null);
+  const [dataset, setDataset] = useState<GridDataset | null>(null);
 
   useEffect(() => {
     void reportsApi
       .trialBalance({ query: { asOfDate: "2026-06-12" } })
-      .then(setResult);
+      .then(setDataset);
   }, []);
 
   return (
     <ReportScreenFrame title="Trial Balance">
-      {result ? <ReportGridResult result={result} /> : null}
+      {dataset ? <ReportGridDataset dataset={dataset} /> : null}
     </ReportScreenFrame>
   );
 }
@@ -319,14 +326,14 @@ pnpm exec sapporta describe "GET /api/reports/trial-balance"
 curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/reports/trial-balance?asOfDate=2026-06-12"
 ```
 
-Also add route tests that parse the response with `gridReportResultSchema` and
-unit tests for pure row-to-result mappers when the report has hierarchy,
+Also add route tests that parse the response with `gridDatasetSchema` and
+unit tests for pure row-to-dataset mappers when the report has hierarchy,
 rollups, or non-trivial totals.
 
 ## References
 
 - [Report Linking](../report-linking/SKILL.md) - frontend link resolvers for
   row, cell, and footer navigation.
-- [Full API Reference](references/full-api-reference.md) - `GridReportResult`
+- [Full API Reference](references/full-api-reference.md) - `GridDataset`
   and report renderer types.
 - [Worked Examples](references/examples.md) - route-based report examples.

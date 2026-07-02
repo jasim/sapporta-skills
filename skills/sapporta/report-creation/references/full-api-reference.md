@@ -1,16 +1,16 @@
 # Route-Based Report API Reference
 
-Use this reference when a report needs exact shared result and renderer types.
+Use this reference when a report needs exact shared dataset and renderer types.
 
 ## Backend Route Contract
 
 Declare report routes with `@sapporta/rest-core` contracts. Use
-`gridReportResultSchema` for the success response.
+`gridDatasetSchema` for the success response.
 
 ```ts
 import { z } from "zod";
 import { initContract } from "@sapporta/rest-core";
-import { gridReportResultSchema } from "@sapporta/shared/report-grid";
+import { gridDatasetSchema } from "@sapporta/shared/grid-dataset";
 import { errorBodySchema } from "@sapporta/shared/contracts";
 
 const c = initContract();
@@ -20,39 +20,50 @@ export const reportRoute = c.query({
   path: "/reports/example",
   query: z.object({ asOfDate: z.string() }),
   responses: {
-    200: gridReportResultSchema,
+    200: gridDatasetSchema,
     400: errorBodySchema,
     403: errorBodySchema,
   },
 });
 ```
 
-## `GridReportResult`
+## `GridDataset`
 
 ```ts
-type GridReportResult = {
+type GridDataset = {
   name: string;
   label: string;
-  columns: GridColumn[];
-  levelColumns: Record<string, GridColumn[]>;
-  data: GridReportNode[];
-  levelOptions?: Record<string, { defaultCollapsed?: boolean }>;
-  footerRows?: GridFooterRow[];
+  rootLevel: string;
+  levels: Record<string, GridDatasetLevel>;
+  nodes: GridDatasetNode[];
+  totalCount?: number;
+  footerRows?: GridDatasetFooterRow[];
   errors?: { path: string; message: string }[];
-  stats?: GridReportStat[];
+  stats?: GridDatasetStat[];
 };
 ```
 
-`columns` is the top-level grid's columns. `levelColumns` must include entries
-for every `GridReportNode.levelName` used in `data` or nested `children`.
+`rootLevel` names the level rendered at the root. `levels` must include entries
+for every `GridDatasetNode.levelName` used in `nodes` or nested `children`.
 
-## `GridColumn`
+## `GridDatasetLevel`
 
 ```ts
-type GridColumn = {
-  name: string;
+type GridDatasetLevel = {
+  label?: string;
+  columns: GridDatasetColumn[];
+  childLevels: string[];
+  defaultCollapsed?: boolean;
+};
+```
+
+## `GridDatasetColumn`
+
+```ts
+type GridDatasetColumn = {
+  id: string;
   label: string;
-  kind?: "text" | "number" | "boolean" | "date" | "timestamp";
+  kind: "text" | "number" | "boolean" | "date" | "timestamp";
   displayFormat?: "currency" | "percentage";
   textDisplay?: "multiLine" | "markdown";
   visuallyHidden?: boolean;
@@ -63,49 +74,52 @@ type GridColumn = {
   zeroDisplay?: "blank" | "dot";
   strong?: boolean;
   notes?: string;
-  clientEditable?: boolean;
+  sortable?: boolean;
+  filterable?: boolean;
+  searchable?: boolean;
 };
 ```
 
 Use `visuallyHidden: true` for IDs or helper fields that link resolvers need but
 users should not see as normal columns.
 
-## `GridReportNode`
+## `GridDatasetNode`
 
 ```ts
-type GridReportNode = {
+type GridDatasetNode = {
+  rowKey: string;
   levelName: string;
   columns: Record<string, unknown>;
   rollup?: Record<string, unknown>;
-  children?: Record<string, GridReportNode[] | GridReportNode | null>;
-  childFooterRows?: Record<string, GridFooterRow[]>;
+  children?: Record<string, GridDatasetNode[]>;
+  childFooterRows?: Record<string, GridDatasetFooterRow[]>;
   kind?: "opening" | "closing" | "subtotal";
 };
 ```
 
 `columns` holds source row values. `rollup` holds computed values for the same
-display row. The renderer reads `node.columns[column.name]` first and then
-falls back to `node.rollup?.[column.name]`.
+display row. The renderer reads `node.columns[column.id]` first and then falls
+back to `node.rollup?.[column.id]`.
 
 `children` is keyed by child level name. `childFooterRows` is keyed the same
 way and renders after that child group.
 
-## `GridFooterRow`
+## `GridDatasetFooterRow`
 
 ```ts
-type GridFooterRow = {
-  label: string;
+type GridDatasetFooterRow = {
+  rowKey: string;
   columns: Record<string, unknown>;
 };
 ```
 
-Top-level footer rows live on `GridReportResult.footerRows`. Child group
-footers live on `GridReportNode.childFooterRows`.
+Top-level footer rows live on `GridDataset.footerRows`. Child group footers
+live on `GridDatasetNode.childFooterRows`.
 
-## `GridReportStat`
+## `GridDatasetStat`
 
 ```ts
-type GridReportStat = {
+type GridDatasetStat = {
   label: string;
   value: string;
   tone?: "fg" | "positive" | "negative" | "brand" | "muted";
@@ -119,7 +133,7 @@ Use stats for compact summary values that sit outside the grid.
 
 ```tsx
 import {
-  ReportGridResult,
+  ReportGridDataset,
   ReportScreenFrame,
   ReportToolbar,
   ReportRunButton,
@@ -131,11 +145,11 @@ import {
 } from "@sapporta/frontend/report";
 ```
 
-`ReportGridResult` props:
+`ReportGridDataset` props:
 
 ```ts
-type ReportGridResultProps<TInput = unknown> = {
-  result: GridReportResult;
+type ReportGridDatasetProps<TInput = unknown> = {
+  dataset: GridDataset;
   links?: ReportGridLinkResolvers<TInput>;
   linkContext?: { input: TInput };
 };
@@ -165,11 +179,15 @@ type ReportGridLinkResolvers<TInput = unknown> = Record<
 >;
 ```
 
-Links are frontend-only. Do not put link metadata in `GridReportResult`.
+Row and cell resolvers receive `dataset`, `node`, `levelName`, optional
+`input`, `ancestors`, and, for cell resolvers, `column` and `value`. Footer
+resolvers receive `dataset`, `footerRow`, and optional `input`.
+
+Links are frontend-only. Do not put link metadata in `GridDataset`.
 
 ## Validation
 
 - `pnpm exec sapporta describe "GET /api/reports/<name>"` confirms OpenAPI
   discovery for the route.
-- Route tests should parse successful responses with `gridReportResultSchema`.
+- Route tests should parse successful responses with `gridDatasetSchema`.
 - Mapper tests should assert hierarchy, rollups, footers, and hidden IDs.

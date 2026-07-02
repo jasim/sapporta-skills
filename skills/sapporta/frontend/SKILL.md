@@ -3,15 +3,17 @@ name: frontend
 description: >
   Use when the user wants to build custom React views in a Sapporta project
   under `packages/frontend/src/`. Covers custom routes, forms, dashboards, wizards,
-  table/grid views using Sapporta primitives, `@sapporta/ui` components, and
-  typed API client calls.
+  table/grid views using Sapporta primitives, BaseGrid from `@sapporta/grid`,
+  ColumnPreset from `@sapporta/grid/column-preset`, generic `@sapporta/ui`
+  components, and typed API client calls.
 ---
 
 # Custom Frontend Views
 
 Build screens under `packages/frontend/src/`: dashboards, import wizards,
 multi-table forms, report pages, and custom table/grid workflows. Use public
-exports from `@sapporta/frontend`, `@sapporta/ui`, and `@sapporta/shared`;
+exports from `@sapporta/frontend`, `@sapporta/shared`, `@sapporta/grid`,
+`@sapporta/grid/column-preset`, and generic UI components from `@sapporta/ui`;
 when local app declarations are needed, inspect the app's `packages/frontend`
 workspace.
 
@@ -78,8 +80,10 @@ Keep app navigation there instead of wiring legacy sidebar components by hand.
   [references/table-grid.md](references/table-grid.md).
 - **Custom non-table grid screens** — when the screen owns its row shape,
   loading behavior, hierarchy, editing rules, side panels, or toolbar behavior,
-  use BaseGrid. Create the live grid from an effect-backed hook, render after it
-  exists, and dispose it when the screen unmounts. Read
+  use BaseGrid from `@sapporta/grid` and ColumnPreset from
+  `@sapporta/grid/column-preset`. Create the runtime with
+  `useGridRuntimeEffect`, render after it returns a runtime, and pass that
+  runtime to `GridRuntimeProvider`. Read
   `docs/BASEGRID-GUIDE.md#build-a-custom-grid-screen` in the Sapporta repo.
 
 ## Backend APIs

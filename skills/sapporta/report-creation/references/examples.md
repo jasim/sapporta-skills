@@ -10,7 +10,7 @@ Shared contract:
 ```ts
 import { z } from "zod";
 import { initContract } from "@sapporta/rest-core";
-import { gridReportResultSchema } from "@sapporta/shared/report-grid";
+import { gridDatasetSchema } from "@sapporta/shared/grid-dataset";
 import { errorBodySchema } from "@sapporta/shared/contracts";
 
 const c = initContract();
@@ -21,7 +21,7 @@ export const reportsContract = c.router({
     path: "/reports/trial-balance",
     query: z.object({ asOfDate: z.string() }),
     responses: {
-      200: gridReportResultSchema,
+      200: gridDatasetSchema,
       400: errorBodySchema,
       403: errorBodySchema,
     },
@@ -56,7 +56,7 @@ export default api;
 Pure mapper:
 
 ```ts
-import type { GridReportResult } from "@sapporta/shared/report-grid";
+import type { GridDataset } from "@sapporta/shared/grid-dataset";
 
 type TrialBalanceRow = {
   accountId: number;
@@ -65,26 +65,32 @@ type TrialBalanceRow = {
   credit: number;
 };
 
-export function toTrialBalanceResult(rows: TrialBalanceRow[]): GridReportResult {
-  const levelColumns = {
-    account: [
-      { name: "accountId", label: "Account ID", visuallyHidden: true },
-      { name: "account", label: "Account" },
-      { name: "debit", label: "Debit", kind: "number", displayFormat: "currency" },
-      { name: "credit", label: "Credit", kind: "number", displayFormat: "currency" },
-    ],
-  };
-
+export function toTrialBalanceResult(rows: TrialBalanceRow[]): GridDataset {
   return {
     name: "trial-balance",
     label: "Trial Balance",
-    columns: levelColumns.account,
-    levelColumns,
-    data: rows.map((row) => ({ levelName: "account", columns: row })),
+    rootLevel: "account",
+    levels: {
+      account: {
+        columns: [
+          { id: "accountId", label: "Account ID", kind: "text", visuallyHidden: true },
+          { id: "account", label: "Account", kind: "text" },
+          { id: "debit", label: "Debit", kind: "number", displayFormat: "currency" },
+          { id: "credit", label: "Credit", kind: "number", displayFormat: "currency" },
+        ],
+        childLevels: [],
+      },
+    },
+    nodes: rows.map((row) => ({
+      rowKey: String(row.accountId),
+      levelName: "account",
+      columns: row,
+    })),
     footerRows: [
       {
-        label: "Grand Total",
+        rowKey: "grand-total",
         columns: {
+          account: "Grand Total",
           debit: rows.reduce((sum, row) => sum + row.debit, 0),
           credit: rows.reduce((sum, row) => sum + row.credit, 0),
         },
@@ -98,24 +104,24 @@ Frontend screen:
 
 ```tsx
 import { useEffect, useState } from "react";
-import { ReportGridResult, ReportScreenFrame } from "@sapporta/frontend/report";
-import type { GridReportResult } from "@sapporta/shared/report-grid";
+import { ReportGridDataset, ReportScreenFrame } from "@sapporta/frontend/report";
+import type { GridDataset } from "@sapporta/shared/grid-dataset";
 import { reportsApi } from "../api";
 
 export function TrialBalanceReport() {
-  const [result, setResult] = useState<GridReportResult | null>(null);
+  const [dataset, setDataset] = useState<GridDataset | null>(null);
 
   useEffect(() => {
     void reportsApi
       .trialBalance({ query: { asOfDate: "2026-06-12" } })
-      .then(setResult);
+      .then(setDataset);
   }, []);
 
   return (
     <ReportScreenFrame title="Trial Balance">
-      {result ? (
-        <ReportGridResult
-          result={result}
+      {dataset ? (
+        <ReportGridDataset
+          dataset={dataset}
           links={{
             account: {
               cell: {
@@ -143,6 +149,8 @@ Use a top-level account row with child line rows when the report needs a
 running balance.
 
 ```ts
+import type { GridDataset } from "@sapporta/shared/grid-dataset";
+
 type AccountRow = {
   accountId: number;
   account: string;
@@ -161,27 +169,12 @@ type LedgerLineRow = {
 export function toAccountLedgerResult(
   account: AccountRow,
   lines: LedgerLineRow[],
-): GridReportResult {
-  const levelColumns = {
-    account: [
-      { name: "accountId", label: "Account ID", visuallyHidden: true },
-      { name: "account", label: "Account" },
-      { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
-    ],
-    line: [
-      { name: "journalEntryId", label: "Journal Entry ID", visuallyHidden: true },
-      { name: "date", label: "Date", kind: "date" },
-      { name: "memo", label: "Memo" },
-      { name: "debit", label: "Debit", kind: "number", displayFormat: "currency" },
-      { name: "credit", label: "Credit", kind: "number", displayFormat: "currency" },
-      { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
-    ],
-  };
-
+): GridDataset {
   let balance = account.openingBalance;
   const lineNodes = lines.map((line) => {
     balance += line.debit - line.credit;
     return {
+      rowKey: String(line.journalEntryId),
       levelName: "line",
       columns: { ...line, balance },
     };
@@ -190,16 +183,38 @@ export function toAccountLedgerResult(
   return {
     name: "account-ledger",
     label: "Account Ledger",
-    columns: levelColumns.account,
-    levelColumns,
-    data: [
+    rootLevel: "account",
+    levels: {
+      account: {
+        columns: [
+          { id: "accountId", label: "Account ID", kind: "text", visuallyHidden: true },
+          { id: "account", label: "Account", kind: "text" },
+          { id: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
+        ],
+        childLevels: ["line"],
+      },
+      line: {
+        columns: [
+          { id: "journalEntryId", label: "Journal Entry ID", kind: "text", visuallyHidden: true },
+          { id: "date", label: "Date", kind: "date" },
+          { id: "memo", label: "Memo", kind: "text" },
+          { id: "debit", label: "Debit", kind: "number", displayFormat: "currency" },
+          { id: "credit", label: "Credit", kind: "number", displayFormat: "currency" },
+          { id: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
+        ],
+        childLevels: [],
+      },
+    },
+    nodes: [
       {
+        rowKey: String(account.accountId),
         levelName: "account",
         columns: { accountId: account.accountId, account: account.account },
         rollup: { balance },
         children: {
           line: [
             {
+              rowKey: "opening",
               levelName: "line",
               kind: "opening",
               columns: { memo: "Opening balance", balance: account.openingBalance },
@@ -216,15 +231,15 @@ export function toAccountLedgerResult(
 ## Route Test
 
 ```ts
-import { gridReportResultSchema } from "@sapporta/shared/report-grid";
+import { gridDatasetSchema } from "@sapporta/shared/grid-dataset";
 
-it("returns a grid report result", async () => {
+it("returns a grid dataset", async () => {
   const response = await app.request(
     "/api/reports/trial-balance?asOfDate=2026-06-12",
   );
 
   expect(response.status).toBe(200);
-  const body = gridReportResultSchema.parse(await response.json());
+  const body = gridDatasetSchema.parse(await response.json());
   expect(body.name).toBe("trial-balance");
 });
 ```

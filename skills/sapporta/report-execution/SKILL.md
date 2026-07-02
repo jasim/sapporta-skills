@@ -41,7 +41,7 @@ curl -fsS \
   and `-d '{"field":"value"}'`.
 - In protected apps, set `SAPPORTA_API_TOKEN`; the token selects the workspace.
 
-Report responses should parse as `GridReportResult`. For data questions, cite
+Report responses should parse as `GridDataset`. For data questions, cite
 the report endpoint and parameters used, especially date range, workspace, or
 filters.
 

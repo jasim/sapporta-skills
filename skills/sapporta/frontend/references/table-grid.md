@@ -18,9 +18,39 @@ workspace.
 
 If the data is not table-shaped and the screen owns its own loading behavior,
 hierarchy, editing rules, side panels, or toolbar behavior, use BaseGrid
-instead. Follow `docs/BASEGRID-GUIDE.md#build-a-custom-grid-screen`: create the
-live grid from an effect-backed hook, render after it exists, and dispose it
-when the screen unmounts.
+instead. Import runtime and React primitives from `@sapporta/grid`, and import
+ColumnPreset helpers from `@sapporta/grid/column-preset`.
+
+Use this lifecycle shape for React-owned BaseGrid runtimes:
+
+```tsx
+const runtime = useGridRuntimeEffect(
+  () =>
+    createGridRuntime({
+      schema,
+      dataSource,
+      interaction,
+      on,
+    }),
+  [runtimeReplacementKey],
+);
+
+if (!runtime) return null;
+
+return (
+  <GridRuntimeProvider runtime={runtime}>
+    <GridLevel
+      path={rootPath(schema.rootLevel)}
+      chrome={columnPreset.chrome()}
+    />
+  </GridRuntimeProvider>
+);
+```
+
+The dependency list controls runtime replacement. Do not use `useMemo` as the
+lifetime owner for a runtime that subscribes, fetches, or requires disposal.
+Do not copy report-grid internals for ordinary report screens; render report
+datasets with `ReportGridDataset`.
 
 Preserve search, filters, sort, pagination, CSV export, lookup labels, URL
 state, loading states, and error states unless the user asks for less.

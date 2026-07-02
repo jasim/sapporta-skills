@@ -2,7 +2,7 @@
 name: report-linking
 description: >
   Use when the user wants report rows, cells, or footer rows to navigate
-  somewhere useful. Covers Sapporta `ReportGridResult` link resolvers,
+  somewhere useful. Covers Sapporta `ReportGridDataset` link resolvers,
   drill-up, drill-into, cross-report links, IDs, foreign keys, and explorable
   summary rows.
 ---
@@ -11,19 +11,17 @@ description: >
 
 Reports are more useful when the user can jump from a row or cell into the
 underlying data. Add links in the report screen by passing resolver functions
-to `ReportGridResult`. Do not put link metadata in `GridReportResult`.
+to `ReportGridDataset`. Do not put link metadata in `GridDataset`.
 
 The backend should include hidden identifiers in `node.columns` when the screen
 needs them for navigation:
 
 ```ts
-const levelColumns = {
-  account: [
-    { name: "accountId", label: "Account ID", visuallyHidden: true },
-    { name: "name", label: "Account" },
-    { name: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
-  ],
-};
+const columns = [
+  { id: "accountId", label: "Account ID", kind: "text", visuallyHidden: true },
+  { id: "name", label: "Account", kind: "text" },
+  { id: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
+];
 ```
 
 ## Link Resolver Shape
@@ -38,11 +36,11 @@ type ReportGridLink = {
 };
 ```
 
-`ReportGridResult` accepts resolvers keyed by report level name:
+`ReportGridDataset` accepts resolvers keyed by report level name:
 
 ```tsx
-<ReportGridResult
-  result={result}
+<ReportGridDataset
+  dataset={dataset}
   links={{
     account: {
       row: ({ node }) => [
@@ -83,21 +81,21 @@ resolvers.
 
 Row and cell resolvers receive:
 
-- `result` - the full `GridReportResult`.
-- `node` - the current `GridReportNode`.
+- `dataset` - the full `GridDataset`.
+- `node` - the current `GridDatasetNode`.
 - `levelName` - the current level.
 - `input` - optional screen context from `linkContext`.
 - `ancestors` - parent nodes for nested report rows.
 - `column` and `value` - only for cell resolvers.
 
-Footer resolvers receive `result`, `footerRow`, and `input`.
+Footer resolvers receive `dataset`, `footerRow`, and `input`.
 
 Pass current query state through `linkContext` when a link needs date range or
 filter values:
 
 ```tsx
-<ReportGridResult
-  result={result}
+<ReportGridDataset
+  dataset={dataset}
   linkContext={{ input }}
   links={{
     line: {
@@ -138,6 +136,6 @@ filter values:
 ## Related
 
 - [report-creation](../report-creation/SKILL.md) - include hidden IDs while
-  shaping `GridReportResult`.
+  shaping `GridDataset`.
 - Point report links to the same user-facing destinations as table row and FK
   links where practical.
