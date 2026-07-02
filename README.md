@@ -1,25 +1,23 @@
 # Sapporta Codex Skills
 
-Sapporta is a TypeScript library and framework-style scaffold for building database-backed apps. It gives projects a schema-as-code data layer, built-in CRUD endpoints, hierarchical reports, OpenAPI-backed discovery, and a place for product-specific domain code as Hono/ts-rest sub-apps.
+Operational skills for agents working inside Sapporta projects.
 
-This repository contains agentic skills for working inside Sapporta projects. The skills teach the coding agent Sapporta conventions, CLI commands, project layout, and implementation patterns for common tasks such as:
+The skills in `skills/sapporta` tell an agent when to choose a workflow, which
+project files to inspect or edit, which auth and row-scope rules are
+non-negotiable, and which validation loop proves a change. They are not the
+Sapporta API reference.
 
-- Discovering tables and endpoints.
-- Creating and modifying schema-as-code tables.
-- Inserting and querying data safely.
-- Writing Hono/ts-rest application endpoints.
-- Building custom frontend views.
-- Creating, linking, and running reports.
-- Troubleshooting common native-module and SQLite issues.
+Use the public documentation for product explanations, API shapes, CLI grammar,
+TypeScript reference, and worked examples:
 
-The main skill is in [`skills/sapporta/SKILL.md`](skills/sapporta/SKILL.md). Supporting skills are grouped under `skills/sapporta/` by area, such as `table-creation`, `app`, `frontend`, and `report-creation`.
+- Sapporta docs: https://sapporta.com/docs/
+- LLM-assisted engineering: https://sapporta.com/docs/tools-and-operations/llm-assisted-engineering/
+- API and tooling choices: https://sapporta.com/docs/tools-and-operations/choose-apis-and-tools/
+- Reference index: https://sapporta.com/docs/reference/
 
-## Installation
+The main skill is in [`skills/sapporta/SKILL.md`](skills/sapporta/SKILL.md).
+Supporting skills are grouped under `skills/sapporta/` by operational area, such
+as `table-creation`, `app`, `frontend`, `data-console`, and `report-creation`.
 
-Install the skill with the `skills` CLI:
-
-```bash
-npx skills add https://github.com/jasim/sapporta-skills --skill sapporta
-```
-
-The skill should appear as `sapporta` and will be invoked when you work in a Sapporta project or ask about Sapporta tables, reports, endpoints, frontend views, or CLI workflows.
+Keep future skill changes concise and agent-facing. Link to the docs when a task
+needs detailed Sapporta API behavior.

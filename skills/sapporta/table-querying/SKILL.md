@@ -9,115 +9,30 @@ description: >
 
 # Table Querying
 
-`GET /api/tables/<name>` is the built-in list endpoint for every table. Its
-query grammar is strict — typos, unknown columns, unknown ops, and out-of-range
-values return **400** via `QueryParseError`. There is no silent-ignore fallback:
-`filter[naration]=foo` (typo) does **not** return all rows, it 400s.
+`GET /api/tables/<name>` is the built-in list endpoint for every table. Use the
+docs for the exact query grammar, operators, response envelope, and error
+codes:
 
-In auth-enabled projects, built-in table routes include Sapporta row-access
-predicates in list, lookup, count, export, get, update, and delete operations.
-Do not add raw workspace filters to compensate; use the endpoint's normal
-filters for product-level criteria only.
+- Generated table APIs: https://sapporta.com/docs/subsystems/generated-table-apis/
+- Filter syntax: https://sapporta.com/docs/reference/filter-syntax/
+- Agent data console recipes: https://sapporta.com/docs/tools-and-operations/agent-data-console-recipes/
 
-For protected or non-local apps, first read the concise CLI access reference:
-[../data-console/references/cli-server-access.md](../data-console/references/cli-server-access.md).
+## Agent Rules
 
-## Filters — `filter[col][op]=value`
+- Every filter must name an operator: `filter[col][op]=value`.
+- Unknown columns, unsupported operators, malformed values, bad limits/pages,
+  and search on tables without search config return 400. Treat a 400 as a bug
+  in the caller.
+- Do not catch-and-retry by dropping the filter or operator; that can read or
+  export a much larger result set.
+- Built-in table routes apply row-access predicates in auth-enabled projects.
+  Do not add raw workspace filters to compensate; use endpoint filters for
+  product-level criteria only.
+- Search with `q=<term>` only when the table declares `meta.search`.
+- Always read the documented response envelope; do not assume the response is a
+  bare array.
+- URL-encode brackets if the client does not accept raw `[` and `]`.
 
-Every filter must name an operator. `filter[col]=value` (no op) is a
-**400**, not an implicit `eq`.
-
-| op | meaning | example |
-| --- | --- | --- |
-| `eq`, `neq` | equal / not equal | `filter[status][eq]=active` |
-| `gt`, `gte`, `lt`, `lte` | ordinal comparison | `filter[amount][gte]=100` |
-| `in`, `nin` | CSV membership | `filter[id][in]=1,2,3` |
-| `contains` | substring match | `filter[name][contains]=cash` |
-| `startswith` | prefix match | `filter[name][startswith]=exp` |
-| `endswith` | suffix match | `filter[name][endswith]=:groceries` |
-| `is` | null check — value must be `null` or `notnull` | `filter[parent_id][is]=null` |
-
-- `contains` / `startswith` / `endswith` escape `%` and `_` in the user
-  value so they match literally. To pattern-match yourself, use the
-  columns directly in `packages/api/app/` code with Drizzle — not this endpoint.
-- `like` is **not** an operator. Use `contains` / `startswith` /
-  `endswith` instead. `filter[col][like]=foo%` returns 400.
-- Multiple filters AND together: `filter[type][eq]=asset&filter[balance][gt]=0`.
-- `in` / `nin` take a comma-separated list. Empty items 400.
-- Values are strings in the URL; the server coerces per column type.
-
-## Search — `q=<term>`
-
-Requires `meta.search.columns` on the table (declared in the schema
-file — see the `table-creation` skill). ANDs with any filters. 400 if
-the table has no `meta.search`. Empty/whitespace `q` is treated as
-absent.
-
-## Sort — `sort=col,-col2`
-
-CSV of column names. Leading `-` means descending. Unknown columns 400.
-
-## Pagination — `page=N&limit=M`
-
-`page` is 1-based; `limit` must be in `[1, 1000]` (default 50).
-Non-integer or out-of-range values 400.
-
-## Response shape
-
-```json
-{
-  "data": [ { "id": 1, ... }, ... ],
-  "meta": { "page": 1, "pages": 3, "total": 127, "limit": 50 }
-}
-```
-
-Always read `body.data` — never treat the response as a bare array.
-
-## Examples
-
-```bash
-API_URL="${SAPPORTA_API_URL:-http://localhost:3000}"
-
-# Exact match on an enum column
-curl "$API_URL/api/tables/accounts?filter[account_type][eq]=Expense"
-
-# Substring match on a text column (replaces the old `like` op)
-curl "$API_URL/api/tables/accounts?filter[name][contains]=groceries"
-
-# Prefix match — name starts with "expenses:"
-curl "$API_URL/api/tables/accounts?filter[name][startswith]=expenses:"
-
-# Compound filter + sort + page
-curl "$API_URL/api/tables/journal_lines?filter[debit][gt]=0&sort=-created_at&page=2&limit=25"
-
-# Null check
-curl "$API_URL/api/tables/accounts?filter[parent_id][is]=null"
-
-# Search (requires meta.search on the table) composed with a filter
-curl "$API_URL/api/tables/accounts?q=cash&filter[account_type][eq]=Asset"
-```
-
-For protected apps, add `-H "Authorization: Bearer ${SAPPORTA_API_TOKEN}"`.
-
-URL-encode `[` and `]` as `%5B` and `%5D` if your client doesn't accept
-raw brackets (curl does).
-
-## Error shape
-
-Malformed queries return HTTP 400 with a JSON body:
-
-```json
-{ "error": "Unknown filter operator \"like\" on column \"name\"", "code": "unknown_op" }
-```
-
-Codes: `unknown_filter_shape`, `unknown_column`, `unknown_op`,
-`bad_value`, `bad_limit`, `bad_page`, `no_search_config`,
-`unknown_search_column`. Treat a 400 as a bug in the caller — never
-catch-and-retry without the op, that just papers over the typo.
-
-## Related
-
-- **Declare a table's `meta.search`** to enable `?q=` — see
-  [table-creation/SKILL.md](../table-creation/SKILL.md).
-- **Insert rows** into a table — see
-  [row-insertion/SKILL.md](../row-insertion/SKILL.md).
+For protected or non-local apps, read
+[../data-console/references/cli-server-access.md](../data-console/references/cli-server-access.md)
+first.

@@ -7,49 +7,42 @@ description: >
   running app.
 ---
 
-## Use When
+# Data Console
 
 Use this skill when the user wants to work with records in an existing Sapporta
-app rather than change the app's code. The Sapporta CLI acts as a console over
-the selected running app and database: it can discover endpoints, list tables,
-sample data, insert, update, or delete rows through built-in row commands, and
-run raw SQL only as a fallback. Discover report routes with `sapporta describe`
-and call them with `curl` or another HTTP client.
-
-Prefer the project-local command form:
+app rather than change the app's code. Prefer the project-local command form:
 
 ```bash
 pnpm exec sapporta ...
 ```
 
+Use docs for CLI grammar, target selection, token setup, table/query syntax, and
+recipes:
+
+- Agent data console: https://sapporta.com/docs/tools-and-operations/agent-data-console/
+- Agent data console recipes: https://sapporta.com/docs/tools-and-operations/agent-data-console-recipes/
+- Agent access: https://sapporta.com/docs/tools-and-operations/agent-access/
+- CLI reference: https://sapporta.com/docs/reference/cli/
+
 ## Required Preflight
 
-For API-backed CLI commands in an existing project, verify that the selected app
-server is reachable. `check` and `init` are local commands; `describe` reads the
-live OpenAPI document, and table/row commands talk to the app API.
+For API-backed CLI commands, verify the selected app server is reachable:
 
 ```bash
 pnpm exec sapporta describe
 pnpm exec sapporta tables
 ```
 
-If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message: check
-the resolved URL, server state, and network permission before treating it as an
-app, auth, or schema failure. If the project uses a non-default API port, set
-`SAPPORTA_API_URL` consistently or pass `--api-url`.
+If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message before
+diagnosing app, auth, or schema behavior. If the project uses a non-default API
+port, set `SAPPORTA_API_URL` or pass `--api-url`.
 
-If the preflight or any API-backed data command returns `unauthenticated`,
-`token_expired`, `token_revoked`, or `workspace_required`, read
+If a protected data command returns `unauthenticated`, `token_expired`,
+`token_revoked`, or `workspace_required`, read
 [references/cli-server-access.md](references/cli-server-access.md), stop data
-work, and ask the user to create or replace the agent access token. Include the
-actual account profile link where they can create the token. Do not silently
-bypass protected app APIs with direct SQLite or raw local database access for
-workspace-user data answers or mutations.
-
-For remote apps, protected apps, token failures, and custom-endpoint `curl`
-patterns, read
-[references/cli-server-access.md](references/cli-server-access.md) only when the
-task needs that detail.
+work, and ask the user to create or replace the agent access token. Do not
+silently bypass protected app APIs with direct SQLite or local database access
+for workspace-user answers or mutations.
 
 ## Discover Before Acting
 
@@ -63,74 +56,51 @@ pnpm exec sapporta tables show <name>
 pnpm exec sapporta tables sample <name>
 ```
 
-`sapporta describe` is the source of truth for endpoint schemas, including
-table routes and app routes from `packages/api/app/`. The CLI cannot invoke app
-HTTP endpoints directly; after describing them, call those routes with `curl`
+The CLI can inspect app-owned routes with `describe`, but it does not invoke
+arbitrary user-defined endpoints. Call those routes with `curl`, a typed client,
 or another HTTP client against the selected app URL.
 
 ## Answer Data Questions
 
 Prefer the highest-level app feature that answers the question:
 
-1. Call a relevant existing report endpoint.
-2. Query the built-in table list endpoint when filters/search/pagination fit.
-3. Use read-only SQL through `sapporta db exec-sql` when no report or table
-   endpoint answers the question cleanly.
+1. Existing report endpoint.
+2. Built-in table list endpoint when filters/search/pagination fit.
+3. Existing domain endpoint when it exposes the needed read.
+4. Read-only SQL through `sapporta db exec-sql` when no report or endpoint
+   answers the question cleanly.
 
-When repeated ad-hoc SQL would be useful to users, suggest creating a
-route-based report instead of leaving the workflow as one-off SQL.
-
-Report results back with enough provenance for the user to trust the answer:
-name the report, table endpoint, domain endpoint, or SQL query path used. If a
-number depends on a date parameter, filter, workspace, or row limit, state that
-constraint. If the app does not expose the data needed to answer
-cleanly, say so and choose the least invasive fallback.
+Report results back with provenance: name the report, table endpoint, domain
+endpoint, or SQL path used. State date parameters, filters, workspace, and row
+limits that affect the answer. If repeated ad-hoc SQL would be useful to users,
+suggest creating a route-based report.
 
 ## Change Data Safely
 
-For data changes, use the highest fitting option:
+Only mutate data when the user asked for a data change. Use the highest fitting
+option:
 
-1. Existing project/domain endpoint from `sapporta describe`
-2. Built-in row commands: `sapporta rows insert/update/delete`
-3. Existing report/domain endpoints when they match the workflow
-4. Raw SQL fallback after reading [../meta-sql/SKILL.md](../meta-sql/SKILL.md)
+1. Existing custom product/domain endpoint from `sapporta describe`.
+2. Built-in row commands: `sapporta rows insert/update/delete`.
+3. Raw SQL fallback after reading [../meta-sql/SKILL.md](../meta-sql/SKILL.md).
 
-Raw SQL writes bypass application behavior and normal row-save validation, so
-use them only when no endpoint or row command fits.
-In auth-enabled projects, raw SQL also bypasses normal row-access helpers; read
-[../meta-sql/SKILL.md](../meta-sql/SKILL.md) before using it for scoped tables.
+Do not recommend reports as mutation surfaces unless the app deliberately
+defines a mutating route.
 
 Direct local database inspection is acceptable for app-development or debugging
 tasks where you are acting as a developer with repository access. For
 data-console answers, treat the running app API as the user's workspace boundary
 unless the user explicitly asks for admin/debug inspection.
 
-## Core CLI Commands
-
-```bash
-pnpm exec sapporta describe
-pnpm exec sapporta describe "METHOD /api/path"
-pnpm exec sapporta tables
-pnpm exec sapporta tables show <name>
-pnpm exec sapporta tables sample <name>
-pnpm exec sapporta rows insert <table> --data '[{...}]'
-pnpm exec sapporta db exec-sql "SELECT ..."
-```
-
-Commands with request bodies can accept `--input-body-json` with one JSON
-object matching the endpoint input schema. Row and table mutation commands may
-also expose route-specific shorthand such as `--data`.
-
 ## Data Safety Rules
 
 - Accept user-provided data as-is; do not silently coerce business values.
-- Do not fabricate foreign keys; look them up.
+- Do not fabricate foreign keys; resolve them from visible app data.
 - Respect NOT NULL constraints.
 - Omit generated columns such as `id`, `created_at`, and `updated_at`.
 - In auth-enabled projects, omit system-managed `workspace_id`, `workspaceId`,
   `scoped_to_user_id`, and `scopedToUserId`.
-- Do not use raw SQL to simulate another workspace/user's visibility; use an
-  appropriate token, built-in endpoint, report route, or scoped custom endpoint.
+- Do not use raw SQL to simulate another workspace/user's visibility.
 - Prefer built-in row commands for ordinary row creation because they run the
   app's normal save behavior.
 - Keep writes scoped to the specific records the user asked to change.
@@ -143,7 +113,7 @@ also expose route-specific shorthand such as `--data`.
   [../master-detail-insertion/SKILL.md](../master-detail-insertion/SKILL.md)
 - Call existing report routes or answer data questions -> read
   [../report-execution/SKILL.md](../report-execution/SKILL.md)
-- Compose `/api/tables/<name>` filters, search, sort, and pagination -> read
+- Compose `/api/tables/<name>` filters, search, sort, pagination -> read
   [../table-querying/SKILL.md](../table-querying/SKILL.md)
 - Raw SQL fallback reads or writes -> read
   [../meta-sql/SKILL.md](../meta-sql/SKILL.md)

@@ -8,47 +8,38 @@ description: >
 
 # Row Insertion
 
-## Scope & Safety
+Only insert or change data when the user has asked for a data change. Inspect
+the table schema first, stay within the requested tables, and never fabricate
+values, credentials, or foreign keys.
 
-Only insert or change data when the user has asked for a data change in the current local Sapporta project. Inspect the table schema first, stay within the requested tables, and never fabricate values, credentials, or foreign keys.
+Docs:
 
-## Command
+- Agent data console recipes: https://sapporta.com/docs/tools-and-operations/agent-data-console-recipes/
+- Generated table APIs: https://sapporta.com/docs/subsystems/generated-table-apis/
+- CLI reference: https://sapporta.com/docs/reference/cli/
 
-```
-sapporta rows insert <table_name> --data '<json>'
-```
+## Workflow
 
-`--data` accepts a single JSON object or a JSON array for multiple rows.
+1. Describe the table with `pnpm exec sapporta tables show <table>`.
+2. Sample visible data with `pnpm exec sapporta tables sample <table>`.
+3. Resolve foreign keys from visible app data. Prefer table samples, table
+   filters, lookup routes, or existing domain endpoints; use SQL only as a
+   fallback/admin inspection tool.
+4. Insert with `pnpm exec sapporta rows insert <table> --data '<json>'`.
+5. Verify with a table query, sample, or row get.
 
-## Before Inserting
-
-1. **Describe the table**: `sapporta tables show <table_name>`
-2. **Sample existing data**: `sapporta tables sample <table_name>`
-3. **Look up FK values**: `sapporta db exec-sql "SELECT id, name FROM referenced_table"`
-
-## Lookup-or-Create Pattern
-
-When inserting rows that reference other tables, or when records may already exist:
-
-```bash
-# Step 1: Check if record exists
-sapporta db exec-sql "SELECT id, name FROM customers WHERE name = 'Alice'"
-
-# Step 2: If not found, insert it
-sapporta rows insert customers --data '{"name": "Alice", "email": "alice@example.com"}'
-
-# Step 3: Use the ID (from step 1 or 2) in the dependent insert
-sapporta rows insert orders --data '{"customer_id": 7, "status": "draft"}'
-```
-
-This is especially important for FK columns — always resolve IDs from existing data before inserting.
+`--data` accepts a single JSON object or an array. Use column names exactly as
+the schema exposes them, normally `snake_case`.
 
 ## Data Rules
 
-- **No coercion** — provide the exact type the column expects:
-  - Text: `"value"` | Integer: `42` | Numeric/money/percentage: `99.5` | Boolean: `true`/`false` | Date: `"2024-01-15"` | Timestamp: `"2024-01-15T10:30:00Z"`
-- **No FK fabrication** — always look up foreign key IDs, never guess
-- **Respect NOT NULL** — include all required columns; omit `id`, `created_at`, `updated_at` (system-generated)
-- **Auth scope is trusted server data** — in auth-enabled projects, omit
-  `workspace_id`, `workspaceId`, `scoped_to_user_id`, and `scopedToUserId`
-- **Use snake_case** — column names must match schema output exactly (`customer_name`, not `customerName`)
+- Provide the exact business values the user requested; do not silently coerce
+  meaning.
+- Omit generated columns such as `id`, `created_at`, and `updated_at`.
+- In auth-enabled projects, omit `workspace_id`, `workspaceId`,
+  `scoped_to_user_id`, and `scopedToUserId`.
+- Include required NOT NULL columns that the server will not generate.
+- Never guess FK ids. If a referenced row does not exist and creating it is
+  required, insert that row first through row commands or a domain endpoint.
+- Prefer row commands over raw SQL because they run server validation, defaults,
+  trusted ownership stamping, and visible-FK checks.

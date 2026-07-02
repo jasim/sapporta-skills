@@ -8,127 +8,37 @@ description: >
 
 # Typed Domain Errors
 
-Sapporta's scaffold installs a default error handler for unexpected faults: it
-logs server-side details and returns a generic JSON 500 response. Right for
-server faults — wrong for *workflow facts* a caller could act on. Each such
-fact deserves its own status and JSON shape; none should look like a crash.
+Use typed domain errors when workflow facts raised deep in service code should
+return actionable non-500 responses. Simple checks directly inside a handler can
+return declared `{ status, body }` values instead.
 
-**The core move**: the error class *is* the HTTP response. It carries the
-status, it carries the payload, and a single shim at the HTTP edge translates
-it to the wire. Handler code never rebuilds the payload, and never re-derives
-it from flags threaded up the stack.
+Docs:
 
-## The pattern
+- Custom endpoint errors: https://sapporta.com/docs/subsystems/custom-api-endpoints/#errors
 
-Three touchpoints — define, raise, catch — each with one home.
+## Pattern
 
-### 1. Define — an abstract base per family
+1. Define one abstract error base per workflow family, near the code that raises
+   the errors. The base carries HTTP status and a payload method.
+2. Raise concrete subclasses at the point where the failure is first known.
+3. Catch the family once at the route edge, return `{ status, body }`, and
+   rethrow everything else to the default 500 path.
 
-One base per workflow family, co-located with the code that raises. It declares
-the two things that define an HTTP response:
+Wrap the whole async handler body when adapter-stage parsing/extraction can
+raise the same family. Each returned status must be declared in the shared
+contract's `responses`.
 
-```typescript
-// src/<domain>/errors.ts
-export abstract class ApiWorkflowError extends Error {
-  abstract readonly status: number;
-  abstract toPayload(): Record<string, unknown>;
-}
-```
+## Status Semantics
 
-A concrete subclass fills both in, carrying whatever data the payload needs:
-
-```typescript
-export class DataConsistencyError extends ApiWorkflowError {
-  readonly status = 422;
-  constructor(
-    readonly computed: number,
-    readonly expected: number,
-    readonly tolerance: number,
-  ) {
-    const diff = Math.abs(computed - expected);
-    super(`Computed ${computed} ≠ expected ${expected} (Δ${diff}, tol ${tolerance})`);
-    this.name = "DataConsistencyError";
-  }
-  toPayload() {
-    return {
-      error: "data_consistency",
-      message: this.message,
-      computed: this.computed,
-      expected: this.expected,
-      difference: Math.abs(this.computed - this.expected),
-      tolerance: this.tolerance,
-    };
-  }
-}
-```
-
-### 2. Raise — at the point of knowledge
-
-Throw on the line where the failure is first known — not later, where it
-happens to be convenient to handle. Threading a boolean up the stack for the
-handler to re-check is the anti-pattern this pattern exists to kill.
-
-### 3. Catch — one shim per handler family
-
-A single shim catches the base class, returns a `{ status, body }` reply,
-and re-throws anything else to Hono's default 500 path. The handler
-itself uses `api.register(name, route, handler)` and returns
-`{ status, body }` directly:
-
-```typescript
-// packages/api/app/<domain>-handlers.ts
-import { ApiWorkflowError } from "../<domain>/errors.js";
-
-api.register("postEntry", postEntryContract.postEntry, async ({ request, c }) => {
-  try {
-    const input = await extractInput(request.body);   // adapter-stage subclass
-    const result = await runWorkflow(argsFrom(request.body, input), c.get("db"));
-    return { status: 200, body: result };
-  } catch (err) {
-    if (err instanceof ApiWorkflowError) {
-      return { status: err.status, body: err.toPayload() } as never;
-    }
-    throw err;
-  }
-});
-```
-
-Wrap the **whole** async body, not just the workflow call. Adapter steps
-before the workflow — parsing, extraction, fetching — should raise from
-the same family and be caught by the same handler-level `try`.
-
-Each `err.status` returned must be declared in the contract's
-`responses` (e.g. `{ 200: ..., 422: ..., 502: ... }`); the cast to
-`never` is the documented escape hatch for the union the contract
-declares but TypeScript can't narrow `err.status` against. If the
-generic-helper form is preferred, write a thin shim per handler family
-that pattern-matches on the concrete error class (so the return type
-narrows to a known status) instead of a one-size-fits-all generic.
-
-## Status semantics
-
-- **422** — request was well-formed, but what the server derived doesn't hold
-  up: data-consistency violations, input that parsed but yielded nothing
-  usable, required-but-derived values missing.
-- **502** — an upstream we call out to (LLM, external API) failed or returned
-  garbage. Our server is fine; its dependency isn't.
-- **400 / 404** — for one-off checks *inside a handler*, plain
-  `return { status: 404, body: { error: "..." } }` is still the default
-  (see `app/SKILL.md`) — but only if `404` is declared in the contract's
-  `responses`. Otherwise reach for the `Response` escape hatch.
-  Typed errors earn their weight only when the check lives deep inside
-  a workflow the handler can't see into.
-
-## Scoping
-
-- **One base per family, not a shared cross-module `ApiError`.** A shared base
-  couples modules that should stay independent.
-- **Re-export from a package root** only when another module also catches or
-  raises the class. Otherwise keep it module-private.
+- `422` -> request parsed, but the workflow cannot accept what the server
+  derived or validated.
+- `502` -> an upstream service failed or returned unusable data.
+- `400` / `404` -> usually return directly in the handler for one-off checks,
+  unless the failure is naturally raised deep inside the workflow.
 
 ## Conventions
 
-- **Set `this.name`** in the subclass constructor — it's what shows up in logs
-  and `JSON.stringify(err)`.
-- **Snake_case payload keys** (`computed_final`, not `computedFinal`) to match
-  the wire convention.
+- One base per workflow family, not a shared cross-module `ApiError`.
+- Keep the base module-private unless another module also catches or raises it.
+- Set `this.name` in subclasses for useful logs.
+- Use snake_case payload keys to match wire conventions.

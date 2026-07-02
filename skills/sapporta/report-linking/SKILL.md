@@ -9,133 +9,40 @@ description: >
 
 # Report Linking
 
-Reports are more useful when the user can jump from a row or cell into the
-underlying data. Add links in the report screen by passing resolver functions
-to `ReportGridDataset`. Do not put link metadata in `GridDataset`.
+Reports are more useful when the user can jump from a row, cell, or total into
+the underlying data. Add links in the report screen by passing resolver
+functions to `ReportGridDataset`. Do not put link metadata in `GridDataset`.
 
-The backend should include hidden identifiers in `node.columns` when the screen
-needs them for navigation:
+Use docs for exact resolver and link type shapes:
 
-```ts
-const columns = [
-  { id: "accountId", label: "Account ID", kind: "text", visuallyHidden: true },
-  { id: "name", label: "Account", kind: "text" },
-  { id: "balance", label: "Balance", kind: "number", displayFormat: "currency" },
-];
-```
+- Reports: https://sapporta.com/docs/subsystems/reports/
+- Report datasets: https://sapporta.com/docs/reference/report-datasets/
+- Grid result shape: https://sapporta.com/docs/reference/full/reports/grid-result-shape/
 
-## Link Resolver Shape
+## Agent Workflow
 
-```ts
-type ReportGridLink = {
-  label: string;
-  href: string;
-  kind?: "drill-down" | "record" | "route" | "external";
-  icon?: "drill-up" | "drill-into" | "report" | "external";
-  target?: "_self" | "_blank";
-};
-```
+- Include hidden identifiers in backend `node.columns` when the screen needs
+  them for navigation.
+- Add `visuallyHidden: true` to helper ID columns that should not display.
+- Keep link resolution in the frontend because route state and navigation
+  policy live there.
+- Pass current query state through `linkContext` when a link needs date range or
+  filter values.
+- Check optional values before returning links for synthetic rows such as
+  opening, closing, subtotal, or footer rows.
+- Exercise non-trivial links in the browser.
 
-`ReportGridDataset` accepts resolvers keyed by report level name:
+## Link Patterns
 
-```tsx
-<ReportGridDataset
-  dataset={dataset}
-  links={{
-    account: {
-      row: ({ node }) => [
-        {
-          label: "Open account",
-          href: `/tables/accounts/${node.columns.accountId}`,
-          kind: "record",
-          icon: "drill-up",
-        },
-      ],
-      cell: {
-        name: ({ node }) => [
-          {
-            label: "Open ledger",
-            href: `/reports/account-ledger?accountId=${node.columns.accountId}`,
-            kind: "route",
-            icon: "drill-into",
-          },
-        ],
-      },
-      footer: () => [
-        {
-          label: "Open total detail",
-          href: "/reports/trial-balance/detail",
-          kind: "route",
-          icon: "report",
-        },
-      ],
-    },
-  }}
-/>
-```
+- FK drill-up -> `/tables/<table>/<id>`
+- Master to children drill-into -> filtered table route or detail report route
+- Cross-report -> another report route with the target query parameters
+- External -> `target: "_blank"` only for deliberately external destinations
 
-Footer resolvers apply to the whole footer row. They are not per-cell footer
-resolvers.
-
-## Resolver Context
-
-Row and cell resolvers receive:
-
-- `dataset` - the full `GridDataset`.
-- `node` - the current `GridDatasetNode`.
-- `levelName` - the current level.
-- `input` - optional screen context from `linkContext`.
-- `ancestors` - parent nodes for nested report rows.
-- `column` and `value` - only for cell resolvers.
-
-Footer resolvers receive `dataset`, `footerRow`, and `input`.
-
-Pass current query state through `linkContext` when a link needs date range or
-filter values:
-
-```tsx
-<ReportGridDataset
-  dataset={dataset}
-  linkContext={{ input }}
-  links={{
-    line: {
-      row: ({ node, input }) => [
-        {
-          label: "Open journal entry",
-          href: `/tables/journal_entries/${node.columns.journalEntryId}?from=${input.periodFrom}`,
-          kind: "record",
-        },
-      ],
-    },
-  }}
-/>
-```
-
-## Patterns
-
-- **FK drill-up:** link a row or FK cell to `/tables/<table>/<id>`.
-- **Master to children drill-into:** link to a filtered table route or detail
-  report route.
-- **Cross-report:** build an href to another app report route and include the
-  target route's query parameters.
-- **External:** use `target: "_blank"` and `kind: "external"` only for
-  intentionally external destinations.
-
-## Checklist
-
-- [ ] Every identifier used by a resolver is present in `node.columns`; use
-  `visuallyHidden: true` for helper IDs that should not display.
-- [ ] Links preserve the current report's relevant date range, workspace-safe
-  filters, and query state when drilling into another screen.
-- [ ] Resolvers check optional values before returning links for synthetic rows
-  such as opening, closing, subtotal, or footer rows.
-- [ ] Link targets enforce their own authorization. Do not treat hidden IDs or
-  URL filters as authorization.
-- [ ] The report screen is exercised in the browser when links are non-trivial.
+Every link target must enforce its own authorization. Hidden IDs and URL filters
+are not authorization.
 
 ## Related
 
 - [report-creation](../report-creation/SKILL.md) - include hidden IDs while
   shaping `GridDataset`.
-- Point report links to the same user-facing destinations as table row and FK
-  links where practical.

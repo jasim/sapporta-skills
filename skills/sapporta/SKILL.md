@@ -8,32 +8,15 @@ description: >
   here to choose between changing the app's code and working with records.
 ---
 
-## What Sapporta Gives The App Builder
+# Sapporta Agent Dispatch
 
-Sapporta is a TypeScript library for database-backed apps. A Sapporta project
-gives the application builder:
+Sapporta skills are operating instructions. Use public docs for product
+explanations, API shapes, CLI grammar, and reference details:
 
-- TypeScript files for defining database tables, columns, relationships,
-  display metadata, search behavior, and row ownership.
-- Built-in table APIs for listing, filtering, creating, updating, and deleting
-  records.
-- Route-based report APIs and React report screens for ledgers, summaries,
-  statements, and structured data views.
-- Custom endpoints for product workflows that need business rules, file
-  uploads, atomic database changes, or custom response shapes.
-- Custom React views that fit alongside the built-in admin UI.
-- An OpenAPI document that `sapporta describe`, the frontend client, and API
-  tooling use to see the current app.
-
-The usual places to work are:
-
-- `packages/api/schema/` for table definitions.
-- `packages/shared/src/contracts/`, `packages/api/app/`, and
-  `packages/frontend/src/` for report routes and screens.
-- `packages/api/app/` for custom backend endpoints.
-- `packages/shared/src/contracts/` for request/response contracts shared by
-  backend, OpenAPI, and frontend code.
-- `packages/frontend/src/` for custom React pages.
+- Docs: https://sapporta.com/docs/
+- Agent workflow overview: https://sapporta.com/docs/tools-and-operations/llm-assisted-engineering/
+- API/tool choice guide: https://sapporta.com/docs/tools-and-operations/choose-apis-and-tools/
+- Reference index: https://sapporta.com/docs/reference/
 
 Prefer the project-local CLI:
 
@@ -41,89 +24,68 @@ Prefer the project-local CLI:
 pnpm exec sapporta ...
 ```
 
-The CLI is both a project initializer and a data console for a selected running
-app. Local project creation and app-development work do not need an agent
-token. API-backed data-management commands inspect endpoints, list and describe
-tables, sample rows, insert/update/delete rows, and execute raw SQL fallback
-commands against the running app. Follow structured CLI errors such as
-`APP_SERVER_UNREACHABLE` before diagnosing app, auth, or schema behavior.
-Protected apps need an agent access token.
-
-For protected or non-local apps, keep the top-level context small and read the
-CLI access details only when needed:
-[data-console/references/cli-server-access.md](data-console/references/cli-server-access.md).
-
 ## Choose The Right Mode
 
-Decide what the user is trying to do before loading detailed context.
+Decide whether the user wants to change app code or operate on existing data.
 
-- The user wants to build or change app behavior: tables, reports, links,
-  custom endpoints, shared contracts, frontend views, auth-aware workflows, or
-  validation loops -> read
-  [app-framework/SKILL.md](app-framework/SKILL.md).
-- The user wants to inspect, query, insert, update, report on, validate, or
-  answer questions from records already in the app -> read
-  [data-console/SKILL.md](data-console/SKILL.md).
+- Build or change app behavior: tables, reports, report links, custom
+  endpoints, shared contracts, frontend views, auth-aware workflows, or
+  validation loops -> read [app-framework/SKILL.md](app-framework/SKILL.md).
+- Inspect, query, insert, update, validate, or answer questions from records
+  already in the app -> read [data-console/SKILL.md](data-console/SKILL.md).
+- Create or scaffold a new Sapporta project -> read
+  [references/project-creation.md](references/project-creation.md).
+- Native module binding failures, `better-sqlite3`, install/dev-server errors
+  -> read [troubleshooting/SKILL.md](troubleshooting/SKILL.md).
 
-Some tasks touch both: build a report route and screen with `app-framework`,
-then call the report endpoint and inspect numbers with `data-console`.
+Some tasks touch both modes: build a report route and screen with
+`app-framework`, then call the report endpoint and inspect the numbers with
+`data-console`.
 
 ## Rules That Prevent Wrong Work
 
 - Work in the local Sapporta project rooted at `cwd` or the nearest
   `sapporta.json`.
-- Framework table/meta APIs and custom app APIs, including report routes, are
-  served under `/api/...`; health checks and frontend/static routes can live
-  outside `/api`.
-- Prefer `pnpm exec sapporta ...` over a global `sapporta` binary.
+- Framework table/meta APIs and app-owned API routes are served under `/api`.
+  Contract paths should not repeat the `/api` prefix. Health checks and
+  frontend/static routes may be outside `/api` when the app deliberately mounts
+  them there.
 - For app-development work, inspect local contracts, route files, schema,
-  migrations, and the local database directly as needed; do not block on an
-  agent token. Use `sapporta describe` for live API discovery when acting
-  through the running app, especially in data-console mode.
-- For API-backed data-management commands, set `SAPPORTA_API_URL` when the app
-  API is not on `http://localhost:3000`; set `SAPPORTA_API_TOKEN` when the app
-  is protected. If a protected data command fails with an auth error, read the
-  CLI access reference and fix the token before continuing data work.
-- The CLI cannot invoke user-defined HTTP endpoints directly; call them with
-  `curl` or another HTTP client against the selected app URL.
+  migrations, and local database state as needed; do not block on an agent token
+  unless the task is explicitly API-backed data work.
+- For API-backed data commands, set `SAPPORTA_API_URL` when the app API is not
+  on `http://localhost:3000`; set `SAPPORTA_API_TOKEN` when the app is
+  protected. If auth fails, read the CLI access reference before continuing.
+- The CLI can inspect app-owned routes with `describe`, but it does not invoke
+  arbitrary user-defined HTTP endpoints. Call those routes with `curl`, a typed
+  client, or another HTTP client.
 - Apply auth scope on the server. Built-in endpoints apply row visibility;
-  custom code must choose the route's ability/data authority and then use
-  scoped row helpers; raw SQL bypasses those helpers and is only a fallback.
-- Raw SQL is a fallback, not the default mutation path.
+  custom code must choose route-edge ability/data authority and use scoped row
+  helpers.
+- Raw SQL is a fallback. In app code, contain it in store/db modules with a
+  justification. In data-console work, treat it as admin/debug inspection unless
+  the user explicitly asked for maintenance SQL.
 
-## Creating New Projects
+Reference docs:
 
-When the user asks to create or scaffold a new Sapporta project, follow
-[references/project-creation.md](references/project-creation.md).
+- CLI: https://sapporta.com/docs/reference/cli/
+- Agent data console: https://sapporta.com/docs/tools-and-operations/agent-data-console/
+- OpenAPI discovery: https://sapporta.com/docs/subsystems/openapi-and-discovery/
+- Auth and row security: https://sapporta.com/docs/reference/auth-and-row-security/
 
 ## Direct Dispatch
-
-- Create, scaffold, or initialize a new Sapporta project from scratch -> read
-  [references/project-creation.md](references/project-creation.md)
-- Define/change tables, domain code, reports, report links, frontend routes,
-  custom endpoints, auth-scoped workflows -> read
-  [app-framework/SKILL.md](app-framework/SKILL.md)
-- Existing records, business questions, table samples, report output, built-in
-  row commands, SQL fallback -> read
-  [data-console/SKILL.md](data-console/SKILL.md)
-- Native module binding failures, `better-sqlite3`, install/dev-server errors
-  -> read [troubleshooting/SKILL.md](troubleshooting/SKILL.md)
-
-## Specific Task Skills
 
 ### App-Building Tasks
 
 - Tables, columns, relations, indexes, search config, and generated schema
-  metadata -> read
-  [table-creation/SKILL.md](table-creation/SKILL.md)
+  metadata -> read [table-creation/SKILL.md](table-creation/SKILL.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [report-creation/SKILL.md](report-creation/SKILL.md)
 - Row links, cell links, drill-through, cross-report navigation -> read
   [report-linking/SKILL.md](report-linking/SKILL.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
-  atomic database changes, OpenAPI registration -> read [app/SKILL.md](app/SKILL.md)
-- Custom React routes, dashboards, forms, table/grid views, BaseGrid,
-  ColumnPreset, generic `@sapporta/ui` components, typed API client ->
+  transactions, OpenAPI registration -> read [app/SKILL.md](app/SKILL.md)
+- Custom React routes, dashboards, forms, table/grid views, typed API client ->
   read [frontend/SKILL.md](frontend/SKILL.md)
 - Domain services, module organization, testable TypeScript workflow code ->
   read [user-code/SKILL.md](user-code/SKILL.md)

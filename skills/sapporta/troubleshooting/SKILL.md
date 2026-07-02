@@ -8,31 +8,26 @@ description: >
 
 # Sapporta Troubleshooting
 
-## better-sqlite3 bindings missing
+Use public troubleshooting docs for known fixes:
 
-better-sqlite3 is a native Node addon compiled per platform and Node version. A stale or missing `.node` binary produces:
+- Troubleshooting guide: https://sapporta.com/docs/tools-and-operations/troubleshooting/
+- Troubleshooting reference: https://sapporta.com/docs/reference/troubleshooting/
 
-```
-Could not locate the bindings file. Tried:
- …/better-sqlite3/build/better_sqlite3.node
- …/better-sqlite3/build/Debug/better_sqlite3.node
-```
+## Native SQLite Binding Triage
 
-Typical triggers: Node version change, wiped `packages/api/node_modules`, or stale pnpm store entry.
+Trigger: startup, tests, or CLI fail with missing native addon output such as
+`Could not locate the bindings file` for `better-sqlite3`.
 
-**Fix:** run `pnpm rebuild better-sqlite3` in the app package that installed
-better-sqlite3, usually the generated API package or the project root.
+Concise recovery direction:
 
-If `pnpm rebuild` doesn't work, find the installed better-sqlite3 package
-directory from the error message or with Node package resolution, then rebuild
-there:
+1. Rebuild `better-sqlite3` in the app package that installed it, usually the
+   generated API package or project root.
+2. If rebuild fails with missing macOS build tools, install the command line
+   tools.
+3. Avoid hard-coding pnpm store paths; installed locations vary by package
+   manager layout and version.
+4. If the docs do not cover the observed failure, inspect the actual error
+   output before changing Node, package manager, or dependency versions.
 
-```bash
-npx --yes node-gyp rebuild --release
-```
-
-Run that command from the resolved better-sqlite3 package directory. Avoid
-hard-coding a pnpm store path; the installed location depends on the package
-manager layout and version.
-
-If rebuild fails with missing build tools: `xcode-select --install` (macOS).
+Typical causes include a Node version change, wiped package `node_modules`, or
+a stale package-manager store entry.
