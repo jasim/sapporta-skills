@@ -34,7 +34,7 @@ on failure.
 Critical rule: do not include the parent FK column in detail rows. The server
 backfills it from the inserted parent.
 
-In auth-enabled projects, trusted scope fields are propagated by the server for
+Trusted scope fields are propagated by the server for
 both parent and detail rows. Do not include `workspace_id`, `workspaceId`,
 `scoped_to_user_id`, `scopedToUserId`, or server-managed references marked
 `clientCanSet: false`.

@@ -27,5 +27,5 @@ Agent reminders:
 - Convert numeric ids at the submit boundary only if the API expects a number.
 - Required-field validation lives outside `Combobox`.
 - Use a native/select primitive for short static option sets.
-- In auth-enabled apps, do not populate options from raw SQL that can expose
+- Do not populate options from raw SQL that can expose
   rows outside the current workspace/user boundary.

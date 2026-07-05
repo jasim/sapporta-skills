@@ -39,7 +39,7 @@ filter/search behavior, relationship metadata, and migration details:
 
 ## Auth Row Scope
 
-Auth-enabled projects must declare `meta.rowScope` on every table and include
+Projects must declare `meta.rowScope` on every table and include
 the required scope columns:
 
 - `workspaceUserScoped` -> `workspace_id` and `scoped_to_user_id`

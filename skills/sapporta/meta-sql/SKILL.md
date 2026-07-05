@@ -28,8 +28,6 @@ Docs:
 through generated table handlers, `scopedRows()`, route-edge ability/data
 authority helpers, table save hooks, or row-security predicates.
 
-In auth-enabled projects:
-
 - Prefer report routes, table endpoints, row commands, or custom endpoints for
   user-facing reads and writes.
 - Treat raw SQL results as database-admin inspection, not workspace-user route

@@ -36,7 +36,7 @@ the schema exposes them, normally `snake_case`.
 - Provide the exact business values the user requested; do not silently coerce
   meaning.
 - Omit generated columns such as `id`, `created_at`, and `updated_at`.
-- In auth-enabled projects, omit `workspace_id`, `workspaceId`,
+- Omit `workspace_id`, `workspaceId`,
   `scoped_to_user_id`, and `scopedToUserId`.
 - Include required NOT NULL columns that the server will not generate.
 - Never guess FK ids. If a referenced row does not exist and creating it is

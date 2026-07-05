@@ -98,7 +98,7 @@ unless the user explicitly asks for admin/debug inspection.
 - Do not fabricate foreign keys; resolve them from visible app data.
 - Respect NOT NULL constraints.
 - Omit generated columns such as `id`, `created_at`, and `updated_at`.
-- In auth-enabled projects, omit system-managed `workspace_id`, `workspaceId`,
+- Omit system-managed `workspace_id`, `workspaceId`,
   `scoped_to_user_id`, and `scopedToUserId`.
 - Do not use raw SQL to simulate another workspace/user's visibility.
 - Prefer built-in row commands for ordinary row creation because they run the

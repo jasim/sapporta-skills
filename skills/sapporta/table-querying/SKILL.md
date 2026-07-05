@@ -25,7 +25,7 @@ codes:
   in the caller.
 - Do not catch-and-retry by dropping the filter or operator; that can read or
   export a much larger result set.
-- Built-in table routes apply row-access predicates in auth-enabled projects.
+- Built-in table routes apply row-access predicates.
   Do not add raw workspace filters to compensate; use endpoint filters for
   product-level criteria only.
 - Search with `q=<term>` only when the table declares `meta.search`.

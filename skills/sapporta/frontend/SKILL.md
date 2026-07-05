@@ -36,7 +36,7 @@ is intentionally public.
 
 ## Auth Boundaries
 
-In auth-enabled apps, let the existing app boot load the session and
+Let the existing app boot load the session and
 `/api/auth-context` before rendering screens that need scoped tables or report
 routes. Non-owner workspace users should not see owner-only table, report, or
 metadata links.
