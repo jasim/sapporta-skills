@@ -1,0 +1,34 @@
+// Example only. Copy into packages/shared/src/contracts/<report-name>.ts and adapt names, paths, and query params.
+import { z } from "zod";
+import { initContract } from "@sapporta/rest-core";
+import { RELATIVE_DURATIONS } from "@sapporta/shared";
+import { errorBodySchema } from "@sapporta/shared/contracts";
+import { gridDatasetSchema } from "@sapporta/shared/grid-dataset";
+
+const c = initContract();
+
+const sampleReportSegmentSchema = z.enum(["all", "new", "expansion"]);
+
+export const sampleReportQuerySchema = z.object({
+  period_relative: z.enum(RELATIVE_DURATIONS).optional(),
+  period_from: z.string().optional(),
+  period_to: z.string().optional(),
+  segment: sampleReportSegmentSchema.optional(),
+});
+
+export type SampleReportQuery = z.output<typeof sampleReportQuerySchema>;
+export type SampleReportSegment = z.output<typeof sampleReportSegmentSchema>;
+
+export const sampleReportContract = c.router({
+  sampleReport: c.query({
+    method: "GET",
+    path: "/reports/sample",
+    summary: "Sample report",
+    metadata: { tags: ["reports"] },
+    query: sampleReportQuerySchema,
+    responses: {
+      200: gridDatasetSchema,
+      400: errorBodySchema,
+    },
+  }),
+});

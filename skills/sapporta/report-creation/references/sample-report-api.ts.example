@@ -1,0 +1,226 @@
+// Example only. Copy into packages/api/app/<report-name>.ts and adapt the contract import, auth subject, query, and mapper.
+import {
+  DateRangeParseError,
+  resolveDateRangeQueryBounds,
+} from "@sapporta/shared";
+import type { GridDataset } from "@sapporta/shared/grid-dataset";
+import { forbidUnless, TsRestApi, type SapportaEnv } from "@sapporta/server";
+import {
+  sampleReportContract,
+  type SampleReportQuery,
+  type SampleReportSegment,
+} from "your-app-shared";
+
+const api = new TsRestApi<SapportaEnv>();
+
+api.register(
+  "sampleReport",
+  sampleReportContract.sampleReport,
+  ({ c, request }) => {
+    const auth = c.get("auth");
+    forbidUnless(c, auth.ability.can("read", "sample_report"));
+
+    const input = readSampleReportInput(request.query);
+    if (!input.ok) {
+      return {
+        status: 400,
+        body: {
+          error: input.error,
+          code: "invalid_report_parameters",
+        },
+      };
+    }
+
+    return {
+      status: 200,
+      body: sampleReportDataset(input.value),
+    };
+  },
+);
+
+export default api;
+
+type SampleReportInput = {
+  segment: SampleReportSegment;
+  periodFrom: string | null;
+  periodTo: string | null;
+};
+
+type SampleReportInputResult =
+  | { ok: true; value: SampleReportInput }
+  | { ok: false; error: string };
+
+type SampleReportRow = {
+  rowKey: string;
+  channel: string;
+  segment: Exclude<SampleReportSegment, "all">;
+  revenue: number;
+  cost: number;
+  notes: string;
+};
+
+const SAMPLE_ROWS: readonly SampleReportRow[] = [
+  {
+    rowKey: "self-serve",
+    channel: "Self-serve",
+    segment: "new",
+    revenue: 42_500,
+    cost: 18_200,
+    notes: "Website and product-led signups",
+  },
+  {
+    rowKey: "sales-led",
+    channel: "Sales-led",
+    segment: "new",
+    revenue: 68_000,
+    cost: 31_500,
+    notes: "Qualified opportunities closed by the team",
+  },
+  {
+    rowKey: "account-expansion",
+    channel: "Account expansion",
+    segment: "expansion",
+    revenue: 37_800,
+    cost: 9_700,
+    notes: "Plan upgrades and additional seats",
+  },
+];
+
+function readSampleReportInput(
+  query: SampleReportQuery,
+): SampleReportInputResult {
+  try {
+    const period = resolveDateRangeQueryBounds("period", query);
+    return {
+      ok: true,
+      value: {
+        segment: query.segment ?? "all",
+        periodFrom: period.from,
+        periodTo: period.to,
+      },
+    };
+  } catch (error) {
+    if (error instanceof DateRangeParseError) {
+      return { ok: false, error: error.message };
+    }
+    return { ok: false, error: "Report period is invalid." };
+  }
+}
+
+function sampleReportDataset(input: SampleReportInput): GridDataset {
+  const rows = SAMPLE_ROWS.filter(
+    (row) => input.segment === "all" || row.segment === input.segment,
+  );
+  const totalRevenue = rows.reduce((sum, row) => sum + row.revenue, 0);
+  const totalCost = rows.reduce((sum, row) => sum + row.cost, 0);
+  const totalMargin = totalRevenue - totalCost;
+
+  return {
+    name: "sample-report",
+    label: "Sample Report",
+    rootLevel: "channel",
+    levels: {
+      channel: {
+        label: "Channels",
+        columns: [
+          { id: "channel", label: "Channel", kind: "text", minWidth: 180 },
+          {
+            id: "segment",
+            label: "Segment",
+            kind: "text",
+            visuallyHidden: true,
+          },
+          {
+            id: "periodFrom",
+            label: "Period From",
+            kind: "date",
+            visuallyHidden: true,
+          },
+          {
+            id: "periodTo",
+            label: "Period To",
+            kind: "date",
+            visuallyHidden: true,
+          },
+          {
+            id: "revenue",
+            label: "Revenue",
+            kind: "number",
+            displayFormat: "currency",
+            colorRule: "positive",
+            zeroDisplay: "blank",
+          },
+          {
+            id: "cost",
+            label: "Cost",
+            kind: "number",
+            displayFormat: "currency",
+            colorRule: "negative",
+            zeroDisplay: "blank",
+          },
+          {
+            id: "margin",
+            label: "Margin",
+            kind: "number",
+            displayFormat: "currency",
+            colorRule: "signed",
+            zeroDisplay: "blank",
+          },
+          { id: "notes", label: "Notes", kind: "text", minWidth: 260 },
+        ],
+        childLevels: [],
+      },
+    },
+    nodes: rows.map((row) => ({
+      rowKey: row.rowKey,
+      levelName: "channel",
+      columns: {
+        channel: row.channel,
+        segment: row.segment,
+        periodFrom: input.periodFrom,
+        periodTo: input.periodTo,
+        revenue: row.revenue,
+        cost: row.cost,
+        margin: row.revenue - row.cost,
+        notes: row.notes,
+      },
+    })),
+    footerRows: [
+      {
+        rowKey: "total",
+        columns: {
+          channel: "Total",
+          revenue: totalRevenue,
+          cost: totalCost,
+          margin: totalMargin,
+        },
+      },
+    ],
+    stats: [
+      {
+        label: "Revenue",
+        value: currency(totalRevenue),
+        tone: "positive",
+      },
+      {
+        label: "Cost",
+        value: currency(totalCost),
+        tone: "muted",
+      },
+      {
+        label: "Margin",
+        value: currency(totalMargin),
+        tone: totalMargin >= 0 ? "positive" : "negative",
+        strong: true,
+      },
+    ],
+  };
+}
+
+function currency(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}

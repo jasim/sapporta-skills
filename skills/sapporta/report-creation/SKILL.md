@@ -39,16 +39,47 @@ Do not create report files in `packages/api/reports/`, use `report({...})`, or
 run `sapporta reports`. Route-based reports are normal app routes and should be
 discoverable through OpenAPI.
 
-## Module Organization
+## Report Slice Organization
 
-Treat one report as one backend module. Keep the report's `api.register(...)`,
-report-specific row types, read/query orchestration, and `GridDataset` mapper
-together in one file unless the query or shared domain logic is large enough to
-move into a store/service.
+Treat each report as a vertical slice by default. Follow the app's existing
+route, navigation, and file naming conventions, but keep report-specific
+decisions with the report instead of hiding them behind broad shared dispatch.
 
-For multiple reports, keep `packages/api/app/reports.ts` as a thin aggregator
-that imports and mounts individual report modules. Do not collect many
-unrelated report queries, row types, handlers, and mappers in one large file.
+Backend:
+- Put each report in its own backend module, commonly under
+  `packages/api/app/reports/` when the app groups reports there.
+- The module owns its `TsRestApi`, one `api.register(...)`, contract key, auth
+  subject, request params, read/query orchestration, local source row types, and
+  pure row-to-`GridDataset` mapper.
+- For multiple reports, keep the report route entrypoint as a thin aggregator
+  that imports report modules and mounts them.
+- Share broad report infrastructure only: auth/scope helpers, row helpers,
+  generic grid columns, date/parameter helpers, footer/flat-result/sum helpers,
+  and result-shape utilities.
+- Put reusable query or domain logic in a domain store/service or a narrowly
+  named report-family helper after two or more reports already use the same
+  concept. Do not centralize unrelated report SQL, mappers, or string-dispatch
+  just because the files look similar.
+
+Frontend:
+- Put each report screen in its own component near the app's existing report
+  routes, commonly under `packages/frontend/src/reports/`.
+- The screen owns its component state, URL/search-param handling, toolbar
+  controls, loading/error/result rendering, and the typed API call for that
+  report.
+- If the app uses a report registry for navigation/routes, keep it metadata
+  oriented: report id, label, component, route path, and other navigation data.
+- Build routes and navigation from the app's existing routing pattern. Preserve
+  existing report URLs unless the user explicitly asks to change them.
+- Avoid generic `reportId` switches and central fetch functions that erase the
+  typed report contract. A shared request helper is fine when it accepts a typed
+  endpoint or caller and does not become the place where report behavior is
+  dispatched by string id.
+
+Shared frontend helpers should be mechanics only: date defaults, date inputs,
+run/loading/error handling, and common grid/error body rendering. Report
+selection controls are a product decision; add them when they make the workflow
+clear, not as a substitute for route-level navigation.
 
 ## Auth And Data Scope
 
@@ -91,6 +122,20 @@ curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/reports/<name>?..."
 For protected apps, include the bearer token. Parse successful responses with
 `gridDatasetSchema` in route tests and unit-test pure mappers for hierarchy,
 rollups, hidden IDs, and totals.
+
+## Example Reference Files
+
+When creating a report from scratch, adapt these reference files instead of
+expecting them to exist in every generated project:
+
+- [Sample report contract](references/sample-report-contract.ts.example)
+- [Sample report API route](references/sample-report-api.ts.example)
+- [Sample report React screen](references/sample-report-screen.tsx.example)
+- [Report parameter helper](references/report-params.ts.example)
+- [Report dataset loading helper](references/use-report-dataset.ts.example)
+
+Copy only the pieces the project needs. The examples are not scaffolded into new
+Sapporta projects by default.
 
 ## References
 

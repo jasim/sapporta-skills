@@ -1,0 +1,281 @@
+// Example only. Copy into packages/frontend/src/reports/<ReportName>.tsx and adapt route params, typed client, toolbar, and links.
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import {
+  parseDateRange,
+  relative,
+  serializeDateRange,
+  Temporal,
+  type DateRangeState,
+} from "@sapporta/shared";
+import {
+  buildSearchParams,
+  createSnapshotUrl,
+  DateRangeField,
+  ReportError,
+  ReportGridDataset,
+  ReportRunButton,
+  ReportScreenFrame,
+  ReportSummaryStats,
+  ReportToolbar,
+} from "@sapporta/frontend/report";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@sapporta/ui/select";
+import { sampleReportApi } from "../api";
+import type {
+  SampleReportQuery,
+  SampleReportSegment,
+} from "your-app-shared";
+import { fieldError, type ReportParamError } from "./report-params";
+import {
+  useReportDataset,
+  type ReportDatasetLoadContext,
+} from "./use-report-dataset";
+
+type SampleReportParams = {
+  period: DateRangeState;
+  segment: SampleReportSegment;
+};
+
+const sampleReportPath = "/reports/sample";
+
+const defaultSampleReportParams = {
+  period: relative("30d"),
+  segment: "all",
+} satisfies SampleReportParams;
+
+const segmentLabels = {
+  all: "All segments",
+  new: "New business",
+  expansion: "Expansion",
+} satisfies Record<SampleReportSegment, string>;
+
+export function SampleReport() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlState = useMemo(
+    () => readSampleReportUrlParams(searchParams),
+    [searchParams],
+  );
+  const urlValidationErrors = useMemo(
+    () => validateSampleReportParams(urlState.params),
+    [urlState.params],
+  );
+  const urlErrors = [...urlState.errors, ...urlValidationErrors];
+  const reportInput = urlErrors.length === 0 ? urlState.params : null;
+  const [reportInputParams, setReportInputParams] = useState(urlState.params);
+  const [reportParamErrors, setReportParamErrors] = useState<
+    ReportParamError<SampleReportParams>[]
+  >([]);
+  const urlParamsKey = searchParams.toString();
+
+  useEffect(() => {
+    setReportInputParams(urlState.params);
+    setReportParamErrors([]);
+  }, [urlParamsKey]);
+
+  const report = useReportDataset({
+    input: reportInput,
+    load: loadSampleReport,
+  });
+
+  const visibleErrors =
+    reportParamErrors.length > 0 ? reportParamErrors : urlErrors;
+  const snapshotUrl = createSnapshotUrl(
+    sampleReportPath,
+    sampleReportQuery(reportInputParams),
+  );
+
+  function runReport() {
+    const errors = validateSampleReportParams(reportInputParams);
+    if (errors.length > 0) {
+      setReportParamErrors(errors);
+      return;
+    }
+
+    setReportParamErrors([]);
+    setSearchParams(buildSearchParams(sampleReportQuery(reportInputParams)));
+  }
+
+  return (
+    <ReportScreenFrame
+      title="Sample Report"
+      subtitle="Revenue, cost, and margin by channel."
+      actions={
+        <a
+          href={snapshotUrl}
+          className="text-sap-data text-sap-muted hover:text-sap-emph"
+        >
+          Snapshot
+        </a>
+      }
+    >
+      <ReportToolbar
+        actions={
+          <ReportRunButton
+            loading={report.loading}
+            disabled={report.loading}
+            onClick={runReport}
+          />
+        }
+      >
+        <DateRangeField
+          label="Period"
+          value={reportInputParams.period}
+          onChange={(period) =>
+            setReportInputParams({ ...reportInputParams, period })
+          }
+          error={fieldError(visibleErrors, "period")}
+        />
+        <SegmentField
+          value={reportInputParams.segment}
+          onChange={(segment) =>
+            setReportInputParams({ ...reportInputParams, segment })
+          }
+          error={fieldError(visibleErrors, "segment")}
+        />
+      </ReportToolbar>
+
+      {urlErrors.length > 0 ? (
+        <ReportError error={urlErrors[0]?.message ?? "Invalid report input."} />
+      ) : null}
+
+      {report.status === "error" ? <ReportError error={report.error} /> : null}
+
+      {report.dataset?.stats ? (
+        <ReportSummaryStats stats={report.dataset.stats} />
+      ) : null}
+
+      <div className="min-h-0 flex-1 overflow-auto bg-sap-panel">
+        {report.dataset ? (
+          <ReportGridDataset
+            dataset={report.dataset}
+            linkContext={reportInput ? { input: reportInput } : undefined}
+          />
+        ) : (
+          <div className="p-[18px] text-sap-data text-sap-muted">
+            Run the report to load results.
+          </div>
+        )}
+      </div>
+    </ReportScreenFrame>
+  );
+}
+
+function SegmentField({
+  value,
+  onChange,
+  error,
+}: {
+  value: SampleReportSegment;
+  onChange(value: SampleReportSegment): void;
+  error?: string | null;
+}) {
+  return (
+    <label className="flex items-center gap-2 text-sap-data">
+      <span className="text-sap-subtle">segment:</span>
+      <Select
+        value={value}
+        onValueChange={(next) => onChange(next as SampleReportSegment)}
+      >
+        <SelectTrigger
+          aria-invalid={error ? true : undefined}
+          className="h-sap-ctl w-[160px] rounded-[5px] text-sap-emph"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(segmentLabels).map(([segment, label]) => (
+            <SelectItem key={segment} value={segment}>
+              {label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {error ? <span className="text-sap-negative">{error}</span> : null}
+    </label>
+  );
+}
+
+function readSampleReportUrlParams(searchParams: URLSearchParams): {
+  params: SampleReportParams;
+  errors: ReportParamError<SampleReportParams>[];
+} {
+  const raw = Object.fromEntries(searchParams.entries());
+  const errors: ReportParamError<SampleReportParams>[] = [];
+  let period = defaultSampleReportParams.period;
+
+  try {
+    period = parseDateRange("period", raw);
+  } catch {
+    errors.push({
+      field: "period",
+      message: "Period in the URL is invalid.",
+    });
+  }
+
+  const segment = sampleReportSegment(raw.segment);
+  if (segment === null) {
+    errors.push({
+      field: "segment",
+      message: "Segment in the URL is invalid.",
+    });
+  }
+
+  return {
+    params: {
+      period,
+      segment: segment ?? defaultSampleReportParams.segment,
+    },
+    errors,
+  };
+}
+
+function validateSampleReportParams(
+  params: SampleReportParams,
+): ReportParamError<SampleReportParams>[] {
+  if (
+    params.period.type === "custom" &&
+    params.period.start &&
+    params.period.end &&
+    Temporal.PlainDate.compare(params.period.start, params.period.end) > 0
+  ) {
+    return [
+      {
+        field: "period",
+        message: "Period start must be on or before period end.",
+      },
+    ];
+  }
+
+  return [];
+}
+
+function sampleReportQuery(params: SampleReportParams): SampleReportQuery {
+  return {
+    ...serializeDateRange(params.period, "period"),
+    segment: params.segment === "all" ? undefined : params.segment,
+  };
+}
+
+async function loadSampleReport(
+  input: SampleReportParams,
+  context: ReportDatasetLoadContext,
+) {
+  return sampleReportApi.sampleReport({
+    query: sampleReportQuery(input),
+    fetchOptions: { signal: context.signal },
+  });
+}
+
+function sampleReportSegment(value: unknown): SampleReportSegment | null {
+  if (value === undefined || value === null || value === "") return "all";
+  if (value === "all" || value === "new" || value === "expansion") {
+    return value;
+  }
+  return null;
+}
