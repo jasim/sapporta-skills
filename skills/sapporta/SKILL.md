@@ -81,7 +81,7 @@ Reference docs:
   metadata -> read [table-creation/SKILL.md](table-creation/SKILL.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [report-creation/SKILL.md](report-creation/SKILL.md)
-- Row links, cell links, drill-through, cross-report navigation -> read
+- Cell links, drill-through, cross-report navigation -> read
   [report-linking/SKILL.md](report-linking/SKILL.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
   transactions, OpenAPI registration -> read [app/SKILL.md](app/SKILL.md)

@@ -1,17 +1,21 @@
 ---
 name: report-linking
 description: >
-  Use when the user wants report rows, cells, or footer rows to navigate
-  somewhere useful. Covers Sapporta `ReportGridDataset` link resolvers,
+  Use when the user wants report cells or total/footer cells to navigate
+  somewhere useful. Covers Sapporta `ReportGridDataset` cell link resolvers,
   drill-up, drill-into, cross-report links, IDs, foreign keys, and explorable
-  summary rows.
+  summary cells.
 ---
 
 # Report Linking
 
 Reports are more useful when the user can jump from a row, cell, or total into
-the underlying data. Add links in the report screen by passing resolver
+the underlying data. Add links in the report screen by passing cell resolver
 functions to `ReportGridDataset`. Do not put link metadata in `GridDataset`.
+
+Use the current public types from `@sapporta/frontend/report`:
+`ReportCellLink`, `ReportCellLinkContext`, and `ReportCellLinkResolvers`.
+Do not use the removed grid-link type family.
 
 Use docs for exact resolver and link type shapes:
 
@@ -28,8 +32,8 @@ Use docs for exact resolver and link type shapes:
   policy live there.
 - Pass current query state through `linkContext` when a link needs date range or
   filter values.
-- Check optional values before returning links for synthetic rows such as
-  opening, closing, subtotal, or footer rows.
+- Check optional values before returning links for synthetic cells such as
+  opening, closing, subtotal, or footer totals.
 - Exercise non-trivial links in the browser.
 
 ## Link Patterns
