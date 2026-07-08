@@ -2,8 +2,9 @@
 name: combobox
 description: >
   Use when a Sapporta React form field needs a searchable dropdown over an
-  id-to-label map. Covers `Combobox` from `@sapporta/ui`, foreign-key pickers,
-  tag selectors, and lists too long for a native `<select>`.
+  array of typed values and labels. Covers `Combobox` from `@sapporta/ui`,
+  foreign-key pickers, tag selectors, and lists too long for a native
+  `<select>`.
 ---
 
 # Combobox
@@ -20,12 +21,26 @@ Docs:
 Agent reminders:
 
 - Use the `Combobox` export from `@sapporta/ui`.
-- `value` is a string id or `null`; `onChange` receives the picked string id or
-  `null`.
-- `options` is an id-to-label map. Build it from scoped rows or already-scoped
-  parent data.
-- Convert numeric ids at the submit boundary only if the API expects a number.
+- `value` is a string id, numeric id, or `null`; `onChange` receives the picked
+  value with the same string/number type or `null`.
+- `options` is an array of `{ id, label }` objects, not an id-to-label map.
+  Build it from lookup entries or already-scoped parent data.
+- Preserve numeric ids when the underlying table stores numeric keys. Convert
+  to strings only at a boundary that explicitly expects text.
+- Clearing the picker passes `null`; do not use an empty string as the clear
+  sentinel.
 - Required-field validation lives outside `Combobox`.
 - Use a native/select primitive for short static option sets.
 - Do not populate options from raw SQL that can expose
   rows outside the current workspace/user boundary.
+
+Typical lookup shape:
+
+```tsx
+const options = lookupEntries.map((entry) => ({
+  id: entry.value,
+  label: entry.label,
+}));
+
+<Combobox value={customerId} onChange={setCustomerId} options={options} />
+```
