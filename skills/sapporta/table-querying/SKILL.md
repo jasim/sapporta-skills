@@ -51,8 +51,9 @@ codes:
 
 Do not expect the old `{ "data": { "123": "Acme" } }` map shape. Lookup values
 are strings or numbers, matching the target table primary-key type. Preserve
-that type through lookup caches, comboboxes, grid editors, and filters; only
-serialize values when building the HTTP query, such as `ids=123,456`.
+that type through lookup caches, Base UI `Combobox` item objects, grid editors,
+and filters; only serialize values when building the HTTP query, such as
+`ids=123,456`.
 
 For protected or non-local apps, read
 [../data-console/references/cli-server-access.md](../data-console/references/cli-server-access.md)

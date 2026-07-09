@@ -52,7 +52,8 @@ Forms must omit system-managed scope fields and columns marked
 
 ## Primitives
 
-- `Combobox` for searchable typed value/label pickers -> read
+- Compose the Base UI `Combobox` primitives and Sapporta's shared combobox
+  styles for searchable typed pickers -> read
   [combobox/SKILL.md](combobox/SKILL.md).
 - Table/grid pages should preserve built-in search, filters, sort, pagination,
   CSV export, lookup labels, URL state, loading states, and error states unless

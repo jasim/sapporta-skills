@@ -1,46 +1,53 @@
 ---
 name: combobox
 description: >
-  Use when a Sapporta React form field needs a searchable dropdown over an
-  array of typed values and labels. Covers `Combobox` from `@sapporta/ui`,
-  foreign-key pickers, tag selectors, and lists too long for a native
-  `<select>`.
+  Use when composing searchable dropdowns in Sapporta React code with Base UI
+  Combobox primitives. Covers the `@sapporta/ui/combobox` re-export, shared
+  Sapporta styles, typed lookup values, and remote lookup integration. Defer
+  general Combobox API, composition, and accessibility guidance to Base UI.
 ---
 
 # Combobox
 
-Use Sapporta's `Combobox` when the user needs to pick one value from a list and
-search improves the flow: foreign keys, accounts, customers, tags, users, or
-any long/changing option set. Prefer it over a hand-rolled popover/list when
-its shape fits.
-
-Docs:
-
-- Frontend screens: https://sapporta.com/docs/subsystems/frontend-screens/
-
-Agent reminders:
-
-- Use the `Combobox` export from `@sapporta/ui`.
-- `value` is a string id, numeric id, or `null`; `onChange` receives the picked
-  value with the same string/number type or `null`.
-- `options` is an array of `{ id, label }` objects, not an id-to-label map.
-  Build it from lookup entries or already-scoped parent data.
-- Preserve numeric ids when the underlying table stores numeric keys. Convert
-  to strings only at a boundary that explicitly expects text.
-- Clearing the picker passes `null`; do not use an empty string as the clear
-  sentinel.
-- Required-field validation lives outside `Combobox`.
-- Use a native/select primitive for short static option sets.
-- Do not populate options from raw SQL that can expose
-  rows outside the current workspace/user boundary.
-
-Typical lookup shape:
+Compose comboboxes with the Base UI primitives re-exported by Sapporta:
 
 ```tsx
-const options = lookupEntries.map((entry) => ({
-  id: entry.value,
-  label: entry.label,
-}));
-
-<Combobox value={customerId} onChange={setCustomerId} options={options} />
+import { Combobox, comboboxClassNames } from "@sapporta/ui/combobox";
+import { cn } from "@sapporta/ui/cn";
 ```
+
+Sapporta exposes the Base UI `Combobox` namespace and shared style tokens. It
+does not provide the old ready-made `Combobox` field or `ComboboxList`.
+
+Use the Base UI documentation as the canonical source for component anatomy,
+props, TypeScript behavior, accessibility, composition patterns, and async
+search:
+
+- https://base-ui.com/react/components/combobox
+
+Inspect the installed Base UI declarations when a project version differs
+from the current documentation.
+
+## Sapporta-specific rules
+
+- Apply the matching `comboboxClassNames` token to each primitive. The map
+  provides `inputGroup`, `input`, `action`, `trigger`, `positioner`, `popup`,
+  `empty`, `list`, `item`, and `itemIndicator`. Merge consumer-specific layout
+  classes with `cn()`.
+- Keep `LookupEntry` objects as `items` and as the Base UI selected value.
+  Translate at the domain boundary with `pickedEntry?.value ?? null`.
+- Preserve numeric lookup ids as numbers. Use `lookupValueEquals()` for item
+  equality and `lookupValueKey()` for React keys.
+- Pass `filter={null}` when a lookup or server performs the search. Update the
+  remote query for the `"input-change"` reason and clear it after selection or
+  other input-reset events.
+- Keep the selected lookup entry in the available items while remote results
+  change. Forward `entry.disabled` to `Combobox.Item`.
+- Populate lookup items through scoped table or lookup APIs. Client filters
+  and raw SQL do not establish workspace or user authorization.
+
+Reference implementations in the Sapporta monorepo:
+
+- `packages/frontend/src/lookup/LookupPicker.tsx`
+- `packages/frontend/src/table/filters/ConditionEditor.tsx`
+- `packages/grid/src/column-preset/editors/LookupValueEditor.tsx`
