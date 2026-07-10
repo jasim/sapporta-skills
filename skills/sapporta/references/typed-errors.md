@@ -1,11 +1,3 @@
----
-name: typed-errors
-description: >
-  Use when backend workflow code needs to return a specific actionable HTTP
-  error instead of collapsing to a 500. Defines domain error subclasses with
-  status/body data and dispatches them at the HTTP edge.
----
-
 # Typed Domain Errors
 
 Use typed domain errors when workflow facts raised deep in service code should

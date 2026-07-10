@@ -1,11 +1,3 @@
----
-name: row-insertion
-description: >
-  Use when the user wants to add records to an existing Sapporta app with
-  `sapporta rows insert`. Covers entering individual rows, seeding data,
-  looking up foreign keys, and using built-in row commands instead of raw SQL.
----
-
 # Row Insertion
 
 Only insert or change data when the user has asked for a data change. Inspect
@@ -20,16 +12,16 @@ Docs:
 
 ## Workflow
 
-1. Describe the table with `pnpm exec sapporta tables show <table>`.
+1. Inspect the table with `pnpm exec sapporta tables show <table>`.
 2. Sample visible data with `pnpm exec sapporta tables sample <table>`.
 3. Resolve foreign keys from visible app data. Prefer table samples, table
    filters, lookup routes, or existing domain endpoints; use SQL only as a
    fallback/admin inspection tool.
-4. Insert with `pnpm exec sapporta rows insert <table> --data '<json>'`.
+4. Insert with `pnpm exec sapporta rows create <table> --values '<json>'`.
 5. Verify with a table query, sample, or row get.
 
-`--data` accepts a single JSON object or an array. Use column names exactly as
-the schema exposes them, normally `snake_case`.
+`--values` accepts a single JSON object or an array. Use column names exactly
+as the schema exposes them, normally `snake_case`.
 
 ## Data Rules
 

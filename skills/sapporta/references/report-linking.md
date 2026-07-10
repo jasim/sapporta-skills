@@ -1,12 +1,3 @@
----
-name: report-linking
-description: >
-  Use when the user wants report cells or total/footer cells to navigate
-  somewhere useful. Covers Sapporta `ReportGridDataset` cell link resolvers,
-  drill-up, drill-into, cross-report links, IDs, foreign keys, and explorable
-  summary cells.
----
-
 # Report Linking
 
 Reports are more useful when the user can jump from a row, cell, or total into
@@ -48,5 +39,5 @@ are not authorization.
 
 ## Related
 
-- [report-creation](../report-creation/SKILL.md) - include hidden IDs while
+- [report-creation](report-creation.md) - include hidden IDs while
   shaping `GridDataset`.

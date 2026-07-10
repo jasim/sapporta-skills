@@ -1,15 +1,6 @@
----
-name: data-console
-description: >
-  Use when the user wants to inspect existing Sapporta data, answer questions
-  from records, sample tables, call report routes, insert or update rows, call
-  existing endpoints with curl, or use `sapporta` CLI commands against a
-  running app.
----
-
 # Data Console
 
-Use this skill when the user wants to work with records in an existing Sapporta
+Use this workflow when the user wants to work with records in an existing Sapporta
 app rather than change the app's code. Prefer the project-local command form:
 
 ```bash
@@ -24,22 +15,31 @@ recipes:
 - Agent access: https://sapporta.com/docs/tools-and-operations/agent-access/
 - CLI reference: https://sapporta.com/docs/reference/cli/
 
+## Contents
+
+- [Required Preflight](#required-preflight)
+- [Discover Before Acting](#discover-before-acting)
+- [Answer Data Questions](#answer-data-questions)
+- [Change Data Safely](#change-data-safely)
+- [Data Safety Rules](#data-safety-rules)
+- [Read The Narrow Reference](#read-the-narrow-reference)
+
 ## Required Preflight
 
 For API-backed CLI commands, verify the selected app server is reachable:
 
 ```bash
-pnpm exec sapporta describe
-pnpm exec sapporta tables
+pnpm exec sapporta endpoints list
+pnpm exec sapporta tables list
 ```
 
 If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message before
 diagnosing app, auth, or schema behavior. If the project uses a non-default API
-port, set `SAPPORTA_API_URL` or pass `--api-url`.
+port, pass `--api-url <url>`.
 
 If a protected data command returns `unauthenticated`, `token_expired`,
 `token_revoked`, or `workspace_required`, read
-[references/cli-server-access.md](references/cli-server-access.md), stop data
+[cli-server-access.md](cli-server-access.md), stop data
 work, and ask the user to create or replace the agent access token. Do not
 silently bypass protected app APIs with direct SQLite or local database access
 for workspace-user answers or mutations.
@@ -49,16 +49,17 @@ for workspace-user answers or mutations.
 Start with discovery before composing requests or mutating data:
 
 ```bash
-pnpm exec sapporta describe
-pnpm exec sapporta describe "METHOD /api/path"
-pnpm exec sapporta tables
+pnpm exec sapporta endpoints list
+pnpm exec sapporta endpoints show "METHOD /api/path"
+pnpm exec sapporta tables list
 pnpm exec sapporta tables show <name>
 pnpm exec sapporta tables sample <name>
 ```
 
-The CLI can inspect app-owned routes with `describe`, but it does not invoke
-arbitrary user-defined endpoints. Call those routes with `curl`, a typed client,
-or another HTTP client against the selected app URL.
+The CLI can inspect app-owned routes with `endpoints list` and
+`endpoints show`, and can invoke arbitrary endpoints with
+`api get/post/put/delete`. Use `curl` or a typed client when that is more
+convenient for the route.
 
 ## Answer Data Questions
 
@@ -67,7 +68,7 @@ Prefer the highest-level app feature that answers the question:
 1. Existing report endpoint.
 2. Built-in table list endpoint when filters/search/pagination fit.
 3. Existing domain endpoint when it exposes the needed read.
-4. Read-only SQL through `sapporta db exec-sql` when no report or endpoint
+4. Read-only SQL through `sapporta sql query` when no report or endpoint
    answers the question cleanly.
 
 Report results back with provenance: name the report, table endpoint, domain
@@ -80,9 +81,9 @@ suggest creating a route-based report.
 Only mutate data when the user asked for a data change. Use the highest fitting
 option:
 
-1. Existing custom product/domain endpoint from `sapporta describe`.
-2. Built-in row commands: `sapporta rows insert/update/delete`.
-3. Raw SQL fallback after reading [../meta-sql/SKILL.md](../meta-sql/SKILL.md).
+1. Existing custom product/domain endpoint from `sapporta endpoints list/show`.
+2. Built-in row commands: `sapporta rows create/update/delete`.
+3. Raw SQL fallback after reading [meta-sql.md](meta-sql.md).
 
 Do not recommend reports as mutation surfaces unless the app deliberately
 defines a mutating route.
@@ -105,15 +106,15 @@ unless the user explicitly asks for admin/debug inspection.
   app's normal save behavior.
 - Keep writes scoped to the specific records the user asked to change.
 
-## Read The Narrow Skill
+## Read The Narrow Reference
 
 - Insert rows or seed flat data -> read
-  [../row-insertion/SKILL.md](../row-insertion/SKILL.md)
+  [row-insertion.md](row-insertion.md)
 - Insert parent and child records atomically -> read
-  [../master-detail-insertion/SKILL.md](../master-detail-insertion/SKILL.md)
+  [master-detail-insertion.md](master-detail-insertion.md)
 - Call existing report routes or answer data questions -> read
-  [../report-execution/SKILL.md](../report-execution/SKILL.md)
+  [report-execution.md](report-execution.md)
 - Compose `/api/tables/<name>` filters, search, sort, pagination -> read
-  [../table-querying/SKILL.md](../table-querying/SKILL.md)
+  [table-querying.md](table-querying.md)
 - Raw SQL fallback reads or writes -> read
-  [../meta-sql/SKILL.md](../meta-sql/SKILL.md)
+  [meta-sql.md](meta-sql.md)

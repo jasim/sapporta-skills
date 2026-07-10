@@ -1,11 +1,3 @@
----
-name: master-detail-insertion
-description: >
-  Use when the user wants to add a parent record and child rows together in an
-  existing Sapporta app, such as orders with line items, journal entries with
-  lines, invoices with details, or any parent-child data entry.
----
-
 # Master-Detail Insertion
 
 Only insert parent-child data when the user has asked for a data change. Inspect
@@ -20,14 +12,15 @@ Docs:
 
 ## Workflow
 
-1. Describe both tables with `pnpm exec sapporta tables show <table>`.
+1. Inspect both tables with `pnpm exec sapporta tables show <table>`.
 2. Confirm the parent `meta.children` relationship when you expect generated
    request schemas to expose the child branch.
 3. Identify the detail table FK column that references the parent.
 4. Resolve any other FKs from visible app data.
-5. Insert the parent with `$details` through `pnpm exec sapporta rows insert`.
+5. Insert the parent with `$details` through
+   `pnpm exec sapporta rows create <parent_table> --values '<json>'`.
 
-The row insert path inserts the parent, reads its primary key, backfills the
+The row create path inserts the parent, reads its primary key, backfills the
 detail FK on each child row, inserts details in one transaction, and rolls back
 on failure.
 

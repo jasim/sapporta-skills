@@ -1,11 +1,3 @@
----
-name: meta-sql
-description: >
-  Use only when no Sapporta endpoint, built-in row command, table query, or
-  report route covers the user's data task. Runs raw SQL directly against the
-  app database with `sapporta db exec-sql "<sql>"`.
----
-
 # Meta SQL Fallback
 
 Use raw SQL only after confirming no higher-level surface fits:
@@ -24,9 +16,10 @@ Docs:
 
 ## Auth And Row Scope
 
-`sapporta db exec-sql` runs direct SQL against the app database. It does not go
-through generated table handlers, `scopedRows()`, route-edge ability/data
-authority helpers, table save hooks, or row-security predicates.
+`sapporta sql query` and `sapporta sql execute` run SQL against the app
+database through the app API. They do not go through generated table handlers,
+`scopedRows()`, route-edge ability/data authority helpers, table save hooks, or
+row-security predicates.
 
 - Prefer report routes, table endpoints, row commands, or custom endpoints for
   user-facing reads and writes.
@@ -40,12 +33,14 @@ authority helpers, table save hooks, or row-security predicates.
 
 ## Command Use
 
-Use `pnpm exec sapporta db exec-sql` for quick read-only inspection. Use the
-documented JSON body form when you need fields such as `limit` or `dryRun`.
+Use `pnpm exec sapporta sql query "<sql>"` for quick read-only inspection. Use
+`--params '<json-array>'` for bound parameters and `--limit <number>` for row
+limits.
 
-For risky maintenance SQL, dry-run first when supported. Treat the command as a
-one-statement escape hatch. Do not use it for manual transaction scripts; write
-app code or use a supported row/master-detail command.
+For risky maintenance SQL, use
+`pnpm exec sapporta sql execute "<sql>" --dry-run` first. Treat the command as
+a one-statement escape hatch. Do not use it for manual transaction scripts;
+write app code or use a supported row/master-detail command.
 
 Raw SQL writes bypass validation, save hooks, default handling, trusted
 ownership stamping, and scoped row helpers. Use them only when the user

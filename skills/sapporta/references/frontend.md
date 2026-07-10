@@ -1,19 +1,18 @@
----
-name: frontend
-description: >
-  Use when the user wants to build custom React views in a Sapporta project
-  under `packages/frontend/src/`. Covers custom routes, forms, dashboards,
-  wizards, table/grid views using Sapporta primitives, `@sapporta/ui`
-  components, and typed API client calls.
----
-
 # Custom Frontend Views
 
 Build screens under `packages/frontend/src/`: dashboards, import wizards,
 multi-table forms, report pages, and custom table/grid workflows. Use public
 exports from `@sapporta/frontend`, `@sapporta/shared`, `@sapporta/grid`,
 `@sapporta/grid/column-preset`, and generic UI components from `@sapporta/ui`.
-When exact declarations are needed, inspect the app's installed packages.
+Prefer domain-aware components and hooks from `@sapporta/frontend` before
+composing generic `@sapporta/ui` primitives. When exact declarations are
+needed, inspect the app's installed packages.
+
+Before creating an app-local field or picker, search for an existing pattern:
+
+```bash
+rg -n 'LookupPicker|useTableLookup|Combobox' packages/frontend/src
+```
 
 Docs:
 
@@ -50,15 +49,20 @@ typed custom endpoints whose server handlers resolve auth and apply
 Forms must omit system-managed scope fields and columns marked
 `clientEditable: false`.
 
-## Primitives
+## Pickers And Primitives
 
-- Compose the Base UI `Combobox` primitives and Sapporta's shared combobox
-  styles for searchable typed pickers -> read
-  [combobox/SKILL.md](combobox/SKILL.md).
+- For ordinary searchable selection from a Sapporta table or foreign key, use
+  `LookupPicker` with `useTableLookup` from `@sapporta/frontend/lookup`. It owns
+  scoped remote search, selected-value loading, caching, clearing, disabled
+  state, and shared styling. Do not compose Base UI or add an app-local picker
+  for this standard case.
+- Compose the Base UI `Combobox` primitives only when the interaction is not
+  covered by `LookupPicker`. Use `Select` for short static choices -> read
+  [combobox.md](combobox.md).
 - Table/grid pages should preserve built-in search, filters, sort, pagination,
   CSV export, lookup labels, URL state, loading states, and error states unless
   the user explicitly asks for less -> read
-  [references/table-grid.md](references/table-grid.md).
+  [table-grid.md](table-grid.md).
 - Custom non-table grid screens should use BaseGrid from `@sapporta/grid` and
   ColumnPreset from `@sapporta/grid/column-preset`; follow the public BaseGrid
   lifecycle docs.

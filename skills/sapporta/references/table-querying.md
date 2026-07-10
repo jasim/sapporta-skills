@@ -1,12 +1,3 @@
----
-name: table-querying
-description: >
-  Use when the user needs to query or compose URLs for Sapporta table list
-  APIs, `GET /api/tables/<name>`, with filters, cross-column search, sort, and
-  pagination. Applies to curl, frontend code, backend handlers, and 400
-  debugging.
----
-
 # Table Querying
 
 `GET /api/tables/<name>` is the built-in list endpoint for every table. Use the
@@ -51,10 +42,12 @@ codes:
 
 Do not expect the old `{ "data": { "123": "Acme" } }` map shape. Lookup values
 are strings or numbers, matching the target table primary-key type. Preserve
-that type through lookup caches, Base UI `Combobox` item objects, grid editors,
-and filters; only serialize values when building the HTTP query, such as
-`ids=123,456`.
+that type through lookup caches, pickers, grid editors, and filters; only
+serialize values when building the HTTP query, such as `ids=123,456`.
+Frontend table-backed selectors should normally use `LookupPicker` and
+`useTableLookup` from `@sapporta/frontend/lookup`. Specialized direct Base UI
+consumers must also preserve the lookup value type.
 
 For protected or non-local apps, read
-[../data-console/references/cli-server-access.md](../data-console/references/cli-server-access.md)
+[cli-server-access.md](cli-server-access.md)
 first.

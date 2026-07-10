@@ -1,12 +1,3 @@
----
-name: table-creation
-description: >
-  Use when the user wants to define or change Sapporta database tables in
-  TypeScript. Covers table modeling, creating or renaming tables, columns,
-  foreign keys, indexes, search config, display metadata, and Drizzle
-  migration workflow.
----
-
 # Table Creation
 
 Table schema work belongs in `packages/api/schema/`. Inspect existing schema
@@ -102,5 +93,5 @@ at startup and does not apply migrations automatically.
 These files intentionally point to canonical docs instead of carrying API
 reference copies:
 
-- [Canonical table docs](references/full-api-reference.md)
-- [Canonical table examples](references/examples.md)
+- [Canonical table docs](table-full-api-reference.md)
+- [Canonical table examples](table-examples.md)

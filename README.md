@@ -1,11 +1,12 @@
 # Sapporta Codex Skills
 
-Operational skills for agents working inside Sapporta projects.
+Operational guidance for agents working inside existing Sapporta applications.
 
-The skills in `skills/sapporta` tell an agent when to choose a workflow, which
-project files to inspect or edit, which auth and row-scope rules are
-non-negotiable, and which validation loop proves a change. They are not the
-Sapporta API reference.
+The skill in `skills/sapporta` tells an agent when to choose a workflow, which
+application files to inspect or edit, which auth and row-scope rules are
+non-negotiable, and which validation loop proves a change. Sapporta is the
+reusable framework and library; a Sapporta application is a downstream product
+project that depends on it and contains its own schema, workflows, UI, and data.
 
 Use the public documentation for product explanations, API shapes, CLI grammar,
 TypeScript reference, and worked examples:
@@ -15,9 +16,10 @@ TypeScript reference, and worked examples:
 - API and tooling choices: https://sapporta.com/docs/tools-and-operations/choose-apis-and-tools/
 - Reference index: https://sapporta.com/docs/reference/
 
-The main skill is in [`skills/sapporta/SKILL.md`](skills/sapporta/SKILL.md).
-Supporting skills are grouped under `skills/sapporta/` by operational area, such
-as `table-creation`, `app`, `frontend`, `data-console`, and `report-creation`.
+The discoverable skill is in
+[`skills/sapporta/SKILL.md`](skills/sapporta/SKILL.md). Supporting workflows are
+ordinary files under `skills/sapporta/references/`, loaded only after the root
+skill selects the relevant operational area.
 
 Keep future skill changes concise and agent-facing. Link to the docs when a task
 needs detailed Sapporta API behavior.

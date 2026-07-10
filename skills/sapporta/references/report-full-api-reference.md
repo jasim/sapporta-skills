@@ -1,6 +1,6 @@
 # Route-Based Report Reference
 
-Do not maintain a second report API/type reference in this skill.
+Use the canonical documentation for report API and type details.
 
 Use the canonical documentation:
 

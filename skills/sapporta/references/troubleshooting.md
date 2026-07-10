@@ -1,11 +1,3 @@
----
-name: troubleshooting
-description: >
-  Use when a Sapporta project fails during install, dev-server startup, tests,
-  or CLI use because of native module binding errors, better-sqlite3 failures,
-  "Could not locate the bindings file", or native addon issues.
----
-
 # Sapporta Troubleshooting
 
 Use public troubleshooting docs for known fixes:

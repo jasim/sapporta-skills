@@ -1,6 +1,6 @@
 # Route-Based Report Examples
 
-Do not keep long worked report examples in this skill.
+Use the canonical documentation for long worked report examples.
 
 Use the canonical documentation:
 

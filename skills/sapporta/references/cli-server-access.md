@@ -12,19 +12,19 @@ Docs:
 
 ## Agent Procedure
 
-- API-backed CLI commands call the selected running app. If `SAPPORTA_API_URL`
-  is unset, the CLI default is documented in the CLI reference.
+- API-backed CLI commands call the selected running app. Pass `--api-url <url>`
+  for non-default servers; otherwise the CLI uses its documented default.
 - If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message. It
   includes the resolved request URL and may mention sandbox network permission.
 - For protected data work, ask the user for an agent access token from the app's
   account profile screen while signed in to the target workspace. The raw token
-  is shown once and should be exposed as `SAPPORTA_API_TOKEN`.
+  is shown once and should be passed with `--api-token <token>`.
 - Do not invent, transform, print, or store tokens in the project repository.
 - A token belongs to one user and one workspace. To work in another workspace,
   the user needs a token created while that workspace is active.
 - When auth fails during data-console work, stop and tell the user the targeted
   API URL, the token-creation link, and to expose the new active-workspace token
-  as `SAPPORTA_API_TOKEN`.
+  with `--api-token <token>`.
 - Do not fall back to direct local SQLite/database access for workspace-user
   data answers or mutations unless the user explicitly asks for admin/debug
   inspection. If you do, state that it is local developer inspection, not

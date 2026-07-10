@@ -1,6 +1,6 @@
 # Table Definition Reference
 
-Do not maintain a second table-definition API reference in this skill.
+Use the canonical documentation for table-definition API details.
 
 Use the canonical documentation:
 

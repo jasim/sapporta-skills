@@ -1,12 +1,3 @@
----
-name: app
-description: >
-  Use when the user wants to add or change Sapporta backend endpoints and
-  product workflows. Covers `TsRestApi` routes in `packages/api/app/`, shared
-  contracts, request validation, OpenAPI docs, typed clients, file uploads, and
-  multi-table transactions.
----
-
 # Application Endpoints
 
 Put app-owned route entrypoints in `packages/api/app/`. Each typed route should
@@ -19,6 +10,15 @@ uploads, response content types, OpenAPI behavior, and typed clients:
 - Typed clients: https://sapporta.com/docs/subsystems/typed-api-clients/
 - OpenAPI discovery: https://sapporta.com/docs/subsystems/openapi-and-discovery/
 - Auth and row security: https://sapporta.com/docs/reference/auth-and-row-security/
+
+## Contents
+
+- [File Placement](#file-placement)
+- [Auth Boundary](#auth-boundary)
+- [Backend Organization](#backend-organization)
+- [Error Handling](#error-handling)
+- [Validation](#validation)
+- [Common Pitfalls](#common-pitfalls)
 
 ## File Placement
 
@@ -41,7 +41,7 @@ like `/invoices/:id/void`, not `/api/invoices/:id/void`.
 Verify the mounted route:
 
 ```bash
-pnpm exec sapporta describe "METHOD /api/your/path"
+pnpm exec sapporta endpoints show "METHOD /api/your/path"
 ```
 
 ## Auth Boundary
@@ -91,7 +91,7 @@ Do not pile parser, workflow, and database logic directly into
 
 Return declared `{ status, body }` responses for expected failures. Declare
 every returned status in the contract. For errors raised deep in business logic,
-read [../user-code/typed-errors/SKILL.md](../user-code/typed-errors/SKILL.md).
+read [typed-errors.md](typed-errors.md).
 
 Unexpected errors should bubble to the app's default error handler. Use raw
 `Response` returns only for deliberate escape hatches such as streaming,
@@ -103,12 +103,12 @@ contract return.
 Run the narrowest proof:
 
 ```bash
-pnpm exec sapporta describe "METHOD /api/your/path"
+pnpm exec sapporta endpoints show "METHOD /api/your/path"
 pnpm build
 ```
 
-If `describe` says the route is not found, check `loadApp()` mounting and the
-contract path before writing frontend code.
+If `endpoints show` says the route is not found, check `loadApp()` mounting
+and the contract path before writing frontend code.
 
 ## Common Pitfalls
 

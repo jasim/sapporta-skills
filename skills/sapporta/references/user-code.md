@@ -1,11 +1,3 @@
----
-name: user-code
-description: >
-  Use when the user wants backend workflow code to be easier to test, organize,
-  or reason about. Covers TypeScript + Hono patterns for Sapporta domain
-  services, modules, and logic that should stay independent of route adapters.
----
-
 # User Code Patterns
 
 Sapporta provides table and CRUD plumbing. Write reports, business logic,
@@ -41,4 +33,4 @@ would have applied.
 ## Routing
 
 - Deep workflow failures that need specific HTTP statuses -> read
-  [typed-errors/SKILL.md](typed-errors/SKILL.md)
+  [typed-errors.md](typed-errors.md)

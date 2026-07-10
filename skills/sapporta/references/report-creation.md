@@ -1,12 +1,3 @@
----
-name: report-creation
-description: >
-  Use when the user wants to create or change Sapporta reports. Covers
-  route-based report APIs, shared report contracts, GridDataset mappers, report
-  screens, summaries, financial statements, trial balances, ledgers, and
-  route/dataset validation.
----
-
 # Report Creation
 
 Build reports as app-owned API routes that return grid-renderable data, plus
@@ -21,6 +12,17 @@ data, frontend renderers, date range helpers, and examples:
 - Route-based reports: https://sapporta.com/docs/reference/full/reports/route-based-reports/
 - Grid result shape: https://sapporta.com/docs/reference/full/reports/grid-result-shape/
 - Scoped report data: https://sapporta.com/docs/reference/full/reports/scoped-report-data/
+
+## Contents
+
+- [Workflow](#workflow)
+- [Report Slice Organization](#report-slice-organization)
+- [Auth And Data Scope](#auth-and-data-scope)
+- [Mapper Rules](#mapper-rules)
+- [Frontend Rules](#frontend-rules)
+- [Validation](#validation)
+- [Example Reference Files](#example-reference-files)
+- [References](#references)
 
 ## Workflow
 
@@ -99,7 +101,7 @@ owns data authority.
 - Use rollups and footers intentionally; tests should assert totals and
   hierarchy when they matter.
 - Keep links out of the backend result. Report links are frontend resolver
-  behavior; read [../report-linking/SKILL.md](../report-linking/SKILL.md).
+  behavior; read [report-linking.md](report-linking.md).
 
 ## Frontend Rules
 
@@ -115,11 +117,11 @@ editing rules, side panels, or toolbar behavior, read the custom grid docs:
 Use the smallest loop that proves the report:
 
 ```bash
-pnpm exec sapporta describe "GET /api/reports/<name>"
-curl -fsS "${SAPPORTA_API_URL:-http://localhost:3000}/api/reports/<name>?..."
+pnpm exec sapporta endpoints show "GET /api/reports/<name>"
+pnpm exec sapporta api get /api/reports/<name> --query '{"...":"..."}'
 ```
 
-For protected apps, include the bearer token. Parse successful responses with
+For protected apps, pass `--api-token <token>`. Parse successful responses with
 `gridDatasetSchema` in route tests and unit-test pure mappers for hierarchy,
 rollups, hidden IDs, and totals.
 
@@ -128,17 +130,17 @@ rollups, hidden IDs, and totals.
 When creating a report from scratch, adapt these reference files instead of
 expecting them to exist in every generated project:
 
-- [Sample report contract](references/sample-report-contract.ts.example)
-- [Sample report API route](references/sample-report-api.ts.example)
-- [Sample report React screen](references/sample-report-screen.tsx.example)
-- [Report parameter helper](references/report-params.ts.example)
-- [Report dataset loading helper](references/use-report-dataset.ts.example)
+- [Sample report contract](sample-report-contract.ts.example)
+- [Sample report API route](sample-report-api.ts.example)
+- [Sample report React screen](sample-report-screen.tsx.example)
+- [Report parameter helper](report-params.ts.example)
+- [Report dataset loading helper](use-report-dataset.ts.example)
 
 Copy only the pieces the project needs. The examples are not scaffolded into new
 Sapporta projects by default.
 
 ## References
 
-- [Report Linking](../report-linking/SKILL.md)
-- [Canonical report docs](references/full-api-reference.md)
-- [Canonical report examples](references/examples.md)
+- [Report Linking](report-linking.md)
+- [Canonical report docs](report-full-api-reference.md)
+- [Canonical report examples](report-examples.md)

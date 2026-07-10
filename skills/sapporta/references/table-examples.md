@@ -1,6 +1,6 @@
 # Table Definition Examples
 
-Do not keep long worked table examples in this skill.
+Use the canonical documentation for long worked table examples.
 
 Use the canonical documentation:
 
