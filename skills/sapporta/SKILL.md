@@ -55,6 +55,9 @@ Some tasks touch both modes: build a report route and screen with
 - For app-development work, inspect local contracts, route files, schema,
   migrations, and local database state as needed; do not block on an agent token
   unless the task is explicitly API-backed data work.
+- To discover how to define application tables, follow
+  [table-creation.md](references/table-creation.md). It routes to the canonical
+  worked schema example and exact references.
 - For API-backed data commands, pass `--api-url <url>` when the app API is not
   on `http://localhost:3000`; pass `--api-token <token>` when the app is
   protected. If auth fails, read the CLI access reference before continuing.
@@ -81,14 +84,15 @@ Reference docs:
 ### App-Building Tasks
 
 - Tables, columns, relations, indexes, search config, and generated schema
-  metadata -> read [table-creation.md](references/table-creation.md)
+  metadata, including the first application tables -> read
+  [table-creation.md](references/table-creation.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [report-creation.md](references/report-creation.md)
 - Cell links, drill-through, cross-report navigation -> read
   [report-linking.md](references/report-linking.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
-  transactions, OpenAPI registration -> read
-  [app-endpoints.md](references/app-endpoints.md)
+  transactions, atomic parent-detail or line-item writes, OpenAPI registration
+  -> read [app-endpoints.md](references/app-endpoints.md)
 - Custom React routes, dashboards, forms, table/grid views, typed API client ->
   read [frontend.md](references/frontend.md)
 - Domain services, module organization, testable TypeScript workflow code ->

@@ -37,8 +37,6 @@ not authorization. Do not use scope fields in frontend filters to enforce auth.
 
 - Do not copy report-grid internals for ordinary report screens; render report
   datasets with report components.
-- Do not use stale examples that pass `editable: false` if the current grid docs
-  and package use `edit: "none"`.
 - Create React-owned BaseGrid runtimes with the documented lifecycle hook, and
   render only after a runtime exists.
 - For bulk actions, read selected rows through public runtime/session APIs

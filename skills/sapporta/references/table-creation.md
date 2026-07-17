@@ -1,16 +1,47 @@
 # Table Creation
 
 Table schema work belongs in `packages/api/schema/`. Inspect existing schema
-files before adding a new pattern.
+files before adding a new pattern:
+
+```bash
+rg --files packages/api/schema
+```
+
+Use local application schemas for project conventions. To discover how to
+define application tables from the canonical starter pattern, use the guide
+below.
 
 Use the public docs for column factories, metadata fields, row-scope reference,
 filter/search behavior, relationship metadata, and migration details:
 
-- Data modeling: https://sapporta.com/docs/subsystems/data-modeling/
-- Table definitions: https://sapporta.com/docs/reference/table-definitions/
-- Schema metadata: https://sapporta.com/docs/reference/full/schema-metadata/
-- Schema and migrations: https://sapporta.com/docs/reference/full/schema-and-migrations/
-- Auth and row security: https://sapporta.com/docs/reference/auth-and-row-security/
+- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
+- Table definitions: https://sapporta.com/docs/reference/schema/table-definitions/
+- Table and column metadata: https://sapporta.com/docs/reference/schema/table-and-column-metadata/
+- Relationships and lookup behavior: https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior/
+- Schema changes and migrations: https://sapporta.com/docs/guides/model-data/schema-changes-and-migrations/
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
+
+## Canonical Starter Pattern
+
+To discover how Sapporta application tables are defined, start with the
+canonical [Define projects and tasks](https://sapporta.com/docs/getting-started/define-projects-and-tasks/)
+worked example. It demonstrates, in one place:
+
+- raw Drizzle tables and exported Sapporta wrappers;
+- semantic text, date, and timestamp columns;
+- primary keys, foreign keys, indexes, and cascade behavior;
+- select metadata, search, row labels, child metadata, and row scope;
+- Temporal timestamp defaults; and
+- the named migration, SQL review, migrate, and check loop.
+
+Use that page as the starter pattern, then rename and adapt the tables, columns,
+scope, relationships, and metadata to the user's domain. For an exact option or
+type, follow its links to the table-definition and metadata references above.
+Do not copy the tutorial's task-management domain into an unrelated app.
+
+The generated application layout is documented at
+https://sapporta.com/docs/reference/project/generated-project-layout/ when the
+package responsibilities or extension points are unclear.
 
 ## Authoring Rules
 

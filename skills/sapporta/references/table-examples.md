@@ -1,13 +1,16 @@
 # Table Definition Examples
 
-Use the canonical documentation for long worked table examples.
+To discover table-definition patterns, use the complete two-table tutorial and
+the canonical references below.
 
 Use the canonical documentation:
 
-- Data modeling examples: https://sapporta.com/docs/subsystems/data-modeling/
-- Building your own feature: https://sapporta.com/docs/building-your-own-feature/overview/
-- Table definitions reference: https://sapporta.com/docs/reference/table-definitions/
-- Schema metadata reference: https://sapporta.com/docs/reference/full/schema-metadata/
+- Complete starter schema: https://sapporta.com/docs/getting-started/define-projects-and-tasks/
+- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
+- Relationships and lookup behavior: https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior/
+- Schema changes and migrations: https://sapporta.com/docs/guides/model-data/schema-changes-and-migrations/
+- Table definitions reference: https://sapporta.com/docs/reference/schema/table-definitions/
+- Table and column metadata reference: https://sapporta.com/docs/reference/schema/table-and-column-metadata/
 
 Agent reminder: adapt examples to the current app's wrapper/import style, add
 required `rowLabelColumns`, declare `rowScope`, and verify relationships with a

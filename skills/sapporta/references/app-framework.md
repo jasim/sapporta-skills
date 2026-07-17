@@ -14,20 +14,26 @@ Read the narrow reference for the specific thing being changed.
 
 Docs:
 
-- LLM-assisted engineering: https://sapporta.com/docs/tools-and-operations/llm-assisted-engineering/
-- Data modeling: https://sapporta.com/docs/subsystems/data-modeling/
-- Custom endpoints: https://sapporta.com/docs/subsystems/custom-api-endpoints/
-- Reports: https://sapporta.com/docs/subsystems/reports/
-- Frontend screens: https://sapporta.com/docs/subsystems/frontend-screens/
+- Develop with a coding agent: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
+- Generated project layout: https://sapporta.com/docs/reference/project/generated-project-layout/
+- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
+- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints/
+- Route-based reports: https://sapporta.com/docs/guides/reports/route-based-reports/
+- Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens/
 
 ## Before Writing Code
 
 Inspect the existing app before editing:
 
 ```bash
+rg --files packages/api/schema
 pnpm exec sapporta tables list
 pnpm exec sapporta endpoints list
 ```
+
+To discover how to define application tables, continue with
+[table-creation.md](table-creation.md). It points to local conventions and the
+canonical starter pattern.
 
 Prefer the project's existing style. Do not create custom code for behavior
 already covered by built-in table APIs or an existing domain endpoint unless the

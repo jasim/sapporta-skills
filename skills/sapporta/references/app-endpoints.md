@@ -6,15 +6,18 @@ register a shared ts-rest contract with `TsRestApi`.
 Use the public docs for exact contract syntax, handler arguments, multipart
 uploads, response content types, OpenAPI behavior, and typed clients:
 
-- Custom endpoints: https://sapporta.com/docs/subsystems/custom-api-endpoints/
-- Typed clients: https://sapporta.com/docs/subsystems/typed-api-clients/
-- OpenAPI discovery: https://sapporta.com/docs/subsystems/openapi-and-discovery/
-- Auth and row security: https://sapporta.com/docs/reference/auth-and-row-security/
+- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints/
+- Domain workflows and transactions: https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions/
+- Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients/
+- OpenAPI discovery: https://sapporta.com/docs/reference/http/openapi/
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
+- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
 
 ## Contents
 
 - [File Placement](#file-placement)
 - [Auth Boundary](#auth-boundary)
+- [Atomic Multi-Table Writes](#atomic-multi-table-writes)
 - [Backend Organization](#backend-organization)
 - [Error Handling](#error-handling)
 - [Validation](#validation)
@@ -58,6 +61,29 @@ Never manually stamp or filter `workspace_id`, `workspaceId`,
 `scoped_to_user_id`, or `scopedToUserId`. Never mutate scoped rows by primary
 key alone. Never insert `request.body` directly into scoped tables. Never fetch
 broadly and filter row ownership in JavaScript.
+
+## Atomic Multi-Table Writes
+
+For a custom endpoint that creates or changes a parent plus details, line
+items, history, or another related table, read these before implementing:
+
+- https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions/
+- https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
+
+Then inspect the app for an existing local pattern:
+
+```bash
+rg -n 'db\.transaction|rowSecurity\.forTable|insertValuesSync|serverValues' packages/api
+```
+
+Use one `auth.rowSecurity.forTable(...)` guard per participating table. Scope
+reads in SQL, prepare transaction writes with `insertValuesSync(tx, ...)`, and
+pass parent keys or other server-authored references through `serverValues`.
+The default Sapporta SQLite transaction callback is synchronous; do not mark it
+`async` or await work inside it.
+
+If the app has no local example, follow the canonical parent-detail recipe in
+the domain-workflow guide above.
 
 ## Backend Organization
 
