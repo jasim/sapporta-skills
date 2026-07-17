@@ -28,6 +28,10 @@ filter/search behavior, relationship metadata, and migration details:
 - Keep table and column names in the app's established convention, normally SQL
   `snake_case`, kebab-case filenames, and camelCase exports.
 
+## Column Sizing
+
+For table `width`, `minWidth`, or `maxWidth`, use the canonical [Column sizing](https://sapporta.com/docs/reference/column-sizing/) reference.
+
 ## Auth Row Scope
 
 Projects must declare `meta.rowScope` on every table and include

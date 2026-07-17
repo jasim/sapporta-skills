@@ -123,7 +123,7 @@ function sampleReportDataset(input: SampleReportInput): GridDataset {
       channel: {
         label: "Channels",
         columns: [
-          { id: "channel", label: "Channel", kind: "text", minWidth: 180 },
+          { id: "channel", label: "Channel", kind: "text", minWidth: 40 },
           {
             id: "segment",
             label: "Segment",
@@ -166,7 +166,7 @@ function sampleReportDataset(input: SampleReportInput): GridDataset {
             colorRule: "signed",
             zeroDisplay: "blank",
           },
-          { id: "notes", label: "Notes", kind: "text", minWidth: 260 },
+          { id: "notes", label: "Notes", kind: "text", minWidth: 64 },
         ],
         childLevels: [],
       },

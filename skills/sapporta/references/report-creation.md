@@ -102,6 +102,7 @@ owns data authority.
   hierarchy when they matter.
 - Keep links out of the backend result. Report links are frontend resolver
   behavior; read [report-linking.md](report-linking.md).
+- For `GridDatasetColumn` width hints, use the canonical [Column sizing](https://sapporta.com/docs/reference/column-sizing/) reference.
 
 ## Frontend Rules
 
