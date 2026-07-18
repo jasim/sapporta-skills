@@ -10,9 +10,9 @@ Do not use the removed grid-link type family.
 
 Use docs for exact resolver and link type shapes:
 
-- Reports: https://sapporta.com/docs/subsystems/reports/
-- Report datasets: https://sapporta.com/docs/reference/report-datasets/
-- Grid result shape: https://sapporta.com/docs/reference/full/reports/grid-result-shape/
+- Reports: https://sapporta.com/docs/guides/reports/route-based-reports/
+- Report datasets: https://sapporta.com/docs/guides/reports/report-datasets-and-formatting/
+- Grid result shape: https://sapporta.com/docs/reference/reports/grid-dataset/
 
 ## Agent Workflow
 

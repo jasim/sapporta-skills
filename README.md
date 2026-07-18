@@ -12,8 +12,8 @@ Use the public documentation for product explanations, API shapes, CLI grammar,
 TypeScript reference, and worked examples:
 
 - Sapporta docs: https://sapporta.com/docs/
-- LLM-assisted engineering: https://sapporta.com/docs/tools-and-operations/llm-assisted-engineering/
-- API and tooling choices: https://sapporta.com/docs/tools-and-operations/choose-apis-and-tools/
+- Develop with a coding agent: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
+- Choose an application interface: https://sapporta.com/docs/guides/discovery/choose-an-application-interface/
 - Reference index: https://sapporta.com/docs/reference/
 
 The discoverable skill is in

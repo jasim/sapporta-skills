@@ -27,13 +27,19 @@ Inspect the existing app before editing:
 
 ```bash
 rg --files packages/api/schema
-pnpm exec sapporta tables list
-pnpm exec sapporta endpoints list
 ```
+
+When the app server is already running, also inspect its mounted surfaces with
+`pnpm exec sapporta tables list` and `pnpm exec sapporta endpoints list`.
 
 To discover how to define application tables, continue with
 [table-creation.md](table-creation.md). It points to local conventions and the
 canonical starter pattern.
+
+If `packages/api/schema/` has no domain tables and its definitions only support
+project authentication, take the fresh-app branch in
+[table-creation.md](table-creation.md) before inspecting framework internals or
+test fixtures. That reference owns the starter-schema workflow.
 
 Prefer the project's existing style. Do not create custom code for behavior
 already covered by built-in table APIs or an existing domain endpoint unless the
@@ -66,16 +72,18 @@ and filter row ownership in JavaScript.
 
 Docs:
 
-- Authorization: https://sapporta.com/docs/subsystems/authorization/
-- Auth and row security: https://sapporta.com/docs/reference/auth-and-row-security/
+- Authentication and abilities: https://sapporta.com/docs/guides/security/authentication-and-abilities/
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
 
 ## Validation
 
 Use the smallest loop that proves the change:
 
 ```bash
-pnpm --filter ./packages/api db:generate
+pnpm --filter ./packages/api db:generate --name <change_name>
+# Review the generated SQL before continuing.
 pnpm --filter ./packages/api db:migrate
+pnpm --filter ./packages/api db:check
 pnpm dev
 pnpm exec sapporta endpoints show "METHOD /api/path"
 ```
@@ -86,19 +94,20 @@ troubleshooting before trying broad dependency changes.
 
 ## Read The Narrow Reference
 
-- Tables, columns, relations, indexes, search config, schema migration -> read
-  [table-creation.md](table-creation.md)
+- Tables, columns, relations, indexes, search config, schema migration, custom
+  table validation, semantic values -> read [table-creation.md](table-creation.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [report-creation.md](report-creation.md)
 - Cell links, drill-through, cross-report navigation -> read
   [report-linking.md](report-linking.md)
 - Domain endpoints, `TsRestApi`, shared contracts, handlers, uploads,
   transactions, OpenAPI registration -> read [app-endpoints.md](app-endpoints.md)
-- Custom React routes, dashboards, forms, table/grid views, typed API clients ->
-  read [frontend.md](frontend.md)
+- Custom React routes, dashboards, forms, record workflows, table/grid views,
+  master-detail screens, side panels, row selection, custom cells, typed API
+  clients -> read [frontend.md](frontend.md), then [table-grid.md](table-grid.md)
 - Domain services, module organization, testable TypeScript workflow code ->
   read [user-code.md](user-code.md)
-- Deep workflow failures and typed HTTP status/body mapping -> read
-  [typed-errors.md](typed-errors.md)
+- Expected non-2xx failures raised below a route adapter -> read
+  [typed-errors.md](typed-errors.md) before implementing the handler
 - Native module or `better-sqlite3` failures -> read
   [troubleshooting.md](troubleshooting.md)

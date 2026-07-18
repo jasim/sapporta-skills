@@ -8,10 +8,10 @@ report routes are described through OpenAPI like other app endpoints.
 
 Docs:
 
-- Reports: https://sapporta.com/docs/subsystems/reports/
-- Report datasets: https://sapporta.com/docs/reference/report-datasets/
-- OpenAPI discovery: https://sapporta.com/docs/subsystems/openapi-and-discovery/
-- Agent data console: https://sapporta.com/docs/tools-and-operations/agent-data-console/
+- Reports: https://sapporta.com/docs/guides/reports/route-based-reports/
+- Report datasets: https://sapporta.com/docs/guides/reports/report-datasets-and-formatting/
+- OpenAPI discovery: https://sapporta.com/docs/guides/discovery/openapi-and-endpoint-discovery/
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
 
 ## Decision: Report Route Or Ad-Hoc Query?
 

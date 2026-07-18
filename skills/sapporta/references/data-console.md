@@ -10,10 +10,10 @@ pnpm exec sapporta ...
 Use docs for CLI grammar, target selection, token setup, table/query syntax, and
 recipes:
 
-- Agent data console: https://sapporta.com/docs/tools-and-operations/agent-data-console/
-- Agent data console recipes: https://sapporta.com/docs/tools-and-operations/agent-data-console-recipes/
-- Agent access: https://sapporta.com/docs/tools-and-operations/agent-access/
-- CLI reference: https://sapporta.com/docs/reference/cli/
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
+- CLI workflow: https://sapporta.com/docs/guides/discovery/use-the-sapporta-cli/
+- Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens/
+- CLI commands: https://sapporta.com/docs/reference/cli/overview-and-global-options/
 
 ## Contents
 
@@ -114,7 +114,8 @@ unless the user explicitly asks for admin/debug inspection.
   [master-detail-insertion.md](master-detail-insertion.md)
 - Call existing report routes or answer data questions -> read
   [report-execution.md](report-execution.md)
-- Compose `/api/tables/<name>` filters, search, sort, pagination -> read
+- Call generated table HTTP routes or compose their filters, search, sort, and
+  pagination -> read
   [table-querying.md](table-querying.md)
 - Raw SQL fallback reads or writes -> read
   [meta-sql.md](meta-sql.md)

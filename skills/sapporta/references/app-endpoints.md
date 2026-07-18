@@ -9,6 +9,8 @@ uploads, response content types, OpenAPI behavior, and typed clients:
 - Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints/
 - Domain workflows and transactions: https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions/
 - Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients/
+- Errors and endpoint patterns: https://sapporta.com/docs/guides/app-owned-features/errors-uploads-and-endpoint-patterns/
+- Serialization and API errors: https://sapporta.com/docs/reference/contracts/serialization-and-api-errors/
 - OpenAPI discovery: https://sapporta.com/docs/reference/http/openapi/
 - Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
 - Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
@@ -116,8 +118,14 @@ Do not pile parser, workflow, and database logic directly into
 ## Error Handling
 
 Return declared `{ status, body }` responses for expected failures. Declare
-every returned status in the contract. For errors raised deep in business logic,
-read [typed-errors.md](typed-errors.md).
+every returned status in the contract.
+
+If the contract declares an expected non-2xx response that a service, store, or
+other code below the route adapter can raise, read
+[typed-errors.md](typed-errors.md) before implementing the handler. This route
+is mandatory for that task shape. Catch the workflow error family once at the
+route edge, map it to a declared status and stable body, and let unexpected
+errors reach the default error handler.
 
 Unexpected errors should bubble to the app's default error handler. Use raw
 `Response` returns only for deliberate escape hatches such as streaming,
@@ -136,6 +144,15 @@ pnpm build
 If `endpoints show` says the route is not found, check `loadApp()` mounting
 and the contract path before writing frontend code.
 
+For every expected failure, verify:
+
+- the shared contract declares the status and response schema;
+- the route edge contains exactly one mapping for the workflow error family;
+- the response body is stable and matches the declared schema;
+- a frontend action catches and handles `ApiError` when the screen exposes the
+  operation; and
+- focused checks cover one success response and each expected failure branch.
+
 ## Common Pitfalls
 
 - File exists under `packages/api/app/` but is not mounted from `loadApp()`.
@@ -144,6 +161,8 @@ and the contract path before writing frontend code.
 - Contract path repeats `/api`.
 - Multipart handler reads a file from `request.body` instead of `files`.
 - Handler returns a status not declared in `responses`.
+- Service-level expected failures bypass the typed-error route or are caught in
+  multiple layers.
 - Client sends scope fields or a full `request.body` directly into a scoped
   table write.
 - Route updates/deletes a scoped row by primary key alone.

@@ -16,11 +16,30 @@ rg -n 'LookupPicker|useTableLookup|Combobox' packages/frontend/src
 
 Docs:
 
-- Frontend screens: https://sapporta.com/docs/subsystems/frontend-screens/
-- Typed clients: https://sapporta.com/docs/subsystems/typed-api-clients/
-- Table-aware grids: https://sapporta.com/docs/subsystems/grid/
-- TGrid usage: https://sapporta.com/grid/docs/full/tgrid-usage/
-- BaseGrid guide: https://sapporta.com/grid/docs/full/basegrid-guide/
+- Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens/
+- Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients/
+- Grid-first record workflows: https://sapporta.com/docs/guides/generated-surfaces/grid-first-record-workflows/
+- Grid core model: https://sapporta.com/grid/guides/core-model/
+- Choose a Grid layer: https://sapporta.com/grid/start/choose-a-grid-layer/
+- Interactions: https://sapporta.com/grid/reference/interactions/
+- Keyboard and selection: https://sapporta.com/grid/guides/keyboard-and-selection/
+
+## Record Workflow Surfaces
+
+Treat Grid as the default surface for record-oriented workflows:
+
+1. Use the generated table surface for ordinary table work.
+2. Use TGrid when persisted Sapporta tables own the records or relationships.
+3. Use BaseGrid with ColumnPreset when the page owns temporary drafts,
+   composite workflow rows, calculated projections, or a custom data source.
+4. Use conventional form controls for compact headers, singleton values, and
+   specialized editors or panels around the grid.
+
+For every custom Grid, read the Grid core model and choose an interaction mode
+before designing custom cells, panels, or toolbar actions. Decide separately
+whether the workflow needs cell selection, an active row, row selection that
+follows the cursor, or independently pinned row selection. Continue with
+[table-grid.md](table-grid.md) for the surface and interaction decision.
 
 ## Routes And Navigation
 
@@ -63,9 +82,9 @@ Forms must omit system-managed scope fields and columns marked
   CSV export, lookup labels, URL state, loading states, and error states unless
   the user explicitly asks for less -> read
   [table-grid.md](table-grid.md).
-- Custom non-table grid screens should use BaseGrid from `@sapporta/grid` and
-  ColumnPreset from `@sapporta/grid/column-preset`; follow the public BaseGrid
-  lifecycle docs.
+- Use ColumnPreset before authoring a custom BaseGrid column. Keep application
+  validation, persistence, conflicts, and workflow transactions in save
+  handlers, services, and endpoints rather than cell renderers.
 
 ## Backend APIs
 

@@ -7,11 +7,11 @@ query, screen route, navigation entry, and validation loop for the report.
 Use public docs for exact `GridDataset` shape, report contracts, scoped report
 data, frontend renderers, date range helpers, and examples:
 
-- Reports guide: https://sapporta.com/docs/subsystems/reports/
-- Report datasets: https://sapporta.com/docs/reference/report-datasets/
-- Route-based reports: https://sapporta.com/docs/reference/full/reports/route-based-reports/
-- Grid result shape: https://sapporta.com/docs/reference/full/reports/grid-result-shape/
-- Scoped report data: https://sapporta.com/docs/reference/full/reports/scoped-report-data/
+- Reports guide: https://sapporta.com/docs/guides/reports/route-based-reports/
+- Report datasets: https://sapporta.com/docs/guides/reports/report-datasets-and-formatting/
+- Report routes: https://sapporta.com/docs/reference/reports/report-routes-and-registration/
+- Grid result shape: https://sapporta.com/docs/reference/reports/grid-dataset/
+- Scoped report data: https://sapporta.com/docs/reference/reports/scoped-report-helpers/
 
 ## Contents
 
@@ -110,8 +110,8 @@ Render normal report results with the report components. Do not copy report-grid
 internals. When the screen owns its own row shape, loading behavior, hierarchy,
 editing rules, side panels, or toolbar behavior, read the custom grid docs:
 
-- TGrid usage: https://sapporta.com/grid/docs/full/tgrid-usage/
-- BaseGrid guide: https://sapporta.com/grid/docs/full/basegrid-guide/
+- TGrid usage: https://sapporta.com/docs/reference/frontend/tgrid/
+- BaseGrid guide: https://sapporta.com/grid/reference/base-grid/
 
 ## Validation
 

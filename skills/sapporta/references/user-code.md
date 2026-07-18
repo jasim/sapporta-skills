@@ -6,9 +6,9 @@ independent of Hono request objects.
 
 Docs:
 
-- Custom endpoints: https://sapporta.com/docs/subsystems/custom-api-endpoints/
-- Auth and row security: https://sapporta.com/docs/reference/auth-and-row-security/
-- LLM-assisted engineering: https://sapporta.com/docs/tools-and-operations/llm-assisted-engineering/
+- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints/
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
+- Agent development workflow: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
 
 ## Auth-Aware Workflow Code
 

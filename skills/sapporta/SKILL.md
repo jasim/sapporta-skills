@@ -18,8 +18,8 @@ This skill provides operating instructions. Use public docs for product
 explanations, API shapes, CLI grammar, and reference details:
 
 - Docs: https://sapporta.com/docs/
-- Agent workflow overview: https://sapporta.com/docs/tools-and-operations/llm-assisted-engineering/
-- API/tool choice guide: https://sapporta.com/docs/tools-and-operations/choose-apis-and-tools/
+- Agent workflow overview: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
+- API/tool choice guide: https://sapporta.com/docs/guides/discovery/choose-an-application-interface/
 - Reference index: https://sapporta.com/docs/reference/
 
 Prefer the project-local CLI:
@@ -58,13 +58,21 @@ Some tasks touch both modes: build a report route and screen with
 - To discover how to define application tables, follow
   [table-creation.md](references/table-creation.md). It routes to the canonical
   worked schema example and exact references.
+- When `packages/api/schema/` contains only project-authentication tables, treat
+  the project as a fresh app. Read the complete starter schema through
+  [table-creation.md](references/table-creation.md) before inspecting framework
+  source, internal fixtures, or generated declarations.
 - For API-backed data commands, pass `--api-url <url>` when the app API is not
   on `http://localhost:3000`; pass `--api-token <token>` when the app is
   protected. If auth fails, read the CLI access reference before continuing.
-- The CLI can inspect app-owned routes with `endpoints list` and
-  `endpoints show`, and can invoke app endpoints with
+- The CLI can inspect mounted routes with `endpoints list` and `endpoints show`,
+  and can invoke app endpoints with
   `api get/post/put/delete`. Use `curl` or a typed client when that is more
   convenient for the route.
+- Before constructing a raw generated-table HTTP request, read
+  [table-querying.md](references/table-querying.md) and inspect the intended
+  method and path with `endpoints show`. Generated row updates use `PUT`, not
+  `PATCH`.
 - Apply auth scope on the server. Built-in endpoints apply row visibility;
   custom code must choose route-edge ability/data authority and use scoped row
   helpers.
@@ -74,17 +82,24 @@ Some tasks touch both modes: build a report route and screen with
 
 Reference docs:
 
-- CLI: https://sapporta.com/docs/reference/cli/
-- Agent data console: https://sapporta.com/docs/tools-and-operations/agent-data-console/
-- OpenAPI discovery: https://sapporta.com/docs/subsystems/openapi-and-discovery/
-- Auth and row security: https://sapporta.com/docs/reference/auth-and-row-security/
+- CLI: https://sapporta.com/docs/reference/cli/overview-and-global-options/
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
+- OpenAPI discovery: https://sapporta.com/docs/guides/discovery/openapi-and-endpoint-discovery/
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
 
 ## Direct Dispatch
 
+For app-building work, use `app-framework.md` as the mode entrypoint, then use
+the matching narrow reference below. Endpoint work starts with
+`app-endpoints.md`; add `user-code.md` for service organization and make
+`typed-errors.md` the mandatory next read when a declared failure can originate
+below the route adapter.
+
 ### App-Building Tasks
 
-- Tables, columns, relations, indexes, search config, and generated schema
-  metadata, including the first application tables -> read
+- Tables, columns, relations, indexes, search config, generated schema metadata,
+  custom table validation, and semantic table values, including the first
+  application tables -> read
   [table-creation.md](references/table-creation.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [report-creation.md](references/report-creation.md)
@@ -92,13 +107,18 @@ Reference docs:
   [report-linking.md](references/report-linking.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
   transactions, atomic parent-detail or line-item writes, OpenAPI registration
-  -> read [app-endpoints.md](references/app-endpoints.md)
-- Custom React routes, dashboards, forms, table/grid views, typed API client ->
-  read [frontend.md](references/frontend.md)
-- Domain services, module organization, testable TypeScript workflow code ->
+  -> read [app-endpoints.md](references/app-endpoints.md), then follow its
+  conditional routes to service organization or typed errors
+- Custom React routes, dashboards, forms, record workflows, table/grid views,
+  master-detail screens, side panels, row selection, custom cells, or typed API
+  clients -> read [frontend.md](references/frontend.md), then
+  [table-grid.md](references/table-grid.md) for Grid work
+- Domain services, module organization, testable TypeScript workflow code
+  outside an endpoint change ->
   read [user-code.md](references/user-code.md)
-- Deep workflow failures, typed HTTP errors, status/body mapping -> read
-  [typed-errors.md](references/typed-errors.md)
+- A contract declares an expected non-2xx outcome that a service or store can
+  raise below the route adapter -> read
+  [typed-errors.md](references/typed-errors.md) before implementing the handler
 
 ### Existing Data Tasks
 

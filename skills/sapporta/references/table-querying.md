@@ -1,12 +1,25 @@
 # Table Querying
 
-`GET /api/tables/<name>` is the built-in list endpoint for every table. Use the
-docs for the exact query grammar, operators, response envelope, and error
-codes:
+`GET /api/tables/<name>` is the built-in list endpoint for every table. Before
+constructing a raw generated-table HTTP request, inspect the mounted operation:
 
-- Generated table APIs: https://sapporta.com/docs/subsystems/generated-table-apis/
-- Filter syntax: https://sapporta.com/docs/reference/filter-syntax/
-- Agent data console recipes: https://sapporta.com/docs/tools-and-operations/agent-data-console-recipes/
+```bash
+pnpm exec sapporta endpoints show "GET /api/tables/tasks"
+pnpm exec sapporta endpoints show "PUT /api/tables/tasks/{id}"
+```
+
+Use the intended method and mounted path. The result verifies the route,
+request shape, auth boundary, and declared responses. Generated row updates use
+`PUT /api/tables/<name>/<id>`, not `PATCH`.
+
+Use the docs for the exact route, query grammar, operators, response envelope,
+semantic values, and error codes:
+
+- Table endpoints: https://sapporta.com/docs/reference/http/table-endpoints/
+- Generated table APIs: https://sapporta.com/docs/guides/generated-surfaces/generated-table-apis/
+- Query syntax: https://sapporta.com/docs/reference/http/query-syntax/
+- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries/
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
 
 ## Agent Rules
 
@@ -28,11 +41,15 @@ codes:
 - Search with `q=<term>` only when the table declares `meta.search`.
 - Always read the documented response envelope; do not assume the response is a
   bare array.
+- Generated table bodies carry JSON primitives. Preserve select-backed text as
+  strings, numbers and booleans as their JSON primitives, foreign keys as the
+  target primary-key type, and dates/timestamps as canonical strings. Parse
+  domain values only at the documented application boundary.
 - URL-encode brackets if the client does not accept raw `[` and `]`.
 
 ## Lookup Responses
 
-`GET /api/tables/<name>/lookup` returns:
+`GET /api/tables/<name>/_lookup` returns:
 
 ```json
 {

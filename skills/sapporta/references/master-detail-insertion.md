@@ -6,9 +6,9 @@ credentials, or foreign keys.
 
 Docs:
 
-- Agent data console recipes: https://sapporta.com/docs/tools-and-operations/agent-data-console-recipes/
-- Generated table APIs: https://sapporta.com/docs/subsystems/generated-table-apis/
-- Schema metadata: https://sapporta.com/docs/reference/full/schema-metadata/
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
+- Generated table APIs: https://sapporta.com/docs/guides/generated-surfaces/generated-table-apis/
+- Schema metadata: https://sapporta.com/docs/reference/schema/schema-metadata-types/
 
 ## Workflow
 

@@ -11,12 +11,19 @@ Use local application schemas for project conventions. To discover how to
 define application tables from the canonical starter pattern, use the guide
 below.
 
+When the schema directory contains only project-authentication tables, treat
+the project as a fresh app. Read the complete starter pattern before framework
+source, internal fixtures, or generated declarations. Then adapt the pattern to
+the requested domain.
+
 Use the public docs for column factories, metadata fields, row-scope reference,
 filter/search behavior, relationship metadata, and migration details:
 
 - Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
 - Table definitions: https://sapporta.com/docs/reference/schema/table-definitions/
 - Table and column metadata: https://sapporta.com/docs/reference/schema/table-and-column-metadata/
+- Table validation: https://sapporta.com/docs/reference/schema/table-validation/
+- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries/
 - Relationships and lookup behavior: https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior/
 - Schema changes and migrations: https://sapporta.com/docs/guides/model-data/schema-changes-and-migrations/
 - Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
@@ -109,19 +116,36 @@ Before finishing schema work, make a relationship pass:
 - For enum-like fields, use the documented select metadata unless the app needs
   a reference table.
 
+## Validation And Semantic Values
+
+When generated CRUD needs constraints beyond the semantic column kind, read the
+[table-validation reference](https://sapporta.com/docs/reference/schema/table-validation/)
+before defining `meta.validation`. Confirm create, partial-update, nullable,
+defaulted, client-editable, and server-managed field behavior. Keep conversion
+or normalization outside validation unless the save path explicitly consumes
+the transformed result.
+
+When app-owned code reads or writes generated table values, duplicates a
+generated form, or introduces a select-backed domain type, read the
+[semantic-value boundary reference](https://sapporta.com/docs/reference/schema/semantic-value-boundaries/).
+Keep select-backed text values as strings across form, wire, runtime, and
+database boundaries. Parse and serialize other semantic kinds at the documented
+boundary instead of inventing a second conversion path.
+
 ## Migration And Validation Loop
 
 After table changes:
 
 ```bash
 pnpm --filter ./packages/api db:generate --name <change_name>
+# Review the generated SQL before continuing.
 pnpm --filter ./packages/api db:migrate
 pnpm --filter ./packages/api db:check
 pnpm exec sapporta tables show <table_name>
 ```
 
-Review generated SQL before applying it. The server validates table definitions
-at startup and does not apply migrations automatically.
+The server validates table definitions at startup and does not apply migrations
+automatically.
 
 ## Reference Files
 

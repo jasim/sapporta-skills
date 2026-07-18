@@ -10,9 +10,9 @@ Use raw SQL only after confirming no higher-level surface fits:
 
 Docs:
 
-- Agent data console: https://sapporta.com/docs/tools-and-operations/agent-data-console/
-- Agent data console recipes: https://sapporta.com/docs/tools-and-operations/agent-data-console-recipes/
-- Auth and row security: https://sapporta.com/docs/reference/auth-and-row-security/
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
+- SQL commands: https://sapporta.com/docs/reference/cli/api-and-sql-commands/
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
 
 ## Auth And Row Scope
 

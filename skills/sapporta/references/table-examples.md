@@ -1,7 +1,9 @@
 # Table Definition Examples
 
 To discover table-definition patterns, use the complete two-table tutorial and
-the canonical references below.
+the canonical references below. When `packages/api/schema/` contains only
+project-authentication tables, take the fresh-app branch in
+[table-creation.md](table-creation.md) before using these examples.
 
 Use the canonical documentation:
 
@@ -11,6 +13,8 @@ Use the canonical documentation:
 - Schema changes and migrations: https://sapporta.com/docs/guides/model-data/schema-changes-and-migrations/
 - Table definitions reference: https://sapporta.com/docs/reference/schema/table-definitions/
 - Table and column metadata reference: https://sapporta.com/docs/reference/schema/table-and-column-metadata/
+- Table validation reference: https://sapporta.com/docs/reference/schema/table-validation/
+- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries/
 
 Agent reminder: adapt examples to the current app's wrapper/import style, add
 required `rowLabelColumns`, declare `rowScope`, and verify relationships with a
