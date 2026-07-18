@@ -39,7 +39,7 @@ port, pass `--api-url <url>`.
 
 If a protected data command returns `unauthenticated`, `token_expired`,
 `token_revoked`, or `workspace_required`, read
-[cli-server-access.md](cli-server-access.md), stop data
+[server-access.md](server-access.md), stop data
 work, and ask the user to create or replace the agent access token. Do not
 silently bypass protected app APIs with direct SQLite or local database access
 for workspace-user answers or mutations.
@@ -83,7 +83,7 @@ option:
 
 1. Existing custom product/domain endpoint from `sapporta endpoints list/show`.
 2. Built-in row commands: `sapporta rows create/update/delete`.
-3. Raw SQL fallback after reading [meta-sql.md](meta-sql.md).
+3. Raw SQL fallback after reading [sql-fallback.md](sql-fallback.md).
 
 Do not recommend reports as mutation surfaces unless the app deliberately
 defines a mutating route.
@@ -109,13 +109,13 @@ unless the user explicitly asks for admin/debug inspection.
 ## Read The Narrow Reference
 
 - Insert rows or seed flat data -> read
-  [row-insertion.md](row-insertion.md)
+  [row-writes.md](row-writes.md)
 - Insert parent and child records atomically -> read
-  [master-detail-insertion.md](master-detail-insertion.md)
+  [master-detail-writes.md](master-detail-writes.md)
 - Call existing report routes or answer data questions -> read
-  [report-execution.md](report-execution.md)
+  [report-runs.md](report-runs.md)
 - Call generated table HTTP routes or compose their filters, search, sort, and
   pagination -> read
-  [table-querying.md](table-querying.md)
+  [table-queries.md](table-queries.md)
 - Raw SQL fallback reads or writes -> read
-  [meta-sql.md](meta-sql.md)
+  [sql-fallback.md](sql-fallback.md)

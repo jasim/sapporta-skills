@@ -39,5 +39,5 @@ are not authorization.
 
 ## Related
 
-- [report-creation](report-creation.md) - include hidden IDs while
+- [report-creation](create.md) - include hidden IDs while
   shaping `GridDataset`.

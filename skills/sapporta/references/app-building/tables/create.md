@@ -152,5 +152,5 @@ automatically.
 These files intentionally point to canonical docs instead of carrying API
 reference copies:
 
-- [Canonical table docs](table-full-api-reference.md)
-- [Canonical table examples](table-examples.md)
+- [Canonical table docs](api-reference.md)
+- [Canonical table examples](examples.md)

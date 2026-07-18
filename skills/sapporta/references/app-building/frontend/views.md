@@ -39,7 +39,7 @@ For every custom Grid, read the Grid core model and choose an interaction mode
 before designing custom cells, panels, or toolbar actions. Decide separately
 whether the workflow needs cell selection, an active row, row selection that
 follows the cursor, or independently pinned row selection. Continue with
-[table-grid.md](table-grid.md) for the surface and interaction decision.
+[grids.md](grids.md) for the surface and interaction decision.
 
 ## Routes And Navigation
 
@@ -77,11 +77,11 @@ Forms must omit system-managed scope fields and columns marked
   for this standard case.
 - Compose the Base UI `Combobox` primitives only when the interaction is not
   covered by `LookupPicker`. Use `Select` for short static choices -> read
-  [combobox.md](combobox.md).
+  [pickers.md](pickers.md).
 - Table/grid pages should preserve built-in search, filters, sort, pagination,
   CSV export, lookup labels, URL state, loading states, and error states unless
   the user explicitly asks for less -> read
-  [table-grid.md](table-grid.md).
+  [grids.md](grids.md).
 - Use ColumnPreset before authoring a custom BaseGrid column. Keep application
   validation, persistence, conflicts, and workflow transactions in save
   handlers, services, and endpoints rather than cell renderers.

@@ -31,7 +31,7 @@ For data questions, cite the report endpoint and parameters used, especially
 date range, workspace, filters, and row limits. If no report route covers a
 repeated summary, suggest creating a route-based report endpoint and screen.
 
-This workflow is about reads. For mutations, use [row-insertion](row-insertion.md),
-[master-detail-insertion](master-detail-insertion.md), a custom
+This workflow is about reads. For mutations, use [row-insertion](row-writes.md),
+[master-detail-insertion](master-detail-writes.md), a custom
 domain endpoint, or the raw SQL fallback only when the user explicitly asks for
 that kind of data change.

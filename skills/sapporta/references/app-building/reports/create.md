@@ -101,7 +101,7 @@ owns data authority.
 - Use rollups and footers intentionally; tests should assert totals and
   hierarchy when they matter.
 - Keep links out of the backend result. Report links are frontend resolver
-  behavior; read [report-linking.md](report-linking.md).
+  behavior; read [linking.md](linking.md).
 - For `GridDatasetColumn` width hints, use the canonical [Column sizing](https://sapporta.com/docs/reference/column-sizing/) reference.
 
 ## Frontend Rules
@@ -131,17 +131,17 @@ rollups, hidden IDs, and totals.
 When creating a report from scratch, adapt these reference files instead of
 expecting them to exist in every generated project:
 
-- [Sample report contract](sample-report-contract.ts.example)
-- [Sample report API route](sample-report-api.ts.example)
-- [Sample report React screen](sample-report-screen.tsx.example)
-- [Report parameter helper](report-params.ts.example)
-- [Report dataset loading helper](use-report-dataset.ts.example)
+- [Sample report contract](sample-contract.ts.example)
+- [Sample report API route](sample-api.ts.example)
+- [Sample report React screen](sample-screen.tsx.example)
+- [Report parameter helper](params.ts.example)
+- [Report dataset loading helper](use-dataset.ts.example)
 
 Copy only the pieces the project needs. The examples are not scaffolded into new
 Sapporta projects by default.
 
 ## References
 
-- [Report Linking](report-linking.md)
-- [Canonical report docs](report-full-api-reference.md)
-- [Canonical report examples](report-examples.md)
+- [Report Linking](linking.md)
+- [Canonical report docs](api-reference.md)
+- [Canonical report examples](examples.md)

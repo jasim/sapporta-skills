@@ -33,12 +33,12 @@ When the app server is already running, also inspect its mounted surfaces with
 `pnpm exec sapporta tables list` and `pnpm exec sapporta endpoints list`.
 
 To discover how to define application tables, continue with
-[table-creation.md](table-creation.md). It points to local conventions and the
+[tables/create.md](tables/create.md). It points to local conventions and the
 canonical starter pattern.
 
 If `packages/api/schema/` has no domain tables and its definitions only support
 project authentication, take the fresh-app branch in
-[table-creation.md](table-creation.md) before inspecting framework internals or
+[tables/create.md](tables/create.md) before inspecting framework internals or
 test fixtures. That reference owns the starter-schema workflow.
 
 Prefer the project's existing style. Do not create custom code for behavior
@@ -95,19 +95,19 @@ troubleshooting before trying broad dependency changes.
 ## Read The Narrow Reference
 
 - Tables, columns, relations, indexes, search config, schema migration, custom
-  table validation, semantic values -> read [table-creation.md](table-creation.md)
+  table validation, semantic values -> read [tables/create.md](tables/create.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
-  [report-creation.md](report-creation.md)
+  [reports/create.md](reports/create.md)
 - Cell links, drill-through, cross-report navigation -> read
-  [report-linking.md](report-linking.md)
+  [reports/linking.md](reports/linking.md)
 - Domain endpoints, `TsRestApi`, shared contracts, handlers, uploads,
-  transactions, OpenAPI registration -> read [app-endpoints.md](app-endpoints.md)
+  transactions, OpenAPI registration -> read [backend/endpoints.md](backend/endpoints.md)
 - Custom React routes, dashboards, forms, record workflows, table/grid views,
   master-detail screens, side panels, row selection, custom cells, typed API
-  clients -> read [frontend.md](frontend.md), then [table-grid.md](table-grid.md)
+  clients -> read [frontend/views.md](frontend/views.md), then [frontend/grids.md](frontend/grids.md)
 - Domain services, module organization, testable TypeScript workflow code ->
-  read [user-code.md](user-code.md)
+  read [backend/domain-code.md](backend/domain-code.md)
 - Expected non-2xx failures raised below a route adapter -> read
-  [typed-errors.md](typed-errors.md) before implementing the handler
+  [backend/typed-errors.md](backend/typed-errors.md) before implementing the handler
 - Native module or `better-sqlite3` failures -> read
-  [troubleshooting.md](troubleshooting.md)
+  [../operations/troubleshooting.md](../operations/troubleshooting.md)

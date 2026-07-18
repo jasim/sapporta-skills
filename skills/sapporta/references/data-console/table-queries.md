@@ -66,5 +66,5 @@ Frontend table-backed selectors should normally use `LookupPicker` and
 consumers must also preserve the lookup value type.
 
 For protected or non-local apps, read
-[cli-server-access.md](cli-server-access.md)
+[server-access.md](server-access.md)
 first.

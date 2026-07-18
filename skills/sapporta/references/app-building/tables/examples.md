@@ -3,7 +3,7 @@
 To discover table-definition patterns, use the complete two-table tutorial and
 the canonical references below. When `packages/api/schema/` contains only
 project-authentication tables, take the fresh-app branch in
-[table-creation.md](table-creation.md) before using these examples.
+[create.md](create.md) before using these examples.
 
 Use the canonical documentation:
 
