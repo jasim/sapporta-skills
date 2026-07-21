@@ -1,0 +1,337 @@
+// Compact one-table create/edit reference for a generated Sapporta project.
+// Adapt its wire schema, fields, routes, error presentation, and layout. This
+// example assumes the canonical tasks.project_id -> projects.id relationship.
+
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useForm } from "@tanstack/react-form";
+import {
+  FormField,
+  buildRecordFormFields,
+  createTableRow,
+  fieldModelForColumn,
+  foreignKeyFieldModelForColumn,
+  parseCreateDraft,
+  reloadTGridRows,
+  uiClient,
+  updateTableRow,
+  useSchemaStore,
+} from "@sapporta/frontend";
+import { LookupPicker, useLookupStore } from "@sapporta/frontend/lookup";
+import { Button } from "@sapporta/ui/button";
+import { Label } from "@sapporta/ui/label";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { z } from "zod";
+
+const taskWireSchema = z.object({
+  id: z.union([z.number(), z.string()]),
+  title: z.string(),
+  project_id: z.number(),
+  due_date: z.string().nullable(),
+});
+
+type TaskWire = z.output<typeof taskWireSchema>;
+
+interface TaskFormValues {
+  title: string;
+  project_id: number | null;
+  due_date: string;
+}
+
+type TaskFormFields = ReturnType<typeof buildRecordFormFields>;
+type TaskFormMode = "new" | "edit";
+
+export function TaskForm({ mode }: { mode: TaskFormMode }) {
+  return mode === "new" ? <NewTaskForm /> : <EditTaskForm />;
+}
+
+function NewTaskForm() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { table, fields } = useTaskFormMetadata();
+
+  if (!table) return <p>Loading task metadata...</p>;
+
+  return (
+    <TaskEditor
+      formId="tasks:new"
+      fields={fields}
+      initialValues={{
+        title: "",
+        project_id: recordIdFromParam(searchParams.get("project_id")),
+        due_date: "",
+      }}
+      submitLabel="Create task"
+      onCancel={() => navigate("/tasks")}
+      onSubmit={async (values) => {
+        const parsed = parseCreateDraft(table, taskWriteFromForm(values));
+        if (!parsed.ok) {
+          throw new TaskFormError(
+            parsed.issues.map((issue) => issue.message).join("; "),
+          );
+        }
+        const response = await createTableRow("tasks", parsed.value);
+        const id = recordIdFromCreateResponse(response.data);
+        reloadTGridRows("tasks");
+        navigate(`/tasks/${id}`, { replace: true });
+      }}
+    />
+  );
+}
+
+function EditTaskForm() {
+  const taskId = recordIdFromParam(useParams<{ id: string }>().id ?? null);
+  if (taskId === null) return <p>The task URL does not contain a valid id.</p>;
+  return <EditTaskFormForId taskId={taskId} />;
+}
+
+function EditTaskFormForId({ taskId }: { taskId: number }) {
+  const navigate = useNavigate();
+  const { table, fields } = useTaskFormMetadata();
+  const task = useTaskRecord(taskId);
+
+  if (!table || task.status === "loading") return <p>Loading task...</p>;
+  if (task.status === "error") {
+    return <p role="alert">{messageForError(task.error)}</p>;
+  }
+
+  return (
+    <TaskEditor
+      key={`tasks:${taskId}`}
+      formId={`tasks:${taskId}`}
+      fields={fields}
+      initialValues={taskFormValuesFromWire(task.data)}
+      submitLabel="Save changes"
+      onCancel={() => navigate(`/tasks/${taskId}`)}
+      onSubmit={async (values) => {
+        await updateTableRow(
+          "tasks",
+          String(taskId),
+          taskWriteFromForm(values),
+        );
+        reloadTGridRows("tasks");
+        navigate(`/tasks/${taskId}`, { replace: true });
+      }}
+    />
+  );
+}
+
+function TaskEditor({
+  formId,
+  fields,
+  initialValues,
+  submitLabel,
+  onCancel,
+  onSubmit,
+}: {
+  formId: string;
+  fields: TaskFormFields;
+  initialValues: TaskFormValues;
+  submitLabel: string;
+  onCancel: () => void;
+  onSubmit: (values: TaskFormValues) => Promise<void>;
+}) {
+  const titleField = fieldModelForColumn(fields, "title");
+  const projectField = foreignKeyFieldModelForColumn(fields, "project_id");
+  const dueDateField = fieldModelForColumn(fields, "due_date");
+  const form = useForm({
+    formId,
+    defaultValues: initialValues,
+    validators: { onSubmit: ({ value }) => taskFormErrors(value) },
+    onSubmit: async ({ value, formApi }) => {
+      try {
+        await onSubmit(value);
+      } catch (error) {
+        formApi.setErrorMap({
+          onSubmit: { form: messageForError(error), fields: {} },
+        });
+        throw error;
+      }
+    },
+  });
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    form.setErrorMap({ onSubmit: undefined });
+    void form.handleSubmit().catch(() => undefined);
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate>
+      <form.Subscribe
+        selector={(state) =>
+          [state.isSubmitting, state.errorMap.onSubmit] as const
+        }
+      >
+        {([isSubmitting, submitError]) => (
+          <fieldset disabled={isSubmitting}>
+            <form.Field name="title">
+              {(field) => (
+                <FormField
+                  field={titleField}
+                  value={field.state.value}
+                  issue={firstMessage(field.state.meta.errors)}
+                  onChange={(value) => field.handleChange(String(value ?? ""))}
+                />
+              )}
+            </form.Field>
+
+            <form.Field name="project_id">
+              {(field) => {
+                const issue = firstMessage(field.state.meta.errors);
+                return (
+                  <div>
+                    <Label htmlFor="task-project">
+                      {projectField.column.label}
+                    </Label>
+                    <LookupPicker
+                      id="task-project"
+                      lookup={projectField.lookup}
+                      value={field.state.value}
+                      onChange={(value) =>
+                        field.handleChange(
+                          typeof value === "number" ? value : null,
+                        )
+                      }
+                      ariaInvalid={issue !== undefined}
+                    />
+                    {issue ? <p role="alert">{issue}</p> : null}
+                  </div>
+                );
+              }}
+            </form.Field>
+
+            <form.Field name="due_date">
+              {(field) => (
+                <FormField
+                  field={dueDateField}
+                  value={field.state.value}
+                  issue={firstMessage(field.state.meta.errors)}
+                  onChange={(value) => field.handleChange(String(value ?? ""))}
+                />
+              )}
+            </form.Field>
+
+            {formErrorMessage(submitError) ? (
+              <p role="alert">{formErrorMessage(submitError)}</p>
+            ) : null}
+
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : submitLabel}
+            </Button>
+          </fieldset>
+        )}
+      </form.Subscribe>
+    </form>
+  );
+}
+
+function useTaskFormMetadata() {
+  const table = useSchemaStore((state) =>
+    state.tables.find((candidate) => candidate.name === "tasks"),
+  );
+  const lookups = useLookupStore();
+  const fields = useMemo(
+    () => (table ? buildRecordFormFields({ table, lookups }) : []),
+    [lookups, table],
+  );
+  return { table, fields };
+}
+
+type TaskLoadState =
+  | { status: "loading" }
+  | { status: "ready"; data: TaskWire }
+  | { status: "error"; error: unknown };
+
+function useTaskRecord(taskId: number): TaskLoadState {
+  const [state, setState] = useState<TaskLoadState>({ status: "loading" });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setState({ status: "loading" });
+    void uiClient
+      .getRow({
+        params: { tableName: "tasks", id: String(taskId) },
+        fetchOptions: { signal: controller.signal },
+      })
+      .then((response) => {
+        setState({
+          status: "ready",
+          data: taskWireSchema.parse(response.data),
+        });
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) setState({ status: "error", error });
+      });
+    return () => controller.abort();
+  }, [taskId]);
+
+  return state;
+}
+
+function taskFormErrors(values: TaskFormValues) {
+  const fields: Record<string, string> = {};
+  if (!values.title.trim()) fields.title = "Task title is required.";
+  if (values.project_id === null) fields.project_id = "Select a project.";
+  return Object.keys(fields).length > 0 ? { fields } : undefined;
+}
+
+function taskWriteFromForm(values: TaskFormValues) {
+  if (values.project_id === null) throw new TaskFormError("Select a project.");
+  const title = values.title.trim();
+  if (!title) throw new TaskFormError("Task title is required.");
+  return {
+    title,
+    project_id: values.project_id,
+    due_date: values.due_date.trim() || null,
+  };
+}
+
+function taskFormValuesFromWire(task: TaskWire): TaskFormValues {
+  return {
+    title: task.title,
+    project_id: task.project_id,
+    due_date: task.due_date ?? "",
+  };
+}
+
+function recordIdFromParam(value: string | null): number | null {
+  if (!value) return null;
+  const id = Number(value);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+function recordIdFromCreateResponse(
+  data: Record<string, unknown> | Record<string, unknown>[],
+): string {
+  const record = Array.isArray(data) ? data[0] : data;
+  const parsed = z
+    .object({ id: z.union([z.number(), z.string()]) })
+    .safeParse(record);
+  if (!parsed.success) {
+    throw new TaskFormError("The create response did not include a task id.");
+  }
+  return String(parsed.data.id);
+}
+
+function firstMessage(errors: readonly unknown[]): string | undefined {
+  return errors.find((error): error is string => typeof error === "string");
+}
+
+function formErrorMessage(error: unknown): string | undefined {
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object" && "form" in error) {
+    const form = error.form;
+    return typeof form === "string" ? form : undefined;
+  }
+  return undefined;
+}
+
+function messageForError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+class TaskFormError extends Error {}

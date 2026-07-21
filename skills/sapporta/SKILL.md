@@ -1,18 +1,18 @@
 ---
 name: sapporta
 description: >
-  Use only when the current workspace is an existing Sapporta application and
-  the user wants to define or change application tables, reports, report links,
-  backend endpoints, domain workflows, React views, auth or row ownership,
-  application records, report execution, or project-local Sapporta CLI
-  operations.
+  Use when the user wants to create a Sapporta application or work inside an
+  existing one: define or change tables, reports, report links, backend
+  endpoints, domain workflows, React views, forms, auth or row ownership,
+  application records, report execution, or Sapporta CLI operations.
 ---
 
 # Sapporta Agent Dispatch
 
 Sapporta is the reusable framework and library; a Sapporta application is a
 downstream product project that depends on it and contains its own schema,
-workflows, UI, and data.
+workflows, UI, and data. This skill can scaffold that project or extend an
+existing one.
 
 This skill provides operating instructions. Use public docs for product
 explanations, API shapes, CLI grammar, and reference details:
@@ -22,7 +22,7 @@ explanations, API shapes, CLI grammar, and reference details:
 - API/tool choice guide: https://sapporta.com/docs/guides/discovery/choose-an-application-interface/
 - Reference index: https://sapporta.com/docs/reference/
 
-Prefer the project-local CLI:
+Prefer the project-local CLI after the project exists:
 
 ```bash
 pnpm exec sapporta ...
@@ -32,9 +32,12 @@ pnpm exec sapporta ...
 
 Decide whether the user wants to change app code or operate on existing data.
 
-- Build or change app behavior: tables, reports, report links, custom
-  endpoints, shared contracts, frontend views, auth-aware workflows, or
-  validation loops -> read [app-building/guide.md](references/app-building/guide.md).
+- Create a new Sapporta application -> read
+  [app-building/project/create.md](references/app-building/project/create.md),
+  then continue through the app-building guide inside the generated project.
+- Build or change app behavior: first model the application, then implement its
+  tables, reports, links, endpoints, contracts, views, access, and validation ->
+  read [app-building/guide.md](references/app-building/guide.md).
 - Inspect, query, insert, update, validate, or answer questions from records
   already in the app -> read [data-console/guide.md](references/data-console/guide.md).
 - Native module binding failures, `better-sqlite3`, install/dev-server errors
@@ -46,8 +49,13 @@ with the `data-console` guide.
 
 ## Rules That Prevent Wrong Work
 
-- Work in the local Sapporta project rooted at `cwd` or the nearest
-  `sapporta.json`.
+- For a new application, resolve an explicit parent directory and absent target
+  name before running the versioned scaffold command in
+  [app-building/project/create.md](references/app-building/project/create.md).
+  The scaffold command creates the target, installs dependencies, applies the
+  initial auth migration, and creates the initial Git commit.
+- For an existing application, work in the project rooted at `cwd` or the
+  nearest `sapporta.json`.
 - Framework table/meta APIs and app-owned API routes are served under `/api`.
   Contract paths should not repeat the `/api` prefix. Health checks and
   frontend/static routes may be outside `/api` when the app deliberately mounts
@@ -95,8 +103,20 @@ the matching narrow reference below. Endpoint work starts with
 `backend/typed-errors.md` the mandatory next read when a declared failure can originate
 below the route adapter.
 
+Before direct app-building dispatch, choose the execution model in the
+application-building guide. Run a focused vertical slice in the current
+context. Use staged orchestration for a program of work whose workstreams,
+discovery, dependencies, or delivery risk require bounded contexts.
+
+The narrow branch translates an accepted product model into Sapporta code. An
+artifact-named request such as “add a table” or “build a form” does not skip the
+model, existing-project inspection, or consequential-decision pass in the guide.
+
 ### App-Building Tasks
 
+- New Sapporta project, generated workspace, or first connected application
+  surface -> read
+  [app-building/project/create.md](references/app-building/project/create.md)
 - Tables, columns, relations, indexes, search config, generated schema metadata,
   custom table validation, and semantic table values, including the first
   application tables -> read
@@ -109,9 +129,13 @@ below the route adapter.
   transactions, atomic parent-detail or line-item writes, OpenAPI registration
   -> read [app-building/backend/endpoints.md](references/app-building/backend/endpoints.md), then follow its
   conditional routes to service organization or typed errors
-- Custom React routes, dashboards, forms, record workflows, table/grid views,
-  master-detail screens, side panels, row selection, custom cells, or typed API
-  clients -> read [app-building/frontend/views.md](references/app-building/frontend/views.md), then
+- Custom create or edit forms, domain mutation pages, form dialogs or drawers,
+  and record-entry workflows -> read
+  [app-building/frontend/forms.md](references/app-building/frontend/forms.md) first. Follow its
+  conditional routes to picker or Grid specialization.
+- Custom React routes, dashboards, table/grid views, master-detail screens,
+  side panels, row selection, custom cells, or typed API clients -> read
+  [app-building/frontend/views.md](references/app-building/frontend/views.md), then
   [app-building/frontend/grids.md](references/app-building/frontend/grids.md) for Grid work
 - Domain services, module organization, testable TypeScript workflow code
   outside an endpoint change ->

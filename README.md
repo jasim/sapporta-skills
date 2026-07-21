@@ -1,12 +1,13 @@
 # Sapporta Codex Skills
 
-Operational guidance for agents working inside existing Sapporta applications.
+Operational guidance for agents creating or extending Sapporta applications.
 
-The skill in `skills/sapporta` tells an agent when to choose a workflow, which
-application files to inspect or edit, which auth and row-scope rules are
-non-negotiable, and which validation loop proves a change. Sapporta is the
-reusable framework and library; a Sapporta application is a downstream product
-project that depends on it and contains its own schema, workflows, UI, and data.
+The skill in `skills/sapporta` tells an agent how to scaffold a project, when to
+choose each application workflow, which files to inspect or edit, which auth and
+row-scope rules are non-negotiable, and which validation loop proves a change.
+Sapporta is the reusable framework and library; a Sapporta application is a
+downstream product project that depends on it and contains its own schema,
+workflows, UI, and data.
 
 Use the public documentation for product explanations, API shapes, CLI grammar,
 TypeScript reference, and worked examples:

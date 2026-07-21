@@ -196,31 +196,5 @@ function sampleReportDataset(input: SampleReportInput): GridDataset {
         },
       },
     ],
-    stats: [
-      {
-        label: "Revenue",
-        value: currency(totalRevenue),
-        tone: "positive",
-      },
-      {
-        label: "Cost",
-        value: currency(totalCost),
-        tone: "muted",
-      },
-      {
-        label: "Margin",
-        value: currency(totalMargin),
-        tone: totalMargin >= 0 ? "positive" : "negative",
-        strong: true,
-      },
-    ],
   };
-}
-
-function currency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
 }

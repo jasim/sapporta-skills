@@ -1,8 +1,14 @@
 # Report Creation
 
-Build reports as app-owned API routes that return grid-renderable data, plus
-React screens that display them. Choose the URL, parameters, permission check,
-query, screen route, navigation entry, and validation loop for the report.
+Start with the actor's operational question. Define the report's inclusion and
+exclusion rules, row or summary grain, parameters, authorization boundary, and
+drill-down destination before choosing its route or result shape. Reuse the
+accepted product model and the application's existing report language.
+
+Then build the report as an app-owned API route that returns grid-renderable
+data, plus a React screen that displays it. Choose the URL, parameters,
+permission check, query, screen route, navigation entry, and validation loop for
+the report.
 
 Use public docs for exact `GridDataset` shape, report contracts, scoped report
 data, frontend renderers, date range helpers, and examples:
@@ -30,11 +36,13 @@ Use this shape:
 
 1. Define a shared route contract in `packages/shared/src/contracts/`.
 2. Implement a thin `TsRestApi` handler under `packages/api/app/`.
-3. Put query logic in a domain store/service when it is more than trivial.
-4. Map rows to `GridDataset` in a pure function.
-5. Build a React screen under `packages/frontend/src/`.
-6. Add the screen to React Router and navigation.
-7. Add route tests and mapper tests when hierarchy, rollups, links, or totals
+3. Mount the report sub-app with `route()` and merge its contracts into OpenAPI
+   with `extend()`.
+4. Put query logic in a domain store/service when it is more than trivial.
+5. Map rows to `GridDataset` in a pure function.
+6. Build a React screen under `packages/frontend/src/`.
+7. Add the screen to React Router and navigation.
+8. Add route tests and mapper tests when hierarchy, rollups, links, or totals
    are non-trivial.
 
 Do not create report files in `packages/api/reports/`, use `report({...})`, or
@@ -54,7 +62,8 @@ Backend:
   subject, request params, read/query orchestration, local source row types, and
   pure row-to-`GridDataset` mapper.
 - For multiple reports, keep the report route entrypoint as a thin aggregator
-  that imports report modules and mounts them.
+  that imports report modules, mounts their Hono handlers with `route()`, and
+  merges their registered contracts with `extend()`.
 - Share broad report infrastructure only: auth/scope helpers, row helpers,
   generic grid columns, date/parameter helpers, footer/flat-result/sum helpers,
   and result-shape utilities.
@@ -102,6 +111,10 @@ owns data authority.
   hierarchy when they matter.
 - Keep links out of the backend result. Report links are frontend resolver
   behavior; read [linking.md](linking.md).
+- Keep summary cards out of `GridDataset`. The current schema contains levels,
+  nodes, and optional footer rows. Pass `ReportSummaryStats` a separate
+  `ReportStat[]` value in the screen or declare a custom response envelope when
+  summary values must cross the API boundary.
 - For `GridDatasetColumn` width hints, use the canonical [Column sizing](https://sapporta.com/docs/reference/column-sizing/) reference.
 
 ## Frontend Rules

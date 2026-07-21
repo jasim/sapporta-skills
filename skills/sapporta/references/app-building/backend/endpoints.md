@@ -39,9 +39,19 @@ the shared package browser-safe: contracts, Zod schemas, wire types, constants,
 pure serializers only. No React, Hono, Drizzle, database handles, file I/O, or
 route handlers.
 
-After creating a route file, mount it from `loadApp()` in `packages/api/app.ts`.
+After creating a route file, mount and extend it from `loadApp()` in
+`packages/api/app.ts`. `app.route("/", featureApi)` mounts the Hono runtime
+handlers. `app.extend(featureApi)` adds the sub-app's registered contracts to
+the combined OpenAPI document. A `route()` call alone does not add those
+contracts to `app.docEmitters`.
+
 `app` is already scoped to `/api`, so contract paths should be bare app paths
 like `/invoices/:id/void`, not `/api/invoices/:id/void`.
+
+```ts
+app.route("/", invoiceApi);
+app.extend(invoiceApi);
+```
 
 Verify the mounted route:
 
@@ -88,6 +98,11 @@ If the app has no local example, follow the canonical parent-detail recipe in
 the domain-workflow guide above.
 
 ## Backend Organization
+
+Read [domain-code.md](domain-code.md) when workflow orchestration, invariants,
+or persistence logic moves outside a thin route adapter. If an expected failure
+can originate in that deeper code, also read [typed-errors.md](typed-errors.md)
+before implementing the handler.
 
 Keep route files thin:
 
@@ -156,6 +171,8 @@ For every expected failure, verify:
 ## Common Pitfalls
 
 - File exists under `packages/api/app/` but is not mounted from `loadApp()`.
+- Sub-app is mounted with `route()` but is not merged with `extend()`, so the
+  handler works at runtime but is absent from OpenAPI and CLI discovery.
 - Contract declared inline in `packages/api/app/`, so the frontend cannot import
   the same route shape.
 - Contract path repeats `/api`.

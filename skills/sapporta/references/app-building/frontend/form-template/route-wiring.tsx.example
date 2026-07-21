@@ -1,0 +1,99 @@
+// Adapt this fragment in packages/frontend/src/App.tsx after the corresponding
+// TasksWorkspace, TaskDetail, and TaskForm components exist.
+
+import { lazy, Suspense } from "react";
+import { Navigate, Route } from "react-router-dom";
+import type { Navigation } from "@sapporta/frontend/shell";
+import { ListTodo } from "lucide-react";
+
+const TasksWorkspace = lazy(() =>
+  import("./tasks/TasksWorkspace").then((module) => ({
+    default: module.TasksWorkspace,
+  })),
+);
+
+const TaskDetail = lazy(() =>
+  import("./tasks/TaskDetail").then((module) => ({
+    default: module.TaskDetail,
+  })),
+);
+
+const TaskForm = lazy(() =>
+  import("./tasks/TaskForm").then((module) => ({
+    default: module.TaskForm,
+  })),
+);
+
+function RouteFallback() {
+  return (
+    <div className="p-[18px] text-sap-data text-sap-muted">Loading...</div>
+  );
+}
+
+export const appNavigation: Navigation = [
+  {
+    label: "Work",
+    items: [
+      {
+        label: "Tasks",
+        icon: ListTodo,
+        to: "/tasks",
+      },
+    ],
+  },
+];
+
+export const appHomeRoute = (
+  <Route index element={<Navigate to="/tasks" replace />} />
+);
+
+export const appPublicRoutes = <></>;
+
+export const appProtectedRoutes = (
+  <>
+    <Route
+      path="tasks"
+      element={
+        <Suspense fallback={<RouteFallback />}>
+          <TasksWorkspace />
+        </Suspense>
+      }
+    />
+    <Route
+      path="tasks/new"
+      element={
+        <Suspense fallback={<RouteFallback />}>
+          <TaskForm mode="new" />
+        </Suspense>
+      }
+    />
+    <Route
+      path="tasks/:id"
+      element={
+        <Suspense fallback={<RouteFallback />}>
+          <TaskDetail />
+        </Suspense>
+      }
+    />
+    <Route
+      path="tasks/:id/edit"
+      element={
+        <Suspense fallback={<RouteFallback />}>
+          <TaskForm mode="edit" />
+        </Suspense>
+      }
+    />
+  </>
+);
+
+// Link the components with these application actions:
+//
+//   TasksWorkspace New               -> navigate("/tasks/new")
+//   list activation with preview     -> navigate(`/tasks/${id}/edit`)
+//   list activation without preview  -> navigate(`/tasks/${id}`)
+//   TaskDetail Edit                  -> navigate(`/tasks/${id}/edit`)
+//   create/edit success              -> navigate(`/tasks/${id}`)
+//   project-context create           -> navigate(`/tasks/new?project_id=${id}`)
+//
+// Keep forms and record routes out of appNavigation. They remain reachable
+// through list, preview, and detail actions.

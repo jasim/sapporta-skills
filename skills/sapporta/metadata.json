@@ -3,5 +3,5 @@
   "author": "Jasim A Basheer (https://x.com/jasim_ab)",
   "repository": "https://github.com/jasim/sapporta-skills",
   "date": "May 2026",
-  "abstract": "Operational agent guidance for existing Sapporta applications: choose between app-building and data-console workflows, inspect and edit the right files, preserve auth and row-scope boundaries, use the project-local CLI, validate tables/routes/reports/screens, and link to the canonical Sapporta documentation for API and reference details."
+  "abstract": "Application-first guidance for creating or extending Sapporta projects: scaffold the generated workspace, model resources and workflows, build connected forms and Grid surfaces with row-oriented interaction, preserve access boundaries, and validate complete user outcomes."
 }

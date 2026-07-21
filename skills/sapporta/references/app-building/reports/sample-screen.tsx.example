@@ -16,7 +16,6 @@ import {
   ReportGridDataset,
   ReportRunButton,
   ReportScreenFrame,
-  ReportSummaryStats,
   ReportToolbar,
 } from "@sapporta/frontend/report";
 import {
@@ -145,10 +144,6 @@ export function SampleReport() {
       ) : null}
 
       {report.status === "error" ? <ReportError error={report.error} /> : null}
-
-      {report.dataset?.stats ? (
-        <ReportSummaryStats stats={report.dataset.stats} />
-      ) : null}
 
       <div className="min-h-0 flex-1 overflow-auto bg-sap-panel">
         {report.dataset ? (

@@ -1,17 +1,25 @@
 # Custom Frontend Views
 
 Build screens under `packages/frontend/src/`: dashboards, import wizards,
-multi-table forms, report pages, and custom table/grid workflows. Use public
+report pages, and custom table/grid workflows. Use public
 exports from `@sapporta/frontend`, `@sapporta/shared`, `@sapporta/grid`,
 `@sapporta/grid/column-preset`, and generic UI components from `@sapporta/ui`.
 Prefer domain-aware components and hooks from `@sapporta/frontend` before
 composing generic `@sapporta/ui` primitives. When exact declarations are
 needed, inspect the app's installed packages.
 
-Before creating an app-local field or picker, search for an existing pattern:
+Form work has a separate first read. Use [forms.md](forms.md) before choosing
+fields, form state, persistence, pickers, or an embedded Grid. It covers direct
+TanStack Form composition with `NewRecordPage`, `FormField`,
+`buildRecordFormFields`, field-model lookup functions, `parseCreateDraft`, the
+generated Sapporta table API, and optional application-owned server-state
+caching.
+
+Before creating an app-local field or picker, search for the public form and
+lookup surface:
 
 ```bash
-rg -n 'LookupPicker|useTableLookup|Combobox' packages/frontend/src
+rg -n 'NewRecordPage|FormField|buildRecordFormFields|fieldModelForColumn|foreignKeyFieldModelForColumn|parseCreateDraft|LookupPicker|useTableLookup' packages/frontend/src
 ```
 
 Docs:
@@ -26,20 +34,9 @@ Docs:
 
 ## Record Workflow Surfaces
 
-Treat Grid as the default surface for record-oriented workflows:
-
-1. Use the generated table surface for ordinary table work.
-2. Use TGrid when persisted Sapporta tables own the records or relationships.
-3. Use BaseGrid with ColumnPreset when the page owns temporary drafts,
-   composite workflow rows, calculated projections, or a custom data source.
-4. Use conventional form controls for compact headers, singleton values, and
-   specialized editors or panels around the grid.
-
-For every custom Grid, read the Grid core model and choose an interaction mode
-before designing custom cells, panels, or toolbar actions. Decide separately
-whether the workflow needs cell selection, an active row, row selection that
-follows the cursor, or independently pinned row selection. Continue with
-[grids.md](grids.md) for the surface and interaction decision.
+Apply the application grammar in [../guide.md](../guide.md). For each tabular
+list or related-record collection, read [grids.md](grids.md) before choosing the
+Grid layer, interaction, query context, or columns.
 
 ## Routes And Navigation
 
@@ -48,9 +45,11 @@ Follow the current app convention. `packages/frontend/src/App.tsx` exports
 `appProtectedRoutes`. Add one file per screen, then add a route and, for
 protected screens, a matching navigation item.
 
-Add report screens to `appNavigation` so users can find them alongside table
-and workflow pages. Put public routes in `appPublicRoutes` only when their data
-is intentionally public.
+Add report, list, and workflow-entry screens to `appNavigation`. Keep create,
+edit, and individual record routes contextual. Put public routes in
+`appPublicRoutes` only when their data is intentionally public. For connected
+list, detail, create, and edit routes, adapt
+[form-template/route-wiring.tsx.example](form-template/route-wiring.tsx.example).
 
 ## Auth Boundaries
 
@@ -66,7 +65,8 @@ typed custom endpoints whose server handlers resolve auth and apply
 `scopedRows()` or `rowSecurity`.
 
 Forms must omit system-managed scope fields and columns marked
-`clientEditable: false`.
+`apiWritable: false`. This metadata shapes generated clients and forms. The
+server applies the authoritative write policy.
 
 ## Pickers And Primitives
 

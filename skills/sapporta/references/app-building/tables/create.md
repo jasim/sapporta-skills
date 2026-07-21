@@ -1,5 +1,8 @@
 # Table Creation
 
+Translate an accepted product model into tables; do not derive the product model
+from a requested table or form shape.
+
 Table schema work belongs in `packages/api/schema/`. Inspect existing schema
 files before adding a new pattern:
 
@@ -10,6 +13,12 @@ rg --files packages/api/schema
 Use local application schemas for project conventions. To discover how to
 define application tables from the canonical starter pattern, use the guide
 below.
+
+Define the raw Drizzle table and its inferred row types before building a
+custom frontend form. Export `typeof table.$inferSelect` and
+`typeof table.$inferInsert` aliases from the schema module. After the table is
+registered, read [frontend/forms.md](../frontend/forms.md) for the
+metadata-driven form workflow and the frontend type-only boundary.
 
 When the schema directory contains only project-authentication tables, treat
 the project as a fresh app. Read the complete starter pattern before framework
@@ -57,8 +66,12 @@ package responsibilities or extension points are unclear.
 - Export the Sapporta table wrapper used by the current app. Follow the local
   project style and current docs; do not introduce an older wrapper form into a
   newer app.
-- Derive row and insert types from Drizzle with `$inferSelect` and
-  `$inferInsert`; do not hand-write parallel row types.
+- Export row and insert aliases from the raw table definition:
+  `export type Project = typeof projectsTable.$inferSelect` and
+  `export type NewProject = typeof projectsTable.$inferInsert`. Server and
+  frontend domain code must reuse these aliases. Do not use the generic
+  Sapporta `Row` type as a domain model or hand-write a parallel frontend
+  interface.
 - Use Sapporta semantic column factories for values when available. Use raw
   Drizzle columns for primary keys, foreign keys, and unsupported edge cases.
 - Use Temporal for date/time defaults and app-level date work. Do not use
