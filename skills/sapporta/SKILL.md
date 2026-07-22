@@ -131,12 +131,15 @@ model, existing-project inspection, or consequential-decision pass in the guide.
   conditional routes to service organization or typed errors
 - Custom create or edit forms, domain mutation pages, form dialogs or drawers,
   and record-entry workflows -> read
-  [app-building/frontend/forms.md](references/app-building/frontend/forms.md) first. Follow its
-  conditional routes to picker or Grid specialization.
+  [app-building/frontend/forms.md](references/app-building/frontend/forms.md)
+  first. It routes to the canonical form, validation, and table-query docs;
+  follow its conditional routes to picker or Grid specialization.
 - Custom React routes, dashboards, table/grid views, master-detail screens,
   side panels, row selection, custom cells, or typed API clients -> read
   [app-building/frontend/views.md](references/app-building/frontend/views.md), then
-  [app-building/frontend/grids.md](references/app-building/frontend/grids.md) for Grid work
+  [app-building/frontend/grids.md](references/app-building/frontend/grids.md)
+  for Grid work. The public TGrid and Grid interaction references own exact
+  active-row, activation, and selection behavior.
 - Domain services, module organization, testable TypeScript workflow code
   outside an endpoint change ->
   read [app-building/backend/domain-code.md](references/app-building/backend/domain-code.md)

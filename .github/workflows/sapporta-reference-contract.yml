@@ -1,0 +1,39 @@
+name: Sapporta reference contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Sapporta skills
+        uses: actions/checkout@v4
+
+      - name: Check out Sapporta framework
+        uses: actions/checkout@v4
+        with:
+          repository: jasim/sapporta
+          path: .sapporta-source
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: .sapporta-source/pnpm-lock.yaml
+
+      - name: Install and build framework declarations
+        run: |
+          pnpm --dir .sapporta-source install --frozen-lockfile
+          pnpm --dir .sapporta-source --filter @sapporta/frontend build
+
+      - name: Validate skill examples against framework exports
+        run: node scripts/check-sapporta-reference-contract.mjs .sapporta-source --typecheck

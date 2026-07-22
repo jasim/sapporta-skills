@@ -12,8 +12,8 @@ Form work has a separate first read. Use [forms.md](forms.md) before choosing
 fields, form state, persistence, pickers, or an embedded Grid. It covers direct
 TanStack Form composition with `NewRecordPage`, `FormField`,
 `buildRecordFormFields`, field-model lookup functions, `parseCreateDraft`, the
-generated Sapporta table API, and optional application-owned server-state
-caching.
+generated Sapporta table API, and the generated project's TanStack Query
+integration.
 
 Before creating an app-local field or picker, search for the public form and
 lookup surface:
@@ -25,6 +25,8 @@ rg -n 'NewRecordPage|FormField|buildRecordFormFields|fieldModelForColumn|foreign
 Docs:
 
 - Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens/
+- Custom forms and cached table reads: https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-table-queries/
+- Table query options: https://sapporta.com/docs/reference/frontend/table-query-options/
 - Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients/
 - Grid-first record workflows: https://sapporta.com/docs/guides/generated-surfaces/grid-first-record-workflows/
 - Grid core model: https://sapporta.com/grid/guides/core-model/
