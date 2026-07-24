@@ -53,6 +53,29 @@ edit, and individual record routes contextual. Put public routes in
 list, detail, create, and edit routes, adapt
 [form-template/route-wiring.tsx.example](form-template/route-wiring.tsx.example).
 
+For an app-owned resource workflow, connect these route roles deliberately:
+
+```text
+/<resources>              list or master-detail workspace
+/<resources>/new          create form
+/<resources>/:id          full detail
+/<resources>/:id/edit     edit form
+```
+
+- Open the create route from the list or contextual parent action.
+- Open edit on row activation when the workspace already shows a read preview;
+  otherwise open full detail.
+- Open edit from the detail action.
+- After create or edit, invalidate affected caches before opening detail.
+- Return from cancel to the prior detail or list without saving.
+- Parse and validate route or search identity before using it as a form default.
+- Add only the list or workflow-entry surface to `appNavigation`.
+
+Generated framework routes provide `/tables/:tableName` and
+`/tables/:tableName/new`. Do not assume generated detail or edit routes exist.
+Use app-owned routes until the installed Sapporta version exposes the needed
+surface.
+
 ## Auth Boundaries
 
 Let the existing app boot load the session and

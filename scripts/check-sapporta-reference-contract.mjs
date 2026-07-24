@@ -9,6 +9,11 @@ const sapportaRoot = resolve(
 const shouldTypecheck = process.argv.includes("--typecheck");
 
 const files = {
+  dispatch: readSkill("SKILL.md"),
+  appGuide: readSkill("references/app-building/guide.md"),
+  productSlice: readSkill("references/app-building/product-slice.md"),
+  projectCreate: readSkill("references/app-building/project/create.md"),
+  frontendViews: readSkill("references/app-building/frontend/views.md"),
   forms: readSkill("references/app-building/frontend/forms.md"),
   simpleForm: readSkill(
     "references/app-building/frontend/form-template/SimpleTaskForm.tsx.example",
@@ -31,6 +36,36 @@ const files = {
 };
 
 const failures = [];
+
+requireAll("skill dispatch", files.dispatch, [
+  "app-building/product-slice.md",
+  "Every new",
+  "application and behavioral change uses the proportional product-model",
+]);
+requireAll("application-building guide", files.appGuide, [
+  "[product-model and coherent-slice workflow](product-slice.md)",
+  "After inspecting the project, read [product-slice.md](product-slice.md)",
+]);
+requireAll("common product-slice workflow", files.productSlice, [
+  "**New application:**",
+  "**New feature:**",
+  "**Fine-grained behavior or UI adjustment:**",
+  "Inspect every boundary, but change only the ones required by the outcome.",
+  "active-row movement from passive viewport scrolling",
+]);
+requireAll("project-creation handoff", files.projectCreate, [
+  "Project creation ends after the generated workspace",
+  "[../product-slice.md](../product-slice.md)",
+]);
+forbidAll("project-creation workflow", files.projectCreate, [
+  "## Build The First Connected Slice",
+  "## Link Lists, Details, And Forms",
+]);
+requireAll("frontend route workflow", files.frontendViews, [
+  "/<resources>/:id",
+  "After create or edit, invalidate affected caches before opening detail.",
+  "Do not assume generated detail or edit routes exist.",
+]);
 
 requireAll("form guidance", files.forms, [
   "Generated projects install TanStack Query",

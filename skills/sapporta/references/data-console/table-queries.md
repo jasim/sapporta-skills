@@ -18,6 +18,7 @@ semantic values, and error codes:
 - Table endpoints: https://sapporta.com/docs/reference/http/table-endpoints/
 - Generated table APIs: https://sapporta.com/docs/guides/generated-surfaces/generated-table-apis/
 - Query syntax: https://sapporta.com/docs/reference/http/query-syntax/
+- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/
 - Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries/
 - Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
 
@@ -31,14 +32,16 @@ semantic values, and error codes:
   against table metadata with `parseFiltersForTable()` so numbers, dates,
   timestamps, booleans, and lookup ids keep their table types.
 - Unknown columns, unsupported operators, malformed values, bad limits/pages,
-  and search on tables without search config return 400. Treat a 400 as a bug
-  in the caller.
+  and search on tables with `search: false` return 400. Treat a 400 as a bug in
+  the caller.
 - Do not catch-and-retry by dropping the filter or operator; that can read or
   export a much larger result set.
 - Built-in table routes apply row-access predicates.
   Do not add raw workspace filters to compensate; use endpoint filters for
   product-level criteria only.
-- Search with `q=<term>` only when the table declares `meta.search`.
+- Search with `q=<term>` unless the table declares `search: false`. Search
+  defaults to the current row's visible application columns; an explicitly
+  configured relational plan may also match a parent through child rows.
 - Always read the documented response envelope; do not assume the response is a
   bare array.
 - Generated table bodies carry JSON primitives. Preserve select-backed text as

@@ -31,6 +31,7 @@ filter/search behavior, relationship metadata, and migration details:
 - Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
 - Table definitions: https://sapporta.com/docs/reference/schema/table-definitions/
 - Table and column metadata: https://sapporta.com/docs/reference/schema/table-and-column-metadata/
+- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/
 - Table validation: https://sapporta.com/docs/reference/schema/table-validation/
 - Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries/
 - Relationships and lookup behavior: https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior/
@@ -117,15 +118,32 @@ Before finishing schema work, make a relationship pass:
    report for hierarchy views when needed.
 7. For join tables, add children from both endpoint tables when both browsing
    directions matter.
+8. Identify parent resources whose useful discovery text lives in child
+   collections—for example, a book found by a quote, an order found by a line
+   description, or a case found by a note. Treat these as candidates for
+   explicit relational search.
 
-## Numeric And Search Pitfalls
+## Search Behavior
+
+Leave search unset by default, and retain an existing `search: "allColumns"`
+unless requirements say otherwise. Unset search is equivalent to
+`"allColumns"` and is the right behavior for most tables; it searches the
+visible application values of the current row without walking into has-many
+children.
+
+Customize search only when the product requires a different discovery surface.
+When searching a parent should also return it for a match in a child collection,
+read the canonical [Search table rows and relationships](https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/)
+guide before editing metadata. It owns the recursive `search.children` shape,
+field-selection rules, authorization behavior, relationship index guidance, and
+the boundary between generated relational search and app-owned full-text search.
+Do not infer child traversal merely because `meta.children` exists.
+
+## Numeric And Enum Pitfalls
 
 - Additive numeric fields should be non-null with a default. Use nullable
   numeric fields only when `null` has domain meaning, and mark the metadata
   accordingly.
-- Search config should name text fields a human would type against. Do not add
-  IDs, numeric measures, booleans, timestamps, or enum fields just to make the
-  toolbar appear.
 - For enum-like fields, use the documented select metadata unless the app needs
   a reference table.
 

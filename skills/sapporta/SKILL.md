@@ -35,9 +35,12 @@ Decide whether the user wants to change app code or operate on existing data.
 - Create a new Sapporta application -> read
   [app-building/project/create.md](references/app-building/project/create.md),
   then continue through the app-building guide inside the generated project.
-- Build or change app behavior: first model the application, then implement its
-  tables, reports, links, endpoints, contracts, views, access, and validation ->
-  read [app-building/guide.md](references/app-building/guide.md).
+- Build or change app behavior -> read
+  [app-building/guide.md](references/app-building/guide.md). Every new
+  application and behavioral change uses the proportional product-model and
+  coherent-slice gate in
+  [app-building/product-slice.md](references/app-building/product-slice.md)
+  before implementation-specific references.
 - Inspect, query, insert, update, validate, or answer questions from records
   already in the app -> read [data-console/guide.md](references/data-console/guide.md).
 - Native module binding failures, `better-sqlite3`, install/dev-server errors
@@ -66,6 +69,11 @@ with the `data-console` guide.
 - To discover how to define application tables, follow
   [app-building/tables/create.md](references/app-building/tables/create.md). It routes to the canonical
   worked schema example and exact references.
+- Keep the default table search behavior unless the product requires a narrower
+  or relationship-aware discovery surface. When users should find a parent row
+  by text stored in related child rows, treat that as relational search and
+  follow the search guide routed from
+  [app-building/tables/create.md](references/app-building/tables/create.md).
 - When `packages/api/schema/` contains only project-authentication tables, treat
   the project as a fresh app. Read the complete starter schema through
   [app-building/tables/create.md](references/app-building/tables/create.md) before inspecting framework
@@ -97,29 +105,34 @@ Reference docs:
 
 ## Direct Dispatch
 
-For app-building work, use `app-building/guide.md` as the mode entrypoint, then use
+For app-building work, use `app-building/guide.md` as the mode entrypoint.
+Establish the project context, then read `app-building/product-slice.md` before
 the matching narrow reference below. Endpoint work starts with
-`backend/endpoints.md`; add `backend/domain-code.md` for service organization and make
-`backend/typed-errors.md` the mandatory next read when a declared failure can originate
-below the route adapter.
+`backend/endpoints.md`; add `backend/domain-code.md` for service organization
+and make `backend/typed-errors.md` the mandatory next read when a declared
+failure can originate below the route adapter.
 
 Before direct app-building dispatch, choose the execution model in the
 application-building guide. Run a focused vertical slice in the current
 context. Use staged orchestration for a program of work whose workstreams,
 discovery, dependencies, or delivery risk require bounded contexts.
 
-The narrow branch translates an accepted product model into Sapporta code. An
-artifact-named request such as “add a table” or “build a form” does not skip the
-model, existing-project inspection, or consequential-decision pass in the guide.
+The narrow branch translates an accepted product model or model delta into
+Sapporta code. An artifact-named request such as “add a table” or “build a
+form” does not skip project inspection or the proportional common gate.
 
 ### App-Building Tasks
 
+- Product model or model delta, outcome acceptance, slice boundary, application
+  grammar, and proportional handling of new apps, new features, or fine-grained
+  behavior -> read
+  [app-building/product-slice.md](references/app-building/product-slice.md)
 - New Sapporta project, generated workspace, or first connected application
   surface -> read
   [app-building/project/create.md](references/app-building/project/create.md)
-- Tables, columns, relations, indexes, search config, generated schema metadata,
-  custom table validation, and semantic table values, including the first
-  application tables -> read
+- Tables, columns, relations, indexes, search config, parent search through child
+  rows, generated schema metadata, custom table validation, and semantic table
+  values, including the first application tables -> read
   [app-building/tables/create.md](references/app-building/tables/create.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [app-building/reports/create.md](references/app-building/reports/create.md)

@@ -16,9 +16,7 @@ Public references:
 - [Resolve The Target](#resolve-the-target)
 - [Run The Versioned Scaffold](#run-the-versioned-scaffold)
 - [Inspect The Generated Project](#inspect-the-generated-project)
-- [Build The First Connected Slice](#build-the-first-connected-slice)
-- [Link Lists, Details, And Forms](#link-lists-details-and-forms)
-- [Validate The Project](#validate-the-project)
+- [Continue Through The Common Workflow](#continue-through-the-common-workflow)
 
 ## Resolve The Target
 
@@ -80,97 +78,16 @@ packages/frontend/src/App.tsx App navigation and routes
 
 The generated app starts with authentication tables and a welcome surface. Use
 the fresh-app branch in [../tables/create.md](../tables/create.md) for the first
-domain tables. Model the actors, resources, relationships, workflows, access,
-and expected failures before adapting the starter schema.
+domain tables after completing the common product workflow.
 
-## Build The First Connected Slice
+## Continue Through The Common Workflow
 
-The canonical projects/tasks example is the starter for a relationship-backed
-application. It demonstrates raw Drizzle tables, wrapped Sapporta definitions,
-`workspaceGlobal` scope, semantic columns, server `Temporal` defaults, exported
-server row types, a task-to-project foreign key, and project `meta.children`.
-Read the complete example through [../tables/create.md](../tables/create.md).
+Project creation ends after the generated workspace and its extension points
+are available and inspected. Continue with [../guide.md](../guide.md), then read
+[../product-slice.md](../product-slice.md) and use its full new-application
+design pass before choosing the first implementation branch.
 
-The relationship has two parts:
-
-```text
-tasks.project_id -> projects.id       database integrity and lookup source
-projects.meta.children -> tasks       generated reverse navigation
-```
-
-The task form derives its project picker from the `project_id` foreign key and
-the project's `rowLabelColumns`. Use
-`foreignKeyFieldModelForColumn(fields, "project_id")` with `LookupPicker`.
-Do not load the complete projects table into a local select.
-
-Use the generated list and `NewRecordPage` when one table owns the operation
-and metadata-derived order fits. Build a custom domain form when the workflow
-needs route-derived defaults, custom sections, a custom success destination,
-edit loading, non-column inputs, or one multi-table transaction. Read
-[../frontend/forms.md](../frontend/forms.md) before implementing it.
-
-Reusable custom-form references:
-
-- [SimpleTaskForm.tsx.example](../frontend/form-template/SimpleTaskForm.tsx.example)
-  shows one-table create and edit with a project lookup.
-- [TaskForm.tsx](../frontend/form-template/TaskForm.tsx) shows a larger
-  structural create/edit flow with explicit application-owned seams.
-- [route-wiring.tsx.example](../frontend/form-template/route-wiring.tsx.example)
-  connects the list, form, detail, and navigation routes.
-
-## Link Lists, Details, And Forms
-
-Use app-owned routes for a custom workflow:
-
-```text
-/tasks              list or master-detail workspace
-/tasks/new          create form
-/tasks/:id          full detail
-/tasks/:id/edit     edit form
-```
-
-Connect the surfaces deliberately:
-
-- The list's New action opens `/tasks/new`.
-- Row activation opens `/tasks/:id/edit` when the list already renders the read
-  preview. It opens `/tasks/:id` when the list has no preview.
-- The detail's Edit action opens `/tasks/:id/edit`.
-- Create and edit success open `/tasks/:id` after affected caches are
-  invalidated.
-- Cancel returns to the prior detail or list without saving.
-- A project-context action may open `/tasks/new?project_id=<id>`; parse the
-  search value before using it as a form default.
-- Only the list or workspace belongs in `appNavigation`. Forms and individual
-  records remain contextual routes.
-
-The current generated framework routes provide `/tables/:tableName` and
-`/tables/:tableName/new`. They do not provide generated detail or edit routes.
-Do not point a custom workflow at `/tables/tasks/:id` or
-`/tables/tasks/:id/edit`. Declare app-owned routes until the installed package
-exposes those routes.
-
-## Validate The Project
-
-After adding the first domain tables:
-
-```bash
-pnpm --filter ./packages/api db:generate --name add_projects_and_tasks
-# Review the generated SQL before continuing.
-pnpm --filter ./packages/api db:migrate
-pnpm --filter ./packages/api db:check
-pnpm build
-pnpm dev
-```
-
-Inspect the running surfaces with:
-
-```bash
-pnpm exec sapporta tables show projects
-pnpm exec sapporta tables show tasks
-pnpm exec sapporta endpoints list
-```
-
-Exercise signup and verification when the application has no local account.
-Verify project lookup labels, contextual defaults, create and edit success
-destinations, list refresh, master-detail activation, row scope, empty states,
-and form failures.
+Use [../tables/create.md](../tables/create.md) for the first domain tables.
+Follow the guide's conditional routes for endpoints, reports, forms, views, and
+Grids. Those references own the implementation and validation loops for the
+accepted first slice.
