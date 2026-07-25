@@ -1,4 +1,4 @@
-# Sapporta Codex Skills
+# Sapporta Coding Agent Skills
 
 Operational guidance for agents creating or extending Sapporta applications.
 

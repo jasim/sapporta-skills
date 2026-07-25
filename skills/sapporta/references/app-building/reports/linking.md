@@ -30,11 +30,11 @@ Use docs for exact resolver and link type shapes:
 - Exercise non-trivial links in the browser.
 
 When this is one workstream within a larger feature, strongly prefer a bounded
-subagent or separate Codex task for the linking work. Give it the stable report
-route, backend row shape, report screen, intended destinations, and the
-completion-gate acceptance criteria. The task should return the hidden-ID,
-resolver, and browser-validation changes for the owning feature task to
-integrate; do not let it independently broaden the report's product scope.
+subagent or separate coding agent thread/task for the linking work. Give it the
+stable report route, backend row shape, report screen, intended destinations,
+and the completion-gate acceptance criteria. The task should return the
+hidden-ID, resolver, and browser-validation changes for the owning feature task
+to integrate; do not let it independently broaden the report's product scope.
 
 ## Link Patterns
 
