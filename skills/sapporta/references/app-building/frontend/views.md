@@ -101,7 +101,8 @@ server applies the authoritative write policy.
   state, and shared styling. Do not compose Base UI or add an app-local picker
   for this standard case.
 - Compose the Base UI `Combobox` primitives only when the interaction is not
-  covered by `LookupPicker`. Use `Select` for short static choices -> read
+  covered by `LookupPicker`, including all static choices. Do not use native
+  HTML `<select>` or the BaseUI `Select` component -> read
   [pickers.md](pickers.md).
 - Table/grid pages should preserve built-in search, filters, sort, pagination,
   CSV export, lookup labels, URL state, loading states, and error states unless

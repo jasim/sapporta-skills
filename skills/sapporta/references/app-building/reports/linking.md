@@ -16,6 +16,8 @@ Use docs for exact resolver and link type shapes:
 
 ## Agent Workflow
 
+- Treat this as a required completion task for every record-level report; see
+  [the report-creation linking gate](create.md#record-level-linking-completion-gate).
 - Include hidden identifiers in backend `node.columns` when the screen needs
   them for navigation.
 - Add `visuallyHidden: true` to helper ID columns that should not display.
@@ -26,6 +28,13 @@ Use docs for exact resolver and link type shapes:
 - Check optional values before returning links for synthetic cells such as
   opening, closing, subtotal, or footer totals.
 - Exercise non-trivial links in the browser.
+
+When this is one workstream within a larger feature, strongly prefer a bounded
+subagent or separate Codex task for the linking work. Give it the stable report
+route, backend row shape, report screen, intended destinations, and the
+completion-gate acceptance criteria. The task should return the hidden-ID,
+resolver, and browser-validation changes for the owning feature task to
+integrate; do not let it independently broaden the report's product scope.
 
 ## Link Patterns
 

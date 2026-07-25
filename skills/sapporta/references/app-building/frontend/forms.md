@@ -37,6 +37,28 @@ Sapporta version.
 - Read [grids.md](grids.md) when the form contains a substantial collection or
   a staged multi-row draft.
 
+## Picker Policy
+
+Every choice control must be searchable and keyboard-operable. Do not use a
+native HTML `<select>` or BaseUI's `<Select>` component in application-owned 
+forms, filters, or report controls.
+
+- For a single record from a Sapporta table or foreign-key column, use
+  `LookupPicker` with the field's `LookupCapabilities` or `useTableLookup()`.
+  It preserves scoped remote search, selected-label loading, typed IDs, cache
+  behavior, and shared styling. Do not fetch a whole table merely to turn its
+  rows into local options.
+- For a static enum, status, priority, or other non-table option set, compose
+  the Base UI `Combobox` with Sapporta's `comboboxClassNames` tokens. It must
+  expose text input and filtered keyboard navigation. Read [pickers.md](pickers.md)
+  before composing it.
+- For a specialized item model, grouping, multi-select, tags, or embedded-grid
+  editor, use the same Base UI `Combobox` primitives; do not add a new
+  application-local Select wrapper.
+
+Before completing a form, audit every choice control against this policy,
+including toolbar and report filters that launch or constrain the workflow.
+
 ## Preserve These Boundaries
 
 - Reuse the generated TanStack Query provider and workspace-owned
@@ -80,7 +102,8 @@ imports as framework exports.
 
 ## Validate The Workflow
 
-Run the application's frontend typecheck, tests, and build. Exercise loading,
-cancellation, create and edit initialization, dirty-value preservation,
-required and optional values, select and foreign-key fields, server field
+Ideally in a separate agent/subagent/thread/coding agent task, run the
+application's frontend typecheck, tests, and build. Exercise loading,
+cancellation, create and edit initialization, dirty-value preservation, required
+and optional values, static-combobox and foreign-key lookup fields, server field
 issues, query invalidation, Grid reload, authorization, and success navigation.

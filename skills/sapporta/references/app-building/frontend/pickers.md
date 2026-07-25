@@ -52,18 +52,21 @@ to construct picker options. Do not introduce an app-local `*Picker` around
 Base UI for behavior `LookupPicker` already provides. If a domain wrapper is
 genuinely useful, implement it in terms of `LookupPicker`.
 
-The removed component was the old generic `Combobox` field from
-`@sapporta/ui`. `LookupPicker` remains the app-facing table lookup control. When
-an old `<Combobox options={...}>` selects table records, migrate it to
-`LookupPicker`; do not copy the `LookupPicker` implementation.
+`LookupPicker` remains the app-facing table lookup control. When an old
+application-local combobox selects table records, migrate it to `LookupPicker`;
+do not copy the `LookupPicker` implementation or materialize a table into local
+options.
 
-Use `Select` for a short static option set.
+For short static option sets, use the Base UI `Combobox` with the shared
+Sapporta style tokens. It gives users searchable, keyboard-operable choices and
+is the required replacement for native HTML `<select>` and the removed
+Sapporta `Select` component.
 
 ## Compose Base UI For Specialized Interactions
 
-Compose primitives for behavior outside `LookupPicker`: non-table item models,
-custom rendering or grouping, multi-select or tags, embedded grid editors, and
-special trigger, focus, popup, or layout semantics.
+Compose primitives for static option sets and behavior outside `LookupPicker`:
+non-table item models, custom rendering or grouping, multi-select or tags,
+embedded grid editors, and special trigger, focus, popup, or layout semantics.
 
 Import the Base UI primitives and shared Sapporta styles from focused exports:
 
@@ -100,6 +103,9 @@ from the current documentation.
   change. Forward `entry.disabled` to `Combobox.Item`.
 - Populate lookup items through scoped table or lookup APIs. Client filters
   and raw SQL do not establish workspace or user authorization.
+- For static items, provide an input, popup, empty state, filtered list,
+  selected-value equality, and visible selection indicator. Preserve the
+  static domain value at the boundary rather than converting it to labels.
 
 Use these Sapporta monorepo implementations according to their role:
 

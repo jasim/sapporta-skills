@@ -26,6 +26,7 @@ data, frontend renderers, date range helpers, and examples:
 - [Auth And Data Scope](#auth-and-data-scope)
 - [Mapper Rules](#mapper-rules)
 - [Frontend Rules](#frontend-rules)
+- [Record-Level Linking Completion Gate](#record-level-linking-completion-gate)
 - [Validation](#validation)
 - [Example Reference Files](#example-reference-files)
 - [References](#references)
@@ -42,7 +43,9 @@ Use this shape:
 5. Map rows to `GridDataset` in a pure function.
 6. Build a React screen under `packages/frontend/src/`.
 7. Add the screen to React Router and navigation.
-8. Add route tests and mapper tests when hierarchy, rollups, links, or totals
+8. For a record-level report, complete the mandatory linking gate below before
+   considering the slice done.
+9. Add route tests and mapper tests when hierarchy, rollups, links, or totals
    are non-trivial.
 
 Do not create report files in `packages/api/reports/`, use `report({...})`, or
@@ -125,6 +128,18 @@ editing rules, side panels, or toolbar behavior, read the custom grid docs:
 
 - TGrid usage: https://sapporta.com/docs/reference/frontend/tgrid/
 - BaseGrid guide: https://sapporta.com/grid/reference/base-grid/
+
+## Record-Level Linking Completion Gate
+
+Complete [Report Linking](linking.md) before finishing any report that exposes
+durable records. A report is record-level when a displayed value represents a
+record a user would reasonably inspect, edit, or use as a starting point for
+related work. Summary-only reports need links only when drill-down is useful.
+
+The report should preserve the identity needed for its intended drill-downs and
+make those paths available in the UI. Keep navigation behavior in the frontend,
+then verify that links work for the report's relevant row types and that their
+targets enforce authorization.
 
 ## Validation
 
