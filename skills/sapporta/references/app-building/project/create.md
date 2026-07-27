@@ -8,7 +8,7 @@ Public references:
 
 - Create a project: https://sapporta.com/docs/getting-started/create-a-project/
 - Tour the generated project: https://sapporta.com/docs/getting-started/tour-the-generated-project/
-- Define projects and tasks: https://sapporta.com/docs/getting-started/define-projects-and-tasks/
+- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
 - Generated project layout: https://sapporta.com/docs/reference/project/generated-project-layout/
 
 ## Contents

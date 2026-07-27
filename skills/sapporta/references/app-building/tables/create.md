@@ -41,8 +41,8 @@ filter/search behavior, relationship metadata, and migration details:
 ## Canonical Starter Pattern
 
 To discover how Sapporta application tables are defined, start with the
-canonical [Define projects and tasks](https://sapporta.com/docs/getting-started/define-projects-and-tasks/)
-worked example. It demonstrates, in one place:
+canonical [Tables, columns, and schema metadata](https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/)
+guide. Its complete parent/child starter demonstrates:
 
 - raw Drizzle tables and exported Sapporta wrappers;
 - semantic text, date, and timestamp columns;
@@ -51,10 +51,10 @@ worked example. It demonstrates, in one place:
 - Temporal timestamp defaults; and
 - the named migration, SQL review, migrate, and check loop.
 
-Use that page as the starter pattern, then rename and adapt the tables, columns,
+Use that example as the starter pattern, then rename and adapt the tables, columns,
 scope, relationships, and metadata to the user's domain. For an exact option or
 type, follow its links to the table-definition and metadata references above.
-Do not copy the tutorial's task-management domain into an unrelated app.
+Do not copy the example's project/task domain into an unrelated app.
 
 The generated application layout is documented at
 https://sapporta.com/docs/reference/project/generated-project-layout/ when the
