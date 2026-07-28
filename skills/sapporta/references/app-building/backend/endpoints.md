@@ -14,6 +14,7 @@ uploads, response content types, OpenAPI behavior, and typed clients:
 - OpenAPI discovery: https://sapporta.com/docs/reference/http/openapi/
 - Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
 - Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
+- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/
 
 ## Contents
 
@@ -68,6 +69,18 @@ fits the workflow. Then choose the highest-level data primitive that fits:
 2. `auth.rowSecurity.forTable(table)` with Drizzle for joins, transactions,
    aggregates, multi-table state transitions, and domain invariants.
 3. Raw SQL only when the scoped primitives do not fit.
+
+Read the row-scoped data-helper reference before implementing a bounded read,
+page, complete scan, lookup, count, or custom generated-table adapter. Prefer
+`findMany()` when no total is needed, `page()` for page metadata, `scan()` for a
+complete sequential selection, and `count()`/`countBy()` for aggregates; use
+the reference for current inputs and bounds. Domain code builds Drizzle
+expressions; only an HTTP adapter should translate canonical table query strings
+through the documented named query resolvers.
+
+Treat `scanTableRows()` as an unscoped storage primitive. Prefer
+`scopedRows().scan()`; when raw scanning is deliberate, compose the table
+guard's `ownedRows(...)` predicate explicitly.
 
 Never manually stamp or filter `workspace_id`, `workspaceId`,
 `scoped_to_user_id`, or `scopedToUserId`. Never mutate scoped rows by primary

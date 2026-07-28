@@ -65,6 +65,11 @@ including toolbar and report filters that launch or constrain the workflow.
   `packages/frontend/src/query-client.ts`. Use
   `tableRecordQueryOptions()` and `tableRecordsPageQueryOptions()` with
   `tableQueryKeys` for generated table reads.
+- Read the table-query-options reference before building generated table
+  selection, page, or cache state. Reuse `buildTableSelectionQuery()`,
+  `buildTableRowsQuery()`, `fetchTableRow()`, and `fetchTableRows()` where their
+  documented lifecycle fits; do not replace their lossless repeated-filter
+  handling with a `Record<string, string>` or an application-local table client.
 - Use TanStack Form for draft values, dirty state, local validation, submit
   errors, and pending state.
 - Derive standard table fields from Sapporta metadata. Do not recreate a

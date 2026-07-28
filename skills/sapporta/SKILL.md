@@ -78,9 +78,11 @@ with the `data-console` guide.
   the project as a fresh app. Read the complete starter schema through
   [app-building/tables/create.md](references/app-building/tables/create.md) before inspecting framework
   source, internal fixtures, or generated declarations.
-- For API-backed data commands, pass `--api-url <url>` when the app API is not
-  on `http://localhost:3000`; pass `--api-token <token>` when the app is
-  protected. If auth fails, read the CLI access reference before continuing.
+- For protected endpoint discovery, live records, or runtime read-back, follow
+  [data-console/server-access.md](references/data-console/server-access.md).
+  Prefer the app's setup-prompt and private environment workflow over putting a
+  token in command arguments. Repository-only app development does not require
+  a bearer token.
 - The CLI can inspect mounted routes with `endpoints list` and `endpoints show`,
   and can invoke app endpoints with
   `api get/post/put/delete`. Use `curl` or a typed client when that is more
@@ -92,6 +94,9 @@ with the `data-console` guide.
 - Apply auth scope on the server. Built-in endpoints apply row visibility;
   custom code must choose route-edge ability/data authority and use scoped row
   helpers.
+- Use the public row-scoped data-helper reference before choosing
+  `scopedRows()`, a per-table Drizzle guard, a scan, or raw access. Do not infer
+  method names or HTTP parsing behavior from older examples.
 - Raw SQL is a fallback. In app code, contain it in store/db modules with a
   justification. In data-console work, treat it as admin/debug inspection unless
   the user explicitly asked for maintenance SQL.
@@ -102,6 +107,7 @@ Reference docs:
 - Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
 - OpenAPI discovery: https://sapporta.com/docs/guides/discovery/openapi-and-endpoint-discovery/
 - Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
+- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
 
 ## Direct Dispatch
 
@@ -139,7 +145,8 @@ form” does not skip project inspection or the proportional common gate.
 - Cell links, drill-through, cross-report navigation -> read
   [app-building/reports/linking.md](references/app-building/reports/linking.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
-  transactions, atomic parent-detail or line-item writes, OpenAPI registration
+  transactions, scoped table reads, counts, scans, atomic parent-detail or
+  line-item writes, OpenAPI registration
   -> read [app-building/backend/endpoints.md](references/app-building/backend/endpoints.md), then follow its
   conditional routes to service organization or typed errors
 - Custom create or edit forms, domain mutation pages, form dialogs or drawers,
@@ -162,13 +169,17 @@ form” does not skip project inspection or the proportional common gate.
 
 ### Existing Data Tasks
 
+- Protected or remote app access, setup-prompt handling, auth failures, or
+  direct authenticated HTTP -> read
+  [data-console/server-access.md](references/data-console/server-access.md)
 - Insert rows, seed data, built-in row commands -> read
   [data-console/row-writes.md](references/data-console/row-writes.md)
 - Atomic parent-child data entry, detail rows, line items -> read
   [data-console/master-detail-writes.md](references/data-console/master-detail-writes.md)
 - Call report routes, inspect report output, answer data questions -> read
   [data-console/report-runs.md](references/data-console/report-runs.md)
-- Compose `/api/tables/<name>` URLs, filters, search, sort, pagination -> read
+- Compose `/api/tables/<name>` URLs, CLI `--where`, filters, repeated query
+  keys, search, sort, pagination, lookup, count, or export -> read
   [data-console/table-queries.md](references/data-console/table-queries.md)
 - Raw SQL fallback when no endpoint, CRUD, or report route fits -> read
   [data-console/sql-fallback.md](references/data-console/sql-fallback.md)

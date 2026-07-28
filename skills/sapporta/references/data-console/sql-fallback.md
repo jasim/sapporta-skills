@@ -3,10 +3,11 @@
 Use raw SQL only after confirming no higher-level surface fits:
 
 1. Report route or existing read/domain endpoint.
-2. Built-in table query.
+2. Built-in `rows count` or table query.
 3. Built-in row command for ordinary mutations.
-4. Custom product/domain endpoint for business actions.
-5. SQL fallback.
+4. Scoped custom report/read endpoint for advanced queries.
+5. Custom product/domain endpoint for business actions.
+6. SQL fallback.
 
 Docs:
 

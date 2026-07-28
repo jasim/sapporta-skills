@@ -65,11 +65,11 @@ convenient for the route.
 
 Prefer the highest-level app feature that answers the question:
 
-1. Existing report endpoint.
-2. Built-in table list endpoint when filters/search/pagination fit.
-3. Existing domain endpoint when it exposes the needed read.
-4. Read-only SQL through `sapporta sql query` when no report or endpoint
-   answers the question cleanly.
+1. Existing report or domain endpoint that owns the business definition.
+2. `rows count` for a filtered total or bounded one-column grouping.
+3. Built-in table queries for ordinary visible-row retrieval.
+4. An app-owned scoped report or read endpoint for a reusable advanced query.
+5. Read-only SQL only for explicitly authorized administration or debugging.
 
 Report results back with provenance: name the report, table endpoint, domain
 endpoint, or SQL path used. State date parameters, filters, workspace, and row
@@ -114,8 +114,8 @@ unless the user explicitly asks for admin/debug inspection.
   [master-detail-writes.md](master-detail-writes.md)
 - Call existing report routes or answer data questions -> read
   [report-runs.md](report-runs.md)
-- Call generated table HTTP routes or compose their filters, search, sort, and
-  pagination -> read
+- Call generated table HTTP routes or compose their filters, search, sort,
+  pagination, lookup, count, export, or CLI `--where` -> read
   [table-queries.md](table-queries.md)
 - Raw SQL fallback reads or writes -> read
   [sql-fallback.md](sql-fallback.md)

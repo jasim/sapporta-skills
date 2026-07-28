@@ -13,8 +13,21 @@ const files = {
   appGuide: readSkill("references/app-building/guide.md"),
   productSlice: readSkill("references/app-building/product-slice.md"),
   projectCreate: readSkill("references/app-building/project/create.md"),
+  backendEndpoints: readSkill(
+    "references/app-building/backend/endpoints.md",
+  ),
+  backendDomain: readSkill(
+    "references/app-building/backend/domain-code.md",
+  ),
+  reportCreate: readSkill("references/app-building/reports/create.md"),
+  reportLinking: readSkill("references/app-building/reports/linking.md"),
   frontendViews: readSkill("references/app-building/frontend/views.md"),
   forms: readSkill("references/app-building/frontend/forms.md"),
+  dataConsole: readSkill("references/data-console/guide.md"),
+  tableQueries: readSkill("references/data-console/table-queries.md"),
+  reportRuns: readSkill("references/data-console/report-runs.md"),
+  sqlFallback: readSkill("references/data-console/sql-fallback.md"),
+  serverAccess: readSkill("references/data-console/server-access.md"),
   simpleForm: readSkill(
     "references/app-building/frontend/form-template/SimpleTaskForm.tsx.example",
   ),
@@ -22,7 +35,17 @@ const files = {
     "references/app-building/frontend/form-template/TaskForm.tsx",
   ),
   formExports: readSapporta("packages/frontend/src/form/index.ts"),
+  frontendTableExports: readSapporta("packages/frontend/src/table/index.ts"),
+  frontendRows: readSapporta("packages/frontend/src/table/api/rows.ts"),
   queryExports: readSapporta("packages/frontend/src/table/query/index.ts"),
+  sharedQueryParams: readSapporta("packages/shared/src/query-params.ts"),
+  sharedApiClient: readSapporta("packages/shared/src/client/api-client.ts"),
+  scopedRows: readSapporta("packages/core/src/data/scoped-rows.ts"),
+  tableRowScan: readSapporta("packages/core/src/data/table-row-scan.ts"),
+  tableQueryResolvers: readSapporta("packages/core/src/api/table-query.ts"),
+  coreExports: readSapporta("packages/core/src/index.ts"),
+  cliRegistry: readSapporta("packages/core/src/cli/commands/registry.ts"),
+  cliClient: readSapporta("packages/core/src/cli/client/app-client.ts"),
   generatedAgents: readSapporta("packages/core/src/templates/AGENTS.md"),
   generatedMain: readSapporta(
     "packages/core/src/templates/packages/frontend/src/main.tsx",
@@ -65,6 +88,75 @@ requireAll("frontend route workflow", files.frontendViews, [
   "/<resources>/:id",
   "After create or edit, invalidate affected caches before opening detail.",
   "Do not assume generated detail or edit routes exist.",
+  "table-query-options reference",
+  "QueryParamRecord",
+]);
+
+requireAll("backend endpoint routing", files.backendEndpoints, [
+  "reference/server/row-scoped-data-helpers/",
+  "reference before implementing a bounded read",
+  "`findMany()`",
+  "`page()`",
+  "`scan()`",
+  "`count()`/`countBy()`",
+  "only an HTTP adapter",
+  "scanTableRows()",
+  "ownedRows(...)",
+]);
+requireAll("backend domain routing", files.backendDomain, [
+  "reference/server/row-scoped-data-helpers/",
+  "construct Drizzle predicates directly",
+  "do not manufacture HTTP query grammar",
+]);
+requireAll("report query routing", files.reportCreate, [
+  "reference/server/row-scoped-data-helpers/",
+  "one guard per participating",
+  "Do not route an advanced report to raw SQL",
+]);
+requireAll("report link routing", files.reportLinking, [
+  "verified app-owned detail route",
+  "exact primary-key filter",
+  "does not imply a generated frontend",
+]);
+forbidAll("report link routing", files.reportLinking, [
+  "/tables/<table>/<id>",
+]);
+
+requireAll("data-console query routing", files.dataConsole, [
+  "`rows count`",
+  "app-owned scoped report or read endpoint",
+  "explicitly authorized administration or debugging",
+]);
+requireAll("table query routing", files.tableQueries, [
+  "reference/cli/table-row-and-report-commands/",
+  "JSON `--where`",
+  "Preserve repeated identical HTTP filter keys",
+  "JSON `--where` cannot express",
+  "QueryParamRecord",
+  "disjoint modes",
+  "scoped report or app-owned read endpoint rather than SQL",
+]);
+requireAll("report execution routing", files.reportRuns, [
+  "`rows count`",
+  "app-owned scoped report/read endpoint",
+  "not as workspace-user query behavior",
+]);
+requireAll("SQL fallback routing", files.sqlFallback, [
+  "Built-in `rows count` or table query",
+  "Scoped custom report/read endpoint",
+  "SQL fallback",
+]);
+requireAll("protected server access", files.serverAccess, [
+  "Copy setup prompt",
+  "secret-bearing",
+  "private gitignored wrapper",
+  "exact authenticated invocation in `AGENTS.md`",
+  "never put the",
+  "`pnpm exec sapporta endpoints list`",
+  "`SAPPORTA_API_URL` and `SAPPORTA_API_TOKEN`",
+]);
+forbidAll("protected server access", files.serverAccess, [
+  "should be passed with `--api-token <token>`",
 ]);
 
 requireAll("form guidance", files.forms, [
@@ -77,6 +169,12 @@ requireAll("form guidance", files.forms, [
   "fieldIssuesForSubmissionError",
   "firstFormErrorMessage",
   "reloadTGridRows",
+  "table-query-options reference",
+  "buildTableSelectionQuery()",
+  "buildTableRowsQuery()",
+  "fetchTableRow()",
+  "fetchTableRows()",
+  "Record<string, string>",
 ]);
 forbidAll("form guidance", files.forms, [
   "does not install it or mount a QueryClient",
@@ -121,6 +219,88 @@ requireAll("framework query exports", files.queryExports, [
   "export function tableRecordQueryOptions",
   "export function tableRecordsPageQueryOptions",
 ]);
+requireAll("framework table exports", files.frontendTableExports, [
+  'export * from "./api/rows"',
+  'export * from "./query"',
+]);
+requireAll("framework table read helpers", files.frontendRows, [
+  "export function buildTableSelectionQuery",
+  "export function buildTableRowsQuery",
+  "export async function fetchTableRows",
+  "export async function fetchTableRow",
+  "type QueryParamRecord",
+  "appendQueryParam",
+]);
+requireAll("shared lossless query parameters", files.sharedQueryParams, [
+  "export type QueryParamValue = string | readonly string[]",
+  "export type QueryParamRecord",
+  "export function appendQueryParam",
+  "export function queryParamRecordToSearchParams",
+  "export function isQueryParamRecord",
+  "export function hasRepeatedQueryParams",
+]);
+requireAll("typed client repeated-query transport", files.sharedApiClient, [
+  "pathWithLosslessRepeatedQueryParams",
+  "queryParamRecordToSearchParams",
+  "hasRepeatedQueryParams",
+]);
+requireAll("framework scoped row surface", files.scopedRows, [
+  "findMany(input: FindManyRowsInput)",
+  "page(input?: PageRowsInput)",
+  "scan(input?: RowsQuery)",
+  "lookup(input?: LookupRowsInput<TTable>)",
+  "count(input?: CountRowsInput)",
+  "countBy(input: CountRowsByInput<TTable>)",
+  "ids: readonly RowId[]",
+  "search?: never",
+  "ids?: never",
+]);
+requireAll("raw table scan surface", files.tableRowScan, [
+  "export interface TableRowScanInput",
+  "export function scanTableRows",
+  "There is deliberately no application batch-size input",
+]);
+requireAll("generated table query resolvers", files.tableQueryResolvers, [
+  "export function resolvePageQuery",
+  "export function resolveExportQuery",
+  "export function resolveLookupQuery",
+  "export function resolveCountQuery",
+  "Readonly<QueryParamRecord>",
+]);
+requireAll("public server exports", files.coreExports, [
+  "FindManyRowsInput",
+  "LookupRowsByIdInput",
+  "LookupRowsBySearchInput",
+  "PageRowsResult",
+  "scanTableRows",
+  "resolveCountQuery",
+  "resolveExportQuery",
+  "resolveLookupQuery",
+  "resolvePageQuery",
+]);
+requireAll("CLI table query commands", files.cliRegistry, [
+  'name: ["rows", "list"]',
+  'name: ["rows", "count"]',
+  'flag: "--where <json>"',
+  'flag: "--group-by <column>"',
+]);
+requireAll("CLI where adapter", files.cliClient, [
+  "whereObjectToFilterParams",
+  "filter[${column}][${operator}]",
+  "filterValueToString",
+]);
+forbidAll(
+  "backend switchboard",
+  [files.backendEndpoints, files.backendDomain, files.reportCreate].join("\n"),
+  [
+    "tableHttpQuery",
+    "rows.list(",
+    "batchSize",
+    "guard.read(",
+    "guard.update(",
+    "guard.delete(",
+  ],
+);
 requireAll("generated Query provider", files.generatedMain, [
   "QueryClientProvider",
   'import { queryClient } from "./query-client"',

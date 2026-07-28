@@ -18,6 +18,8 @@ data, frontend renderers, date range helpers, and examples:
 - Report routes: https://sapporta.com/docs/reference/reports/report-routes-and-registration/
 - Grid result shape: https://sapporta.com/docs/reference/reports/grid-dataset/
 - Scoped report data: https://sapporta.com/docs/reference/reports/scoped-report-helpers/
+- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
+- Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens/
 
 ## Contents
 
@@ -102,6 +104,12 @@ Resolve auth and request input at the route edge. Use `scopedRows()` or
 aggregating, or mapping results. For raw SQL, make visible base tables explicit
 with CTEs or guarded row sets before composing the report query.
 
+Read the row-scoped data-helper reference before choosing the query primitive.
+Use its bounded reads, pages, scans, and counts when they fit. For joins and
+aggregates, build scoped Drizzle predicates with one guard per participating
+table. Do not route an advanced report to raw SQL merely because a generated
+table query is too small for it.
+
 Do not accept `workspace_id`, `workspaceId`, `scoped_to_user_id`, or
 `scopedToUserId` from the client as report filters. The route's auth context
 owns data authority.
@@ -150,7 +158,8 @@ pnpm exec sapporta endpoints show "GET /api/reports/<name>"
 pnpm exec sapporta api get /api/reports/<name> --query '{"...":"..."}'
 ```
 
-For protected apps, pass `--api-token <token>`. Parse successful responses with
+For protected runtime checks, follow the agent-access guide and use the
+project's private CLI environment. Parse successful responses with
 `gridDatasetSchema` in route tests and unit-test pure mappers for hierarchy,
 rollups, hidden IDs, and totals.
 

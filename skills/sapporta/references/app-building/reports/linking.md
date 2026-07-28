@@ -38,10 +38,14 @@ to integrate; do not let it independently broaden the report's product scope.
 
 ## Link Patterns
 
-- FK drill-up -> `/tables/<table>/<id>`
+- FK drill-up -> a verified app-owned detail route, or `/tables/<table>` with an
+  exact primary-key filter
 - Master to children drill-into -> filtered table route or detail report route
 - Cross-report -> another report route with the target query parameters
 - External -> `target: "_blank"` only for deliberately external destinations
+
+The generated single-row HTTP endpoint does not imply a generated frontend
+detail route. Inspect the installed app's routes before emitting a record link.
 
 Every link target must enforce its own authorization. Hidden IDs and URL filters
 are not authorization.

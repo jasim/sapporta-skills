@@ -8,6 +8,7 @@ Docs:
 
 - Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints/
 - Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
+- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
 - Agent development workflow: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
 
 ## Auth-Aware Workflow Code
@@ -19,6 +20,10 @@ services/stores, and keep domain code independent of Hono.
 Persistence code that touches scoped tables should use `scopedRows(db, auth,
 table)` for ordinary CRUD and `auth.rowSecurity.forTable(table)` for custom
 Drizzle queries, joins, transactions, aggregates, and multi-step writes.
+Read the row-scoped data-helper reference before selecting bounded reads, pages,
+scans, lookups, counts, or generated HTTP query resolvers. Domain code should
+construct Drizzle predicates directly; do not manufacture HTTP query grammar in
+a service or store.
 
 Do not thread `workspace_id`, `workspaceId`, `scoped_to_user_id`, or
 `scopedToUserId` through service inputs. Do not mutate by primary key alone,

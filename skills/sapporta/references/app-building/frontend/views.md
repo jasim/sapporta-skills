@@ -117,6 +117,12 @@ server applies the authoritative write policy.
 Keep typed API clients in `packages/frontend/src/api.ts`. Prefer a typed client
 from the shared contract over hand-written `fetch("/api/foo")`.
 
+For generated table reads, first use the public fetch functions, selection/page
+serializers, TanStack Query option builders, and cache keys documented in the
+table-query-options reference. Preserve `QueryParamRecord` through the client
+boundary so repeated same-key filters are not collapsed. Keep app-owned endpoint
+clients in `packages/frontend/src/api.ts`.
+
 Typed clients still call server code; they do not make a route auth-safe by
 themselves. When adding a frontend call that mutates or reveals scoped data,
 confirm the matching backend handler chooses the route's ability/data authority

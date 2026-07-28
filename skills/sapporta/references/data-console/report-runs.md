@@ -20,12 +20,17 @@ Docs:
    `pnpm exec sapporta endpoints show "METHOD /api/reports/<path>"`.
 3. Call the report route with `sapporta api get/post`, `curl`, the app's typed
    client, or another HTTP client.
-4. If no endpoint answers the question, use table queries or read-only SQL
-   inspection.
+4. If no endpoint answers a one-table question, use `rows count` or a bounded
+   table query when those surfaces preserve its meaning.
+5. For joins, derived measures, or a repeated advanced query, route the work to
+   an app-owned scoped report/read endpoint.
+6. Use read-only SQL only for explicitly authorized administration or
+   debugging, not as workspace-user query behavior.
 
 Use the route schema from `endpoints show` to choose query parameters or
-request body fields. In protected apps, pass `--api-token <token>`; the token
-selects the workspace.
+request body fields. For a protected app, follow
+[server-access.md](server-access.md); the configured token selects the
+workspace.
 
 For data questions, cite the report endpoint and parameters used, especially
 date range, workspace, filters, and row limits. If no report route covers a
