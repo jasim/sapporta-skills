@@ -60,6 +60,35 @@ The generated application layout is documented at
 https://sapporta.com/docs/reference/project/generated-project-layout/ when the
 package responsibilities or extension points are unclear.
 
+## Minimum `sapportaTable` Metadata
+
+Start every application table wrapper with explicit product metadata:
+
+```ts
+meta: {
+  label: "...",
+  rowScope: "workspaceUserScoped",
+  rowLabelColumns: ["display_name"],
+},
+```
+
+`rowLabelColumns` must be non-empty, name columns on the raw Drizzle table, and
+form a meaningful label in lookups and references. Use a human-facing value such
+as `name`, `title`, `number`, or a combination such as `first_name` and
+`last_name`; do not use an opaque primary key merely to satisfy the requirement.
+
+Default to `workspaceUserScoped`: it is the strictest workspace boundary and
+prevents other workspace members from seeing a row unless the product explicitly
+allows it. It requires both `workspace_id` and `scoped_to_user_id`. Use
+`workspaceGlobal` only after confirming that every authorized member of the
+workspace should be able to access every row; use `systemGlobal` only when the
+data deliberately has no workspace boundary.
+
+Keep a pure join table contextual rather than treating it as an independently
+named resource. If it needs a direct screen or lookup, add a meaningful,
+displayable domain value and use that as its row label instead of the join row's
+primary key.
+
 ## Authoring Rules
 
 - Export the raw Drizzle table so other schema files can reference its columns
@@ -67,6 +96,10 @@ package responsibilities or extension points are unclear.
 - Export the Sapporta table wrapper used by the current app. Follow the local
   project style and current docs; do not introduce an older wrapper form into a
   newer app.
+- Before generating a migration, confirm each `sapportaTable()` has explicit
+  `label`, `rowScope`, and non-empty, human-meaningful `rowLabelColumns`.
+  Start with `workspaceUserScoped`; document why any broader scope is required.
+  Keep pure join tables contextual unless they gain a displayable domain label.
 - Export row and insert aliases from the raw table definition:
   `export type Project = typeof projectsTable.$inferSelect` and
   `export type NewProject = typeof projectsTable.$inferInsert`. Server and

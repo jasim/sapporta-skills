@@ -63,12 +63,22 @@ pnpm exec sapporta endpoints show "METHOD /api/your/path"
 ## Auth Boundary
 
 Resolve auth at the route edge with the narrowest data-authority helper that
-fits the workflow. Then choose the highest-level data primitive that fits:
+fits the workflow.
 
-1. `scopedRows(db, auth, table)` for ordinary table work.
-2. `auth.rowSecurity.forTable(table)` with Drizzle for joins, transactions,
-   aggregates, multi-table state transitions, and domain invariants.
-3. Raw SQL only when the scoped primitives do not fit.
+### Default Data Primitive
+
+Use the highest-level primitive that fits:
+
+1. Standard CRUD for one table -> use the generated table API and surfaces; do
+   not create an app-owned CRUD endpoint.
+2. Ordinary app-owned work on one table -> use
+   `scopedRows(db, auth, table, { searchPlan: catalog.searchPlanFor(table.sqlName) })`.
+3. Joins, aggregates, transactions, or multi-table state transitions -> use
+   `auth.rowSecurity.forTable(table)` with Drizzle, creating a guard for every
+   scoped table touched.
+4. Raw SQL -> only when these primitives cannot express the query. Keep it in a
+   store/db module, document why, and establish a named scoped base set for each
+   scoped table before joining, aggregating, or writing.
 
 Read the row-scoped data-helper reference before implementing a bounded read,
 page, complete scan, lookup, count, or custom generated-table adapter. Prefer
@@ -83,9 +93,11 @@ Treat `scanTableRows()` as an unscoped storage primitive. Prefer
 guard's `ownedRows(...)` predicate explicitly.
 
 Never manually stamp or filter `workspace_id`, `workspaceId`,
-`scoped_to_user_id`, or `scopedToUserId`. Never mutate scoped rows by primary
-key alone. Never insert `request.body` directly into scoped tables. Never fetch
-broadly and filter row ownership in JavaScript.
+`scoped_to_user_id`, or `scopedToUserId`. In particular, do not extract a
+workspace or user-scope value from `auth` or the request and write your own
+scope predicate as a substitute for `scopedRows()` or `rowSecurity`. Never
+mutate scoped rows by primary key alone, insert `request.body` directly into
+scoped tables, or fetch broadly and filter row ownership in JavaScript.
 
 ## Atomic Multi-Table Writes
 
