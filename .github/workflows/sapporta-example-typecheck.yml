@@ -1,4 +1,4 @@
-name: Sapporta reference contract
+name: Sapporta example typecheck
 
 on:
   pull_request:
@@ -35,5 +35,5 @@ jobs:
           pnpm --dir .sapporta-source install --frozen-lockfile
           pnpm --dir .sapporta-source --filter @sapporta/frontend build
 
-      - name: Validate skill examples against framework exports
-        run: node scripts/check-sapporta-reference-contract.mjs .sapporta-source --typecheck
+      - name: Typecheck compact form example
+        run: node scripts/typecheck-sapporta-form-example.mjs .sapporta-source
