@@ -76,9 +76,11 @@ packages/shared/src/          Browser-safe contracts and wire types
 packages/frontend/src/App.tsx App navigation and routes
 ```
 
-The generated app starts with authentication tables and a welcome surface. Use
-the fresh-app branch in [../tables/create.md](../tables/create.md) for the first
-domain tables after completing the common product workflow.
+The generated app starts with authentication tables and a welcome page. Use the
+fresh-app branch in [../tables/create.md](../tables/create.md) for the first
+domain tables after completing the common product workflow. Treat the generated
+table list and welcome page as scaffolding. Before accepting the first connected
+product page, read [../workflow-shell.md](../workflow-shell.md).
 
 ## Continue Through The Common Workflow
 

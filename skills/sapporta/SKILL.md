@@ -133,6 +133,9 @@ form” does not skip project inspection or the proportional common gate.
   grammar, and proportional handling of new apps, new features, or fine-grained
   behavior -> read
   [app-building/product-slice.md](references/app-building/product-slice.md)
+- Main sidebar, protected home page, Advanced/Admin page, framework navigation,
+  or placement of a feature that changes the normal user path -> read
+  [app-building/workflow-shell.md](references/app-building/workflow-shell.md)
 - New Sapporta project, generated workspace, or first connected application
   surface -> read
   [app-building/project/create.md](references/app-building/project/create.md)

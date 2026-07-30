@@ -3,5 +3,5 @@
   "author": "Jasim A Basheer (https://x.com/jasim_ab)",
   "repository": "https://github.com/jasim/sapporta-skills",
   "date": "May 2026",
-  "abstract": "Application-first guidance for creating or extending Sapporta projects: scaffold the generated workspace, model resources and workflows, build connected forms and Grid surfaces with row-oriented interaction, preserve access boundaries, and validate complete user outcomes."
+  "abstract": "Application-first guidance for creating or extending Sapporta projects: scaffold the workspace, model resources and workflows, organize the sidebar and home page around everyday work, keep generated and specialist destinations under Advanced, build connected forms and Grids, preserve access boundaries, and validate complete user outcomes."
 }

@@ -44,13 +44,16 @@ Grid layer, interaction, query context, or columns.
 
 Follow the current app convention. `packages/frontend/src/App.tsx` exports
 `appNavigation`, `appHomeRoute`, `appPublicRoutes`, and
-`appProtectedRoutes`. Add one file per screen, then add a route and, for
-protected screens, a matching navigation item.
+`appProtectedRoutes`. Add one file per screen, then add its route.
 
-Add report, list, and workflow-entry screens to `appNavigation`. Keep create,
-edit, and individual record routes contextual. Put public routes in
-`appPublicRoutes` only when their data is intentionally public. For connected
-list, detail, create, and edit routes, adapt
+Read [../workflow-shell.md](../workflow-shell.md) before changing
+`appNavigation`, the protected home page, `showFrameworkNavigation`, or an
+Advanced/Admin page. Add a protected page to `appNavigation` only when users
+routinely start or resume work there. Keep create, edit, detail, and
+supporting-resource pages contextual unless they are genuine starting points;
+put specialist reports, tools, and maintenance pages under Advanced. Put public
+routes in `appPublicRoutes` only when their data is intentionally public. For
+connected list, detail, create, and edit routes, adapt
 [form-template/route-wiring.tsx.example](form-template/route-wiring.tsx.example).
 
 For an app-owned resource workflow, connect these route roles deliberately:
@@ -69,7 +72,7 @@ For an app-owned resource workflow, connect these route roles deliberately:
 - After create or edit, invalidate affected caches before opening detail.
 - Return from cancel to the prior detail or list without saving.
 - Parse and validate route or search identity before using it as a form default.
-- Add only the list or workflow-entry surface to `appNavigation`.
+- Add only pages where users routinely begin or resume work to `appNavigation`.
 
 Generated framework routes provide `/tables/:tableName` and
 `/tables/:tableName/new`. Do not assume generated detail or edit routes exist.

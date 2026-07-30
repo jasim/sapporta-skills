@@ -130,6 +130,9 @@ troubleshooting before trying broad dependency changes.
 
 - New Sapporta project, generated workspace, or first connected application
   surface -> read [project/create.md](project/create.md)
+- Main sidebar, protected home page, Advanced/Admin page, framework navigation,
+  or placement of a feature that changes the normal user path -> read
+  [workflow-shell.md](workflow-shell.md)
 - Tables, columns, relations, indexes, search config, schema migration, custom
   table validation, semantic values -> read [tables/create.md](tables/create.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read

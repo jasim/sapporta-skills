@@ -14,6 +14,7 @@ small, well-understood adjustment into a full product-discovery exercise.
 - [Model The Outcome](#model-the-outcome)
 - [Define The Coherent Slice](#define-the-coherent-slice)
 - [Use The Default Application Grammar](#use-the-default-application-grammar)
+- [Design The Workflow Shell](#design-the-workflow-shell)
 - [Map The Slice To Sapporta](#map-the-slice-to-sapporta)
 - [Accept The User Outcome](#accept-the-user-outcome)
 
@@ -116,6 +117,13 @@ select a new record unless the product explicitly defines that behavior.
 Treat Manage Data as an administrative surface for direct inspection and
 editing, not as the default application workflow. Authorize it separately when
 its direct access is more powerful than normal user actions.
+
+## Design The Workflow Shell
+
+For every new application, read [workflow-shell.md](workflow-shell.md) before
+accepting the first connected page. Read it again when a later feature changes
+where users start or resume routine work, what comes next, or where they open a
+result, report, tool, or setting.
 
 ## Map The Slice To Sapporta
 
