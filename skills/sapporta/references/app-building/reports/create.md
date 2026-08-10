@@ -117,11 +117,13 @@ owns data authority.
 ## Mapper Rules
 
 - Keep the row-to-`GridDataset` mapper pure and testable without a database.
-- Include hidden IDs in columns when frontend links need them.
+- Include hidden IDs in columns when links need them (`visuallyHidden: true`).
 - Use rollups and footers intentionally; tests should assert totals and
   hierarchy when they matter.
-- Keep links out of the backend result. Report links are frontend resolver
-  behavior; read [linking.md](linking.md).
+- Declare drill-down links in the mapper by default: `links` on
+  `GridDataset` columns and `rowLinks` on levels, using the shared
+  `NavLink` type. Use frontend resolver functions only when a link needs
+  runtime screen state; read [linking.md](linking.md).
 - Keep summary cards out of `GridDataset`. The current schema contains levels,
   nodes, and optional footer rows. Pass `ReportSummaryStats` a separate
   `ReportStat[]` value in the screen or declare a custom response envelope when
@@ -145,9 +147,10 @@ record a user would reasonably inspect, edit, or use as a starting point for
 related work. Summary-only reports need links only when drill-down is useful.
 
 The report should preserve the identity needed for its intended drill-downs and
-make those paths available in the UI. Keep navigation behavior in the frontend,
-then verify that links work for the report's relevant row types and that their
-targets enforce authorization.
+make those paths available in the UI — declaratively in the `GridDataset`
+mapper by default, with frontend resolvers for runtime-state cases. Verify that
+links work for the report's relevant row types and that their targets enforce
+authorization.
 
 ## Validation
 

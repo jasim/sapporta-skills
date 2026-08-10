@@ -9,5 +9,7 @@ Use the canonical documentation:
 - Report routes: https://sapporta.com/docs/reference/reports/report-routes-and-registration/
 - Scoped report data: https://sapporta.com/docs/reference/reports/scoped-report-helpers/
 
-Agent reminder: keep report mappers pure, include hidden IDs for frontend links,
-and validate route output with `gridDatasetSchema`.
+Agent reminder: keep report mappers pure, include hidden IDs for links
+(`visuallyHidden: true`), declare `links`/`rowLinks` on dataset columns and
+levels for drill-downs (see [linking.md](linking.md)), and validate route
+output with `gridDatasetSchema`.

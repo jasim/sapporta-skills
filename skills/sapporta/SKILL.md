@@ -140,12 +140,15 @@ form” does not skip project inspection or the proportional common gate.
   surface -> read
   [app-building/project/create.md](references/app-building/project/create.md)
 - Tables, columns, relations, indexes, search config, parent search through child
-  rows, generated schema metadata, custom table validation, and semantic table
-  values, including the first application tables -> read
+  rows, generated schema metadata, custom table validation, semantic table
+  values, and table/row navigation links (FK drill-up, related-data drill-into,
+  cross-report links in table metadata), including the first application tables
+  -> read
   [app-building/tables/create.md](references/app-building/tables/create.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [app-building/reports/create.md](references/app-building/reports/create.md)
-- Cell links, drill-through, cross-report navigation -> read
+- Cell links, drill-through, cross-report navigation, declarative
+  `GridDataset` links, link resolvers -> read
   [app-building/reports/linking.md](references/app-building/reports/linking.md)
 - Hono sub-apps, `TsRestApi`, ts-rest contracts, route handlers, uploads,
   transactions, scoped table reads, counts, scans, atomic parent-detail or

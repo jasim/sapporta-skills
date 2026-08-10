@@ -156,6 +156,63 @@ Before finishing schema work, make a relationship pass:
    description, or a case found by a note. Treat these as candidates for
    explicit relational search.
 
+## Table And Row Linking
+
+Sapporta derives navigation links from the relationship metadata above and
+renders them in the table grid without extra code:
+
+- Every FK column gets a drill-up link to the referenced table's rows (the
+  cell shows a trailing link adornment; Enter opens it on read-only cells).
+- Every `meta.children` entry gets a row-level drill-into link ("Open Line
+  Items") offered in the row's right-click context menu.
+
+So the relationship pass above is also the linking pass: declaring
+`.references()` and `meta.children` correctly is what produces useful default
+navigation.
+
+On top of the derived links, declare domain links with the shared
+`NavLink` type (`@sapporta/shared/contracts`):
+
+```ts
+meta: {
+  // ...
+  columns: {
+    customer_id: {
+      links: [
+        { kind: "report", report: "customer-statement",
+          bind: { customer_id: "customer_id" }, label: "Customer statement" },
+      ],
+    },
+  },
+  rowLinks: [
+    { kind: "table", table: "payments",
+      bind: { invoice_id: "id" }, label: "Payments received" },
+    { kind: "url", href: "https://dashboard.stripe.com/invoices/{stripe_id}",
+      label: "Open in Stripe", target: "_blank" },
+  ],
+},
+```
+
+`bind` maps the destination's filter/parameter names to source columns on the
+current row (`{ destination: source }`). Schema extraction validates links:
+unknown source columns (in binds or url `{column}` placeholders), unknown
+destination tables, and unknown destination columns fail at boot, not
+silently in the UI. A link only resolves on rows
+where every bound value is present, so nullable FKs need no guarding.
+
+Column `links` surface on the cell (first resolvable link is primary) and in
+the context menu; `rowLinks` surface in the row's context menu after the
+cell's own links. The same declarations flow through the schema metadata API,
+so report screens and custom views can reuse them.
+
+Declare links domain-aware: for each table, ask what a user looking at this
+row does next in their workflow — settle an invoice, review an account's
+ledger, check a shipment's tracking — and link exactly those destinations.
+Do not add links whose destination the user cannot act on, and rely on the
+derived FK/children links instead of restating them. The linking reference
+for reports, [reports/linking.md](../reports/linking.md), documents the full
+`NavLink` vocabulary (`table` | `report` | `url`, labels, icons, targets).
+
 ## Search Behavior
 
 Leave search unset by default, and retain an existing `search: "allColumns"`
