@@ -14,3 +14,13 @@ effects, and generated agent instructions aligned with framework exports. CI
 checks the same contract against the framework's `main` branch and strictly
 typechecks the compact form example. After installing and building the adjacent
 framework checkout, run the same typecheck locally with `--typecheck`.
+
+## Validate documentation links
+
+```bash
+node scripts/check-sapporta-doc-links.mjs
+```
+
+The check collects every `sapporta.com` link in the repository, requires the
+agent-friendly markdown form (a `.md` suffix instead of a slash-terminated HTML
+route), and fetches each unique URL to confirm it responds 200.

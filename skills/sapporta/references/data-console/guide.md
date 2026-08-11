@@ -10,10 +10,10 @@ pnpm exec sapporta ...
 Use docs for CLI grammar, target selection, token setup, table/query syntax, and
 recipes:
 
-- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
-- CLI workflow: https://sapporta.com/docs/guides/discovery/use-the-sapporta-cli/
-- Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens/
-- CLI commands: https://sapporta.com/docs/reference/cli/overview-and-global-options/
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console.md
+- CLI workflow: https://sapporta.com/docs/guides/discovery/use-the-sapporta-cli.md
+- Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens.md
+- CLI commands: https://sapporta.com/docs/reference/cli/overview-and-global-options.md
 
 ## Contents
 

@@ -28,20 +28,20 @@ the requested domain.
 Use the public docs for column factories, metadata fields, row-scope reference,
 filter/search behavior, relationship metadata, and migration details:
 
-- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
-- Table definitions: https://sapporta.com/docs/reference/schema/table-definitions/
-- Table and column metadata: https://sapporta.com/docs/reference/schema/table-and-column-metadata/
-- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/
-- Table validation: https://sapporta.com/docs/reference/schema/table-validation/
-- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries/
-- Relationships and lookup behavior: https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior/
-- Schema changes and migrations: https://sapporta.com/docs/guides/model-data/schema-changes-and-migrations/
-- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
+- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata.md
+- Table definitions: https://sapporta.com/docs/reference/schema/table-definitions.md
+- Table and column metadata: https://sapporta.com/docs/reference/schema/table-and-column-metadata.md
+- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata.md
+- Table validation: https://sapporta.com/docs/reference/schema/table-validation.md
+- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries.md
+- Relationships and lookup behavior: https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior.md
+- Schema changes and migrations: https://sapporta.com/docs/guides/model-data/schema-changes-and-migrations.md
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security.md
 
 ## Canonical Starter Pattern
 
 To discover how Sapporta application tables are defined, start with the
-canonical [Tables, columns, and schema metadata](https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/)
+canonical [Tables, columns, and schema metadata](https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata.md)
 guide. Its complete parent/child starter demonstrates:
 
 - raw Drizzle tables and exported Sapporta wrappers;
@@ -57,7 +57,7 @@ type, follow its links to the table-definition and metadata references above.
 Do not copy the example's project/task domain into an unrelated app.
 
 The generated application layout is documented at
-https://sapporta.com/docs/reference/project/generated-project-layout/ when the
+https://sapporta.com/docs/reference/project/generated-project-layout.md when the
 package responsibilities or extension points are unclear.
 
 ## Minimum `sapportaTable` Metadata
@@ -115,7 +115,7 @@ primary key.
 
 ## Column Sizing
 
-For table `width`, `minWidth`, or `maxWidth`, use the canonical [Column sizing](https://sapporta.com/docs/reference/column-sizing/) reference.
+For table `width`, `minWidth`, or `maxWidth`, use the canonical [Column sizing](https://sapporta.com/docs/reference/column-sizing.md) reference.
 
 ## Auth Row Scope
 
@@ -223,7 +223,7 @@ children.
 
 Customize search only when the product requires a different discovery surface.
 When searching a parent should also return it for a match in a child collection,
-read the canonical [Search table rows and relationships](https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/)
+read the canonical [Search table rows and relationships](https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata.md)
 guide before editing metadata. It owns the recursive `search.children` shape,
 field-selection rules, authorization behavior, relationship index guidance, and
 the boundary between generated relational search and app-owned full-text search.
@@ -240,7 +240,7 @@ Do not infer child traversal merely because `meta.children` exists.
 ## Validation And Semantic Values
 
 When generated CRUD needs constraints beyond the semantic column kind, read the
-[table-validation reference](https://sapporta.com/docs/reference/schema/table-validation/)
+[table-validation reference](https://sapporta.com/docs/reference/schema/table-validation.md)
 before defining `meta.validation`. Confirm create, partial-update, nullable,
 defaulted, client-editable, and server-managed field behavior. Keep conversion
 or normalization outside validation unless the save path explicitly consumes
@@ -248,7 +248,7 @@ the transformed result.
 
 When app-owned code reads or writes generated table values, duplicates a
 generated form, or introduces a select-backed domain type, read the
-[semantic-value boundary reference](https://sapporta.com/docs/reference/schema/semantic-value-boundaries/).
+[semantic-value boundary reference](https://sapporta.com/docs/reference/schema/semantic-value-boundaries.md).
 Keep select-backed text values as strings across form, wire, runtime, and
 database boundaries. Parse and serialize other semantic kinds at the documented
 boundary instead of inventing a second conversion path.

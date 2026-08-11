@@ -7,14 +7,14 @@ project-authentication tables, take the fresh-app branch in
 
 Use the canonical documentation:
 
-- Complete parent/child starter and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
-- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/
-- Relationships and lookup behavior: https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior/
-- Schema changes and migrations: https://sapporta.com/docs/guides/model-data/schema-changes-and-migrations/
-- Table definitions reference: https://sapporta.com/docs/reference/schema/table-definitions/
-- Table and column metadata reference: https://sapporta.com/docs/reference/schema/table-and-column-metadata/
-- Table validation reference: https://sapporta.com/docs/reference/schema/table-validation/
-- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries/
+- Complete parent/child starter and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata.md
+- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata.md
+- Relationships and lookup behavior: https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior.md
+- Schema changes and migrations: https://sapporta.com/docs/guides/model-data/schema-changes-and-migrations.md
+- Table definitions reference: https://sapporta.com/docs/reference/schema/table-definitions.md
+- Table and column metadata reference: https://sapporta.com/docs/reference/schema/table-and-column-metadata.md
+- Table validation reference: https://sapporta.com/docs/reference/schema/table-validation.md
+- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries.md
 
 Agent reminder: adapt examples to the current app's wrapper/import style, add
 required `rowLabelColumns`, declare `rowScope`, and verify relationships with a

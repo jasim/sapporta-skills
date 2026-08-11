@@ -6,9 +6,9 @@ values, credentials, or foreign keys.
 
 Docs:
 
-- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
-- Generated table APIs: https://sapporta.com/docs/guides/generated-surfaces/generated-table-apis/
-- CLI row commands: https://sapporta.com/docs/reference/cli/table-row-and-report-commands/
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console.md
+- Generated table APIs: https://sapporta.com/docs/guides/generated-surfaces/generated-table-apis.md
+- CLI row commands: https://sapporta.com/docs/reference/cli/table-row-and-report-commands.md
 
 ## Workflow
 

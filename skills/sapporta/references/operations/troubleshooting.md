@@ -2,8 +2,8 @@
 
 Use public troubleshooting docs for known fixes:
 
-- Troubleshooting guide: https://sapporta.com/docs/guides/operations/troubleshooting/
-- Diagnostics reference: https://sapporta.com/docs/reference/operations/error-catalogue-and-diagnostics/
+- Troubleshooting guide: https://sapporta.com/docs/guides/operations/troubleshooting.md
+- Diagnostics reference: https://sapporta.com/docs/reference/operations/error-catalogue-and-diagnostics.md
 
 ## Native SQLite Binding Triage
 

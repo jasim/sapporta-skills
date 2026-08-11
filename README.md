@@ -12,10 +12,10 @@ workflows, UI, and data.
 Use the public documentation for product explanations, API shapes, CLI grammar,
 TypeScript reference, and worked examples:
 
-- Sapporta docs: https://sapporta.com/docs/
-- Develop with a coding agent: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
-- Choose an application interface: https://sapporta.com/docs/guides/discovery/choose-an-application-interface/
-- Reference index: https://sapporta.com/docs/reference/
+- Sapporta docs: https://sapporta.com/docs.md
+- Develop with a coding agent: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent.md
+- Choose an application interface: https://sapporta.com/docs/guides/discovery/choose-an-application-interface.md
+- Reference index: https://sapporta.com/docs/reference.md
 
 The discoverable skill is in
 [`skills/sapporta/SKILL.md`](skills/sapporta/SKILL.md). Supporting workflows are

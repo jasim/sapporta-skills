@@ -16,17 +16,17 @@ request shape, auth boundary, and declared responses. Generated row updates use
 Use the docs for the exact route, query grammar, operators, response envelope,
 semantic values, and error codes:
 
-- Table endpoints: https://sapporta.com/docs/reference/http/table-endpoints/
-- Generated table APIs: https://sapporta.com/docs/guides/generated-surfaces/generated-table-apis/
-- Count visible rows: https://sapporta.com/docs/guides/generated-surfaces/count-visible-rows/
-- Query syntax: https://sapporta.com/docs/reference/http/query-syntax/
-- CLI workflow: https://sapporta.com/docs/guides/discovery/use-the-sapporta-cli/
-- Table, row, and report commands: https://sapporta.com/docs/reference/cli/table-row-and-report-commands/
-- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/
-- Contract helpers and wire types: https://sapporta.com/docs/reference/contracts/contract-helpers-and-wire-types/
-- Frontend table query options: https://sapporta.com/docs/reference/frontend/table-query-options/
-- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries/
-- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
+- Table endpoints: https://sapporta.com/docs/reference/http/table-endpoints.md
+- Generated table APIs: https://sapporta.com/docs/guides/generated-surfaces/generated-table-apis.md
+- Count visible rows: https://sapporta.com/docs/guides/generated-surfaces/count-visible-rows.md
+- Query syntax: https://sapporta.com/docs/reference/http/query-syntax.md
+- CLI workflow: https://sapporta.com/docs/guides/discovery/use-the-sapporta-cli.md
+- Table, row, and report commands: https://sapporta.com/docs/reference/cli/table-row-and-report-commands.md
+- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata.md
+- Contract helpers and wire types: https://sapporta.com/docs/reference/contracts/contract-helpers-and-wire-types.md
+- Frontend table query options: https://sapporta.com/docs/reference/frontend/table-query-options.md
+- Semantic value boundaries: https://sapporta.com/docs/reference/schema/semantic-value-boundaries.md
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console.md
 
 ## Agent Rules
 

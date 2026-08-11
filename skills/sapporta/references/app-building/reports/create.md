@@ -13,13 +13,13 @@ the report.
 Use public docs for exact `GridDataset` shape, report contracts, scoped report
 data, frontend renderers, date range helpers, and examples:
 
-- Reports guide: https://sapporta.com/docs/guides/reports/route-based-reports/
-- Report datasets: https://sapporta.com/docs/guides/reports/report-datasets-and-formatting/
-- Report routes: https://sapporta.com/docs/reference/reports/report-routes-and-registration/
-- Grid result shape: https://sapporta.com/docs/reference/reports/grid-dataset/
-- Scoped report data: https://sapporta.com/docs/reference/reports/scoped-report-helpers/
-- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
-- Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens/
+- Reports guide: https://sapporta.com/docs/guides/reports/route-based-reports.md
+- Report datasets: https://sapporta.com/docs/guides/reports/report-datasets-and-formatting.md
+- Report routes: https://sapporta.com/docs/reference/reports/report-routes-and-registration.md
+- Grid result shape: https://sapporta.com/docs/reference/reports/grid-dataset.md
+- Scoped report data: https://sapporta.com/docs/reference/reports/scoped-report-helpers.md
+- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
+- Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens.md
 
 ## Contents
 
@@ -128,7 +128,7 @@ owns data authority.
   nodes, and optional footer rows. Pass `ReportSummaryStats` a separate
   `ReportStat[]` value in the screen or declare a custom response envelope when
   summary values must cross the API boundary.
-- For `GridDatasetColumn` width hints, use the canonical [Column sizing](https://sapporta.com/docs/reference/column-sizing/) reference.
+- For `GridDatasetColumn` width hints, use the canonical [Column sizing](https://sapporta.com/docs/reference/column-sizing.md) reference.
 
 ## Frontend Rules
 
@@ -136,8 +136,8 @@ Render normal report results with the report components. Do not copy report-grid
 internals. When the screen owns its own row shape, loading behavior, hierarchy,
 editing rules, side panels, or toolbar behavior, read the custom grid docs:
 
-- TGrid usage: https://sapporta.com/docs/reference/frontend/tgrid/
-- BaseGrid guide: https://sapporta.com/grid/reference/base-grid/
+- TGrid usage: https://sapporta.com/docs/reference/frontend/tgrid.md
+- BaseGrid guide: https://sapporta.com/grid/reference/base-grid.md
 
 ## Record-Level Linking Completion Gate
 

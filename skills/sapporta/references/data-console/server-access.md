@@ -5,10 +5,10 @@ deployments, auth failures, or direct `curl` calls.
 
 Docs:
 
-- Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens/
-- CLI options: https://sapporta.com/docs/reference/cli/overview-and-global-options/
-- OpenAPI discovery: https://sapporta.com/docs/guides/discovery/openapi-and-endpoint-discovery/
-- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
+- Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens.md
+- CLI options: https://sapporta.com/docs/reference/cli/overview-and-global-options.md
+- OpenAPI discovery: https://sapporta.com/docs/guides/discovery/openapi-and-endpoint-discovery.md
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console.md
 
 ## Agent Procedure
 

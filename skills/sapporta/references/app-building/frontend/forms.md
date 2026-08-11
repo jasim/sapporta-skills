@@ -8,17 +8,17 @@ QueryClient and keep its application-wide policy in the workspace-owned
 `packages/frontend/src/query-client.ts` file.
 
 - Custom forms and cached table reads:
-  https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-table-queries/
+  https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-table-queries.md
 - Generated record surfaces and form helpers:
-  https://sapporta.com/docs/reference/frontend/generated-record-surfaces/
+  https://sapporta.com/docs/reference/frontend/generated-record-surfaces.md
 - Table query options:
-  https://sapporta.com/docs/reference/frontend/table-query-options/
+  https://sapporta.com/docs/reference/frontend/table-query-options.md
 - Generated record screens and forms:
-  https://sapporta.com/docs/guides/generated-surfaces/record-screens-and-forms/
+  https://sapporta.com/docs/guides/generated-surfaces/record-screens-and-forms.md
 - Relationships and lookup behavior:
-  https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior/
+  https://sapporta.com/docs/guides/model-data/relationships-and-lookup-behavior.md
 - Serialization and API errors:
-  https://sapporta.com/docs/reference/contracts/serialization-and-api-errors/
+  https://sapporta.com/docs/reference/contracts/serialization-and-api-errors.md
 
 Read the custom-forms guide and both frontend references before implementing a
 custom form. Confirm exact declarations against the application's installed

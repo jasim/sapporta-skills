@@ -6,10 +6,10 @@ independent of Hono request objects.
 
 Docs:
 
-- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints/
-- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
-- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
-- Agent development workflow: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
+- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints.md
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security.md
+- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
+- Agent development workflow: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent.md
 
 ## Auth-Aware Workflow Code
 

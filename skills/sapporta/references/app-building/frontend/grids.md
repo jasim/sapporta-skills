@@ -5,23 +5,23 @@ Sapporta documentation owns exact props, runtime APIs, interaction semantics,
 examples, and invariants:
 
 - Grid-first record workflows:
-  https://sapporta.com/docs/guides/generated-surfaces/grid-first-record-workflows/
+  https://sapporta.com/docs/guides/generated-surfaces/grid-first-record-workflows.md
 - Table-aware Grids and master-detail:
-  https://sapporta.com/docs/guides/generated-surfaces/table-aware-grids-and-customization/
+  https://sapporta.com/docs/guides/generated-surfaces/table-aware-grids-and-customization.md
 - TGrid reference:
-  https://sapporta.com/docs/reference/frontend/tgrid/
+  https://sapporta.com/docs/reference/frontend/tgrid.md
 - Grid interaction reference:
-  https://sapporta.com/grid/reference/interactions/
+  https://sapporta.com/grid/reference/interactions.md
 - BaseGrid reference:
-  https://sapporta.com/grid/reference/base-grid/
+  https://sapporta.com/grid/reference/base-grid.md
 - Choose a Grid layer:
-  https://sapporta.com/grid/start/choose-a-grid-layer/
+  https://sapporta.com/grid/start/choose-a-grid-layer.md
 - Filtering, sorting, search, and pagination:
-  https://sapporta.com/docs/guides/generated-surfaces/filtering-sorting-search-and-pagination/
+  https://sapporta.com/docs/guides/generated-surfaces/filtering-sorting-search-and-pagination.md
 - Hierarchical Grids:
-  https://sapporta.com/grid/guides/hierarchical-grids/
+  https://sapporta.com/grid/guides/hierarchical-grids.md
 - Advanced rows and drafts:
-  https://sapporta.com/grid/guides/advanced-rows/
+  https://sapporta.com/grid/guides/advanced-rows.md
 
 Read the table-aware guide, TGrid reference, and interaction reference before
 implementing row selection, active-row context, row activation, or

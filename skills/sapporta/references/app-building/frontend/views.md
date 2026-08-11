@@ -24,15 +24,15 @@ rg -n 'NewRecordPage|FormField|buildRecordFormFields|fieldModelForColumn|foreign
 
 Docs:
 
-- Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens/
-- Custom forms and cached table reads: https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-table-queries/
-- Table query options: https://sapporta.com/docs/reference/frontend/table-query-options/
-- Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients/
-- Grid-first record workflows: https://sapporta.com/docs/guides/generated-surfaces/grid-first-record-workflows/
-- Grid core model: https://sapporta.com/grid/guides/core-model/
-- Choose a Grid layer: https://sapporta.com/grid/start/choose-a-grid-layer/
-- Interactions: https://sapporta.com/grid/reference/interactions/
-- Keyboard and selection: https://sapporta.com/grid/guides/keyboard-and-selection/
+- Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens.md
+- Custom forms and cached table reads: https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-table-queries.md
+- Table query options: https://sapporta.com/docs/reference/frontend/table-query-options.md
+- Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients.md
+- Grid-first record workflows: https://sapporta.com/docs/guides/generated-surfaces/grid-first-record-workflows.md
+- Grid core model: https://sapporta.com/grid/guides/core-model.md
+- Choose a Grid layer: https://sapporta.com/grid/start/choose-a-grid-layer.md
+- Interactions: https://sapporta.com/grid/reference/interactions.md
+- Keyboard and selection: https://sapporta.com/grid/guides/keyboard-and-selection.md
 
 ## Record Workflow Surfaces
 

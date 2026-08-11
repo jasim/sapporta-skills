@@ -17,10 +17,10 @@ existing one.
 This skill provides operating instructions. Use public docs for product
 explanations, API shapes, CLI grammar, and reference details:
 
-- Docs: https://sapporta.com/docs/
-- Agent workflow overview: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
-- API/tool choice guide: https://sapporta.com/docs/guides/discovery/choose-an-application-interface/
-- Reference index: https://sapporta.com/docs/reference/
+- Docs: https://sapporta.com/docs.md
+- Agent workflow overview: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent.md
+- API/tool choice guide: https://sapporta.com/docs/guides/discovery/choose-an-application-interface.md
+- Reference index: https://sapporta.com/docs/reference.md
 
 Prefer the project-local CLI after the project exists:
 
@@ -103,11 +103,11 @@ with the `data-console` guide.
 
 Reference docs:
 
-- CLI: https://sapporta.com/docs/reference/cli/overview-and-global-options/
-- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console/
-- OpenAPI discovery: https://sapporta.com/docs/guides/discovery/openapi-and-endpoint-discovery/
-- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
-- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
+- CLI: https://sapporta.com/docs/reference/cli/overview-and-global-options.md
+- Agent data console: https://sapporta.com/docs/guides/discovery/use-the-agent-data-console.md
+- OpenAPI discovery: https://sapporta.com/docs/guides/discovery/openapi-and-endpoint-discovery.md
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security.md
+- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
 
 ## Direct Dispatch
 

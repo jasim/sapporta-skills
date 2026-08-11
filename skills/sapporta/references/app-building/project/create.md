@@ -6,15 +6,15 @@ project.
 
 Public references:
 
-- Create a project: https://sapporta.com/docs/getting-started/create-a-project/
-- Tour the generated project: https://sapporta.com/docs/getting-started/tour-the-generated-project/
-- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
-- Generated project layout: https://sapporta.com/docs/reference/project/generated-project-layout/
+- Create a project: https://sapporta.com/docs/getting-started/create-a-project.md
+- Tour the generated project: https://sapporta.com/docs/getting-started/tour-the-generated-project.md
+- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata.md
+- Generated project layout: https://sapporta.com/docs/reference/project/generated-project-layout.md
 
 ## Contents
 
 - [Resolve The Target](#resolve-the-target)
-- [Run The Versioned Scaffold](#run-the-versioned-scaffold)
+- [Run The Documented Scaffold Command](#run-the-documented-scaffold-command)
 - [Inspect The Generated Project](#inspect-the-generated-project)
 - [Continue Through The Common Workflow](#continue-through-the-common-workflow)
 
@@ -34,14 +34,11 @@ bindings, generates and applies the initial auth migration, initializes Git,
 and creates the initial commit. Run it only when the user requested project
 creation, and use the environment's network and filesystem approval mechanism.
 
-## Run The Versioned Scaffold
+## Run The Documented Scaffold Command
 
-Use the version-pinned command from the public create-project guide. The current
-documented command is:
-
-```bash
-pnpm dlx sapporta@0.2.6 init <app-name>
-```
+Run the init command from the create-project guide
+(https://sapporta.com/docs/getting-started/create-a-project.md), which always
+carries the current Sapporta version.
 
 Run it from the intended parent directory. Do not run a separate `pnpm install`,
 auth migration, `git init`, or initial commit after a successful scaffold; the

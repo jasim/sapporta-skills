@@ -6,15 +6,15 @@ register a shared ts-rest contract with `TsRestApi`.
 Use the public docs for exact contract syntax, handler arguments, multipart
 uploads, response content types, OpenAPI behavior, and typed clients:
 
-- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints/
-- Domain workflows and transactions: https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions/
-- Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients/
-- Errors and endpoint patterns: https://sapporta.com/docs/guides/app-owned-features/errors-uploads-and-endpoint-patterns/
-- Serialization and API errors: https://sapporta.com/docs/reference/contracts/serialization-and-api-errors/
-- OpenAPI discovery: https://sapporta.com/docs/reference/http/openapi/
-- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
-- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
-- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata/
+- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints.md
+- Domain workflows and transactions: https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions.md
+- Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients.md
+- Errors and endpoint patterns: https://sapporta.com/docs/guides/app-owned-features/errors-uploads-and-endpoint-patterns.md
+- Serialization and API errors: https://sapporta.com/docs/reference/contracts/serialization-and-api-errors.md
+- OpenAPI discovery: https://sapporta.com/docs/reference/http/openapi.md
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security.md
+- Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
+- Search table rows and relationships: https://sapporta.com/docs/guides/model-data/search-indexes-and-display-metadata.md
 
 ## Contents
 
@@ -104,8 +104,8 @@ scoped tables, or fetch broadly and filter row ownership in JavaScript.
 For a custom endpoint that creates or changes a parent plus details, line
 items, history, or another related table, read these before implementing:
 
-- https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions/
-- https://sapporta.com/docs/reference/server/row-scoped-data-helpers/
+- https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions.md
+- https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
 
 Then inspect the app for an existing local pattern:
 

@@ -72,12 +72,12 @@ implementation details.
 
 Docs:
 
-- Develop with a coding agent: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent/
-- Generated project layout: https://sapporta.com/docs/reference/project/generated-project-layout/
-- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata/
-- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints/
-- Route-based reports: https://sapporta.com/docs/guides/reports/route-based-reports/
-- Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens/
+- Develop with a coding agent: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent.md
+- Generated project layout: https://sapporta.com/docs/reference/project/generated-project-layout.md
+- Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata.md
+- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints.md
+- Route-based reports: https://sapporta.com/docs/guides/reports/route-based-reports.md
+- Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens.md
 
 ## Built-In APIs Or Custom Code
 
@@ -106,8 +106,8 @@ and filter row ownership in JavaScript.
 
 Docs:
 
-- Authentication and abilities: https://sapporta.com/docs/guides/security/authentication-and-abilities/
-- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security/
+- Authentication and abilities: https://sapporta.com/docs/guides/security/authentication-and-abilities.md
+- Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security.md
 
 ## Validation
 
