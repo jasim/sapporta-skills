@@ -46,6 +46,11 @@ Follow the current app convention. `packages/frontend/src/App.tsx` exports
 `appNavigation`, `appHomeRoute`, `appPublicRoutes`, and
 `appProtectedRoutes`. Add one file per screen, then add its route.
 
+Give every screen a browser tab title so history entries and open tabs stay
+readable. Pass `title` to `AppPage` or `PageHeader` — that sets the tab title
+too. If the screen renders its own chrome, call `usePageTitle("...")` from
+`@sapporta/frontend/shell`.
+
 Read [../workflow-shell.md](../workflow-shell.md) before changing
 `appNavigation`, the protected home page, `showFrameworkNavigation`, or an
 Advanced/Admin page. Add a protected page to `appNavigation` only when users
