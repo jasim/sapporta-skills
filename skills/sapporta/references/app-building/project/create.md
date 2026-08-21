@@ -14,6 +14,7 @@ Public references:
 ## Contents
 
 - [Resolve The Target](#resolve-the-target)
+- [Confirm pnpm 11 Or Later](#confirm-pnpm-11-or-later)
 - [Run The Documented Scaffold Command](#run-the-documented-scaffold-command)
 - [Inspect The Generated Project](#inspect-the-generated-project)
 - [Continue Through The Common Workflow](#continue-through-the-common-workflow)
@@ -33,6 +34,14 @@ pnpm workspace, resolves and installs dependencies, verifies native SQLite
 bindings, generates and applies the initial auth migration, initializes Git,
 and creates the initial commit. Run it only when the user requested project
 creation, and use the environment's network and filesystem approval mechanism.
+
+## Confirm pnpm 11 Or Later
+
+Run `pnpm --version` before scaffolding. Sapporta requires pnpm 11 or later, and
+`sapporta init` refuses to run on anything older: the generated project declares
+its workspace settings in `pnpm-workspace.yaml`, which pnpm 10 and earlier
+ignore. If the version is older, tell the user to upgrade (for example
+`corepack use pnpm@11`) and stop; do not work around the check.
 
 ## Run The Documented Scaffold Command
 
