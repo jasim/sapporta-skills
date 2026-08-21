@@ -12,8 +12,8 @@ examples, and invariants:
   https://sapporta.com/docs/reference/frontend/tgrid.md
 - Grid interaction reference:
   https://sapporta.com/grid/reference/interactions.md
-- BaseGrid reference:
-  https://sapporta.com/grid/reference/base-grid.md
+- GridCore reference:
+  https://sapporta.com/grid/reference/grid-core.md
 - Choose a Grid layer:
   https://sapporta.com/grid/start/choose-a-grid-layer.md
 - Filtering, sorting, search, and pagination:
@@ -33,7 +33,7 @@ master-detail behavior.
 - Use `SchemaTableGridView` or TGrid when registered Sapporta tables own the
   records and the application needs tailored columns, query context,
   hierarchy, interaction, navigation, or surrounding layout.
-- Use BaseGrid with ColumnPreset when the application owns temporary rows, a
+- Use GridCore with ColumnPreset when the application owns temporary rows, a
   composite draft, a calculated projection, or a custom data source.
 - Preserve search, filters, sort, pagination, CSV export, lookup labels, URL
   state, loading, and errors unless the product requirement changes them.

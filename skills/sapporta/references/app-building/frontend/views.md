@@ -116,7 +116,7 @@ server applies the authoritative write policy.
   CSV export, lookup labels, URL state, loading states, and error states unless
   the user explicitly asks for less -> read
   [grids.md](grids.md).
-- Use ColumnPreset before authoring a custom BaseGrid column. Keep application
+- Use ColumnPreset before authoring a custom GridCore column. Keep application
   validation, persistence, conflicts, and workflow transactions in save
   handlers, services, and endpoints rather than cell renderers.
 

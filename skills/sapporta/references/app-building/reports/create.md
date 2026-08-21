@@ -137,7 +137,7 @@ internals. When the screen owns its own row shape, loading behavior, hierarchy,
 editing rules, side panels, or toolbar behavior, read the custom grid docs:
 
 - TGrid usage: https://sapporta.com/docs/reference/frontend/tgrid.md
-- BaseGrid guide: https://sapporta.com/grid/reference/base-grid.md
+- GridCore guide: https://sapporta.com/grid/reference/grid-core.md
 
 ## Record-Level Linking Completion Gate
 
