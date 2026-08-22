@@ -161,6 +161,34 @@ function EditTaskFormForId({ taskId }: { taskId: number }) {
 }
 
 type TaskFields = ReturnType<typeof buildRecordFormFields>;
+type TaskFieldModel = ReturnType<typeof fieldModelForColumn>;
+
+// A form instance has no nameable type of its own. Name this hook's return type
+// instead, and give child components that. One useForm call per form.
+function useTaskDraftForm(
+  initialValues: TaskFormValues,
+  submitDraft: (values: TaskFormValues) => Promise<unknown>,
+) {
+  return useForm({
+    defaultValues: initialValues,
+    onSubmit: async ({ value, formApi }) => {
+      // The application schema owns domain validation and transformation. Map
+      // its issues through the current framework form-error surface.
+      try {
+        const parsed = taskFormSchema.safeParse(value);
+        if (!parsed.success) {
+          throw new FormSubmissionError(fieldIssuesFromZodError(parsed.error));
+        }
+        await submitDraft(parsed.data);
+      } catch (error) {
+        formApi.setErrorMap({ onSubmit: submissionErrorMap(error) });
+        throw error;
+      }
+    },
+  });
+}
+
+type TaskDraftForm = ReturnType<typeof useTaskDraftForm>;
 
 function TaskEditor({
   fields,
@@ -172,24 +200,7 @@ function TaskEditor({
   onSubmit: (values: TaskFormValues) => Promise<unknown>;
 }) {
   const titleField = fieldModelForColumn(fields, "title");
-
-  const form = useForm({
-    defaultValues: initialValues,
-    onSubmit: async ({ value, formApi }) => {
-      // The application schema owns domain validation and transformation. Map
-      // its issues through the current framework form-error surface.
-      try {
-        const parsed = taskFormSchema.safeParse(value);
-        if (!parsed.success) {
-          throw new FormSubmissionError(fieldIssuesFromZodError(parsed.error));
-        }
-        await onSubmit(parsed.data);
-      } catch (error) {
-        formApi.setErrorMap({ onSubmit: submissionErrorMap(error) });
-        throw error;
-      }
-    },
-  });
+  const form = useTaskDraftForm(initialValues, onSubmit);
 
   return (
     // The real application owns page/dialog composition, labels, help text,
@@ -215,19 +226,7 @@ function TaskEditor({
       >
         {([canSubmit, isSubmitting, submitError]) => (
           <fieldset disabled={isSubmitting}>
-            <form.Field name="title">
-              {(field) => (
-                <FormField
-                  field={titleField}
-                  value={field.state.value}
-                  issue={firstFormErrorMessage(field.state.meta.errors)}
-                  onChange={(value) => {
-                    form.setErrorMap({ onSubmit: undefined });
-                    field.handleChange(String(value ?? ""));
-                  }}
-                />
-              )}
-            </form.Field>
+            <TaskTitleField form={form} field={titleField} />
 
             {/* Add only fields required by this workflow. Use metadata-derived
                 FormField controls, framework lookups, or application-owned
@@ -244,6 +243,30 @@ function TaskEditor({
         )}
       </form.Subscribe>
     </form>
+  );
+}
+
+function TaskTitleField({
+  form,
+  field,
+}: {
+  form: TaskDraftForm;
+  field: TaskFieldModel;
+}) {
+  return (
+    <form.Field name="title">
+      {(titleField) => (
+        <FormField
+          field={field}
+          value={titleField.state.value}
+          issue={firstFormErrorMessage(titleField.state.meta.errors)}
+          onChange={(value) => {
+            form.setErrorMap({ onSubmit: undefined });
+            titleField.handleChange(String(value ?? ""));
+          }}
+        />
+      )}
+    </form.Field>
   );
 }
 

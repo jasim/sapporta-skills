@@ -59,6 +59,50 @@ forms, filters, or report controls.
 Before completing a form, audit every choice control against this policy,
 including toolbar and report filters that launch or constrain the workflow.
 
+## Name The Form Instance's Type
+
+Call `useForm` inside one concrete hook per form, and name that hook's return
+type. Child components declare their `form` prop with that name:
+
+```tsx
+function useMealDraftForm(
+  defaults: MealDraft,
+  onSubmit: (value: MealDraft) => Promise<void>,
+) {
+  return useForm({
+    defaultValues: defaults,
+    onSubmit: ({ value }) => onSubmit(value),
+  });
+}
+
+type MealForm = ReturnType<typeof useMealDraftForm>;
+
+function ItemRow({ form, index }: { form: MealForm; index: number }) {
+  return (
+    <form.Field name={`items[${index}].quantity`}>
+      {(quantityField) => (
+        <Input
+          value={quantityField.state.value}
+          onChange={(event) => quantityField.handleChange(event.target.value)}
+        />
+      )}
+    </form.Field>
+  );
+}
+```
+
+The hook is the only practical name. `useForm` has twelve type parameters and
+no defaults, so `ReturnType<typeof useForm<MealDraft>>` fails to resolve and
+every `form.Field` render prop under it becomes an implicit `any`.
+`ReactFormExtendedApi` takes the same twelve arguments.
+
+Keep `useForm` to one call per form. Validators and the submit handler belong
+inside the hook so they stay part of the type.
+
+For a form split across many levels, `createFormHook`'s `withForm` types each
+piece from its own `defaultValues`. Do not set that up only to name a form
+type.
+
 ## Preserve These Boundaries
 
 - Reuse the generated TanStack Query provider and workspace-owned
