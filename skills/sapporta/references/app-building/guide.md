@@ -118,11 +118,18 @@ pnpm --filter ./packages/api db:generate --name <change_name>
 # Review the generated SQL before continuing.
 pnpm --filter ./packages/api db:migrate
 pnpm --filter ./packages/api db:check
+pnpm typecheck
 pnpm dev
 pnpm exec sapporta endpoints show "METHOD /api/path"
 ```
 
-For frontend changes, run the project's frontend checks or tests when available.
+Run `pnpm typecheck` after every frontend change, and never treat a green
+`vite build` as proof that frontend code compiles: `vite build` strips types
+with esbuild and reports no type errors, so it succeeds on type-broken `.tsx`.
+In an older project whose root `package.json` has no `typecheck` script, run
+`pnpm --filter ./packages/frontend exec tsc --noEmit` instead, and add the
+script.
+
 For native module failures, binding errors, or dev-server startup failures, read
 troubleshooting before trying broad dependency changes.
 

@@ -107,8 +107,8 @@ imports as framework exports.
 
 ## Validate The Workflow
 
-Ideally in a separate agent/subagent/thread/coding agent task, run the
-application's frontend typecheck, tests, and build. Exercise loading,
+Ideally in a separate agent/subagent/thread/coding agent task, run
+`pnpm typecheck`, then the application's tests and build. Exercise loading,
 cancellation, create and edit initialization, dirty-value preservation, required
 and optional values, static-combobox and foreign-key lookup fields, server field
 issues, query invalidation, Grid reload, authorization, and success navigation.
