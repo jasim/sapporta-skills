@@ -10,6 +10,20 @@ Docs:
 - Errors and endpoint patterns: https://sapporta.com/docs/guides/app-owned-features/errors-uploads-and-endpoint-patterns.md
 - Serialization and API errors: https://sapporta.com/docs/reference/contracts/serialization-and-api-errors.md
 
+## Imports
+
+Import the shared error envelope from the framework package. The app's own
+`your-app-shared` package does not re-export it.
+
+```ts
+import { errorBodySchema, type ErrorBody } from "@sapporta/shared/contracts";
+import { ApiError } from "@sapporta/shared/client";
+```
+
+Declare non-2xx `responses` entries in the shared contract with
+`errorBodySchema`, type a handler's error return with `ErrorBody`, and catch
+`ApiError` in frontend actions.
+
 ## Pattern
 
 1. Define one abstract error base per workflow family, near the code that raises
@@ -33,7 +47,7 @@ contract's `responses`.
 
 ## Conventions
 
-- One base per workflow family, not a shared cross-module `ApiError`.
+- One base per workflow family, not one app-wide base of your own.
 - Keep the base module-private unless another module also catches or raises it.
 - Set `this.name` in subclasses for useful logs.
 - Use snake_case payload keys to match wire conventions.
