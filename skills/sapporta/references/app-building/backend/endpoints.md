@@ -25,6 +25,7 @@ uploads, response content types, OpenAPI behavior, and typed clients:
 - [Error Handling](#error-handling)
 - [Validation](#validation)
 - [Common Pitfalls](#common-pitfalls)
+- [Related Reading](#related-reading)
 
 ## File Placement
 
@@ -102,12 +103,8 @@ scoped tables, or fetch broadly and filter row ownership in JavaScript.
 ## Atomic Multi-Table Writes
 
 For a custom endpoint that creates or changes a parent plus details, line
-items, history, or another related table, read these before implementing:
-
-- https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions.md
-- https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
-
-Then inspect the app for an existing local pattern:
+items, history, or another related table, first inspect the app for an existing
+local pattern:
 
 ```bash
 rg -n 'db\.transaction|rowSecurity\.forTable|insertValuesSync|serverValues' packages/api
@@ -119,8 +116,9 @@ pass parent keys or other server-authored references through `serverValues`.
 The default Sapporta SQLite transaction callback is synchronous; do not mark it
 `async` or await work inside it.
 
-If the app has no local example, follow the canonical parent-detail recipe in
-the domain-workflow guide above.
+If the app has no local example, follow
+[parent-detail-transactions.md](parent-detail-transactions.md). It vendors the
+canonical recipe in full, so the code needs no doc fetch.
 
 ## Backend Organization
 
@@ -208,3 +206,12 @@ For every expected failure, verify:
 - Client sends scope fields or a full `request.body` directly into a scoped
   table write.
 - Route updates/deletes a scoped row by primary key alone.
+
+## Related Reading
+
+If endpoint runs a domain workflow, like orchestration across services, a
+  multi-step state transition, or a transaction. Read:
+
+  https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions.md
+
+If it is a domain workflow, it would get or set data. Then you need to ensure that all APIs return/change only data that are scoped to the authenticated user and workspace. Read: https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md

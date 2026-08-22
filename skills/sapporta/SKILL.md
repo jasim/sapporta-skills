@@ -22,6 +22,18 @@ explanations, API shapes, CLI grammar, and reference details:
 - API/tool choice guide: https://sapporta.com/docs/guides/discovery/choose-an-application-interface.md
 - Reference index: https://sapporta.com/docs/reference.md
 
+## Fetch Docs With `curl`, Not A Summarizer
+
+Every `sapporta.com` URL here is raw markdown, and its code recipes must arrive
+verbatim:
+
+```bash
+curl -sL https://sapporta.com/docs/[path].md
+```
+
+If a doc seems to be missing the code you came for, re-fetch it with `curl`
+before concluding it is absent.
+
 Prefer the project-local CLI after the project exists:
 
 ```bash
@@ -154,7 +166,8 @@ form” does not skip project inspection or the proportional common gate.
   transactions, scoped table reads, counts, scans, atomic parent-detail or
   line-item writes, OpenAPI registration
   -> read [app-building/backend/endpoints.md](references/app-building/backend/endpoints.md), then follow its
-  conditional routes to service organization or typed errors
+  conditional routes to the vendored parent-detail recipe, service
+  organization, or typed errors
 - Custom create or edit forms, domain mutation pages, form dialogs or drawers,
   and record-entry workflows -> read
   [app-building/frontend/forms.md](references/app-building/frontend/forms.md)

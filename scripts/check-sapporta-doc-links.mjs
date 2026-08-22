@@ -15,6 +15,9 @@ for (const file of walk(skillRoot)) {
   const source = readFileSync(file, "utf8");
   for (const match of source.matchAll(URL_PATTERN)) {
     const url = match[0];
+    // `https://sapporta.com/docs/[path].md` and friends are instructional
+    // placeholders showing the URL shape, not links to fetch.
+    if (url.includes("[")) continue;
     if (!linkSites.has(url)) linkSites.set(url, []);
     linkSites.get(url).push(relative(skillRoot, file));
   }

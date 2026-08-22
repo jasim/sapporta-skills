@@ -24,3 +24,15 @@ node scripts/check-sapporta-doc-links.mjs
 The check collects every `sapporta.com` link in the repository, requires the
 agent-friendly markdown form (a `.md` suffix instead of a slash-terminated HTML
 route), and fetches each unique URL to confirm it responds 200.
+
+## Validate vendored recipes
+
+```bash
+node scripts/check-vendored-recipes.mjs
+```
+
+A reference file that vendors a canonical code recipe carries a
+`vendored-from` HTML comment naming its upstream URL. The check fetches that
+doc and fails if any fenced code block in the vendored file no longer appears
+in it verbatim, so an upstream API change surfaces as a re-sync task instead of
+stale guidance.

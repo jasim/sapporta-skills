@@ -23,6 +23,11 @@ ordinary files under `skills/sapporta/references/`, loaded only after the root
 skill selects the relevant operational area.
 
 Keep future skill changes concise and agent-facing. Link to the docs when a task
-needs detailed Sapporta API behavior.
+needs detailed Sapporta API behavior. Doc links are raw markdown and are meant
+to be fetched with `curl`, never through a summarizing fetch tool that would
+paraphrase or drop the code they carry — `SKILL.md` states this once, for the
+whole skill. When a task depends on a code recipe arriving verbatim, vendor that
+recipe into `references/` with a `vendored-from` marker instead of linking to
+it, so the agent needs no network round-trip at all.
 
 Testing and validation instructions are in [`TESTING.md`](TESTING.md).
