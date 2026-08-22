@@ -40,8 +40,8 @@ const files = {
   queryExports: readSapporta("packages/frontend/src/table/query/index.ts"),
   sharedQueryParams: readSapporta("packages/shared/src/query-params.ts"),
   sharedApiClient: readSapporta("packages/shared/src/client/api-client.ts"),
-  scopedRows: readSapporta("packages/core/src/data/scoped-rows.ts"),
-  tableRowScan: readSapporta("packages/core/src/data/table-row-scan.ts"),
+  scopedRows: readSapporta("packages/core/src/rows/scoped-rows.ts"),
+  tableRowScan: readSapporta("packages/core/src/rows/table-row-scan.ts"),
   tableQueryResolvers: readSapporta("packages/core/src/api/table-query.ts"),
   coreExports: readSapporta("packages/core/src/index.ts"),
   cliRegistry: readSapporta("packages/core/src/cli/commands/registry.ts"),
@@ -93,7 +93,7 @@ requireAll("frontend route workflow", files.frontendViews, [
 ]);
 
 requireAll("backend endpoint routing", files.backendEndpoints, [
-  "reference/server/row-scoped-data-helpers/",
+  "reference/server/row-scoped-data-helpers.md",
   "reference before implementing a bounded read",
   "`findMany()`",
   "`page()`",
@@ -104,18 +104,18 @@ requireAll("backend endpoint routing", files.backendEndpoints, [
   "ownedRows(...)",
 ]);
 requireAll("backend domain routing", files.backendDomain, [
-  "reference/server/row-scoped-data-helpers/",
+  "reference/server/row-scoped-data-helpers.md",
   "construct Drizzle predicates directly",
   "do not manufacture HTTP query grammar",
 ]);
 requireAll("report query routing", files.reportCreate, [
-  "reference/server/row-scoped-data-helpers/",
+  "reference/server/row-scoped-data-helpers.md",
   "one guard per participating",
   "Do not route an advanced report to raw SQL",
 ]);
 requireAll("report link routing", files.reportLinking, [
   "verified app-owned detail route",
-  "exact primary-key filter",
+  "becomes an equality filter on the",
   "does not imply a generated frontend",
 ]);
 forbidAll("report link routing", files.reportLinking, [
@@ -128,7 +128,7 @@ requireAll("data-console query routing", files.dataConsole, [
   "explicitly authorized administration or debugging",
 ]);
 requireAll("table query routing", files.tableQueries, [
-  "reference/cli/table-row-and-report-commands/",
+  "reference/cli/table-row-and-report-commands.md",
   "JSON `--where`",
   "Preserve repeated identical HTTP filter keys",
   "JSON `--where` cannot express",
