@@ -30,8 +30,10 @@ For API-backed CLI commands, verify the selected app server is reachable:
 
 ```bash
 pnpm exec sapporta endpoints list
-pnpm exec sapporta tables list
 ```
+
+Use `endpoints list` for this check. A failure means the server is
+unreachable or is the wrong server.
 
 If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message before
 diagnosing app, auth, or schema behavior. If the project uses a non-default API
@@ -55,6 +57,9 @@ pnpm exec sapporta tables list
 pnpm exec sapporta tables show <name>
 pnpm exec sapporta tables sample <name>
 ```
+
+Endpoint output carries each table's column schema. Prefer it over
+`tables` commands for schema discovery.
 
 The CLI can inspect app-owned routes with `endpoints list` and
 `endpoints show`, and can invoke arbitrary endpoints with

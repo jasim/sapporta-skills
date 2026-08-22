@@ -3,6 +3,23 @@
 Use this reference only for protected apps, non-default server URLs, remote
 deployments, auth failures, or direct `curl` calls.
 
+## What Needs A Token
+
+Split the CLI by what each command reads before deciding you need credentials.
+
+Against a local dev server these need no token (the scaffold sets
+`SAPPORTA_OPENAPI_POLICY=public` in `.env.development`):
+
+- `pnpm exec sapporta endpoints list`
+- `pnpm exec sapporta endpoints show "<METHOD> <path>"`
+
+All other API-backed commands (`rows`, `sql`, `api`, `tables`) need an agent
+access token in `SAPPORTA_API_TOKEN`. This includes `tables list` and
+`tables show` — get schema from `endpoints` instead.
+
+Deployments leave `SAPPORTA_OPENAPI_POLICY` unset, so `endpoints` needs a
+token too.
+
 Docs:
 
 - Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens.md
@@ -17,19 +34,28 @@ Docs:
 - If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message. It
   includes the resolved request URL and may mention sandbox network permission.
 - Do not request a token for repository-only inspection or source changes.
-- For protected endpoint discovery, live rows, or runtime read-back, ask the
-  user to open `/account/profile` in the intended workspace, create an agent
-  access token, choose **Copy setup prompt**, and paste that prompt into the
-  trusted coding-agent session opened at the project root.
+- Do not request a token for endpoint discovery against a local development
+  server; run `endpoints list` first and only ask if it fails.
+- For live rows, runtime read-back, or discovery against a protected
+  deployment, ask the user to open `/account/profile` in the intended
+  workspace, create an agent access token, choose **Copy setup prompt**, and
+  paste that prompt into the trusted coding-agent session opened at the project
+  root.
+- Only a signed-in person can create a token. On a freshly scaffolded app there
+  is no user yet, so state plainly that data commands are unavailable until the
+  user signs up and creates one. Do not create an account to work around this,
+  and do not rebuild the CLI's job with hand-rolled sign-up calls, cookie jars,
+  and fetch wrappers.
 - Treat the setup prompt as secret-bearing. Reuse the project's existing mise,
   direnv, or dotenv tooling. If none exists, use a private gitignored wrapper;
   do not install a new environment manager for this purpose.
 - Record the exact authenticated invocation in `AGENTS.md`, but never put the
   token there. Do not invent, transform, print, or store tokens in source,
   committed configuration, screenshots, shell history, or later task prompts.
-- Verify the configured connection with the harmless read-only command
-  `pnpm exec sapporta endpoints list`; request network permission when the
-  sandbox requires it.
+- Verify a configured token with `pnpm exec sapporta rows count <table>`, not
+  `endpoints list` (which needs no token against local dev and proves nothing
+  about the credential). Request network permission when the sandbox requires
+  it.
 - A token belongs to one user and one workspace. To work in another workspace,
   the user needs a token created while that workspace is active.
 - When auth fails during data-console work, stop and tell the user the targeted
