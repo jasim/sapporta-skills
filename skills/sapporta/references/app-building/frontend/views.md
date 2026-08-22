@@ -43,8 +43,12 @@ Grid layer, interaction, query context, or columns.
 ## Routes And Navigation
 
 Follow the current app convention. `packages/frontend/src/App.tsx` exports
-`appNavigation`, `appHomeRoute`, `appPublicRoutes`, and
+`appNavigation`, `appHomeRoute`, `appPublicHomeRoute`, `appPublicRoutes`, and
 `appProtectedRoutes`. Add one file per screen, then add its route.
+
+`appHomeRoute` opens `/` for signed-in users. Put the home page there. Add every
+other screen that needs a session to `appProtectedRoutes`; a screen outside
+those slots loads for visitors who have not signed in.
 
 Give every screen a browser tab title so history entries and open tabs stay
 readable. Pass `title` to `AppPage` or `PageHeader` — that sets the tab title
@@ -57,7 +61,8 @@ Advanced/Admin page. Add a protected page to `appNavigation` only when users
 routinely start or resume work there. Keep create, edit, detail, and
 supporting-resource pages contextual unless they are genuine starting points;
 put specialist reports, tools, and maintenance pages under Advanced. Put public
-routes in `appPublicRoutes` only when their data is intentionally public. For
+routes in `appPublicRoutes`, and an anonymous landing page at `/` in
+`appPublicHomeRoute`, only when their data is intentionally public. For
 connected list, detail, create, and edit routes, adapt
 [form-template/route-wiring.tsx.example](form-template/route-wiring.tsx.example).
 

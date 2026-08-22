@@ -44,7 +44,7 @@ routes.
 
 ## Build The Main Sidebar
 
-- Put the protected home page first.
+- Put the protected home page first, linked to `/`.
 - Group links around everyday work and label them with user-facing domain
   terms.
 - Order groups and links by what normally follows what, but do not number
@@ -88,9 +88,16 @@ not trade a cluttered sidebar for missing or overexposed functionality.
 
 ## Build The Protected Home Page
 
-Open the protected root route on a domain home page. Help a new user answer four
-questions: what is this app for, where do I begin, what happens next, and where
-do I inspect the result?
+Put the domain home page in `appHomeRoute` in `packages/frontend/src/App.tsx`.
+That slot opens `/` for signed-in users and is where sign-in lands, so replace
+the generated `Home` screen instead of adding a redirect or a second home path.
+Leave `appPublicHomeRoute` empty unless the product needs an anonymous landing
+page at `/`; filling it opens `/` to everyone and takes `/` away from
+`appHomeRoute`. Do not edit `SapportaApp.tsx` to change where the home page
+renders.
+
+Help a new user answer four questions: what is this app for, where do I begin,
+what happens next, and where do I inspect the result?
 
 Follow the same path as the sidebar. Start with one short explanation of the
 app's purpose. For each part of the normal path, use:
