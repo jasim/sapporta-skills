@@ -34,7 +34,9 @@ master-detail behavior.
   records and the application needs tailored columns, query context,
   hierarchy, interaction, navigation, or surrounding layout.
 - Use GridCore with ColumnPreset when the application owns temporary rows, a
-  composite draft, a calculated projection, or a custom data source.
+  composite draft, a calculated projection, or a custom data source. This is
+  also the layer for a form's staged multi-row draft; read
+  [forms.md](forms.md) for where that draft becomes persistent shape.
 - Preserve search, filters, sort, pagination, CSV export, lookup labels, URL
   state, loading, and errors unless the product requirement changes them.
 

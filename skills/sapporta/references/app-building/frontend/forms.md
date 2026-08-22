@@ -34,8 +34,44 @@ Sapporta version.
   performs a named domain action. The server owns authorization and the
   transaction.
 - Read [pickers.md](pickers.md) for a picker beyond the standard scoped lookup.
-- Read [grids.md](grids.md) when the form contains a substantial collection or
-  a staged multi-row draft.
+- Read "Stage Multi-Row Drafts In A Grid" below when the workflow collects
+  repeating rows rather than a fixed set of fields.
+
+## Stage Multi-Row Drafts In A Grid
+
+Some workflows collect a repeating structure that no single stored table
+matches: an invoice's lines, a shift roster, a bill of materials, a batch of
+readings. The draft lives only in the browser, carries its own row shape, and
+is transformed on save — often across several tables, or into one named domain
+action. It is a logical representation of a domain concept, not a view of a
+table.
+
+Stage that draft in a Grid. Do not hand-build a stack of rows with Add, Edit,
+and Delete buttons, and do not keep the rows in `useState`. Read
+[grids.md](grids.md), then compose GridCore with ColumnPreset over an
+application-owned in-memory source. Its draft and phantom-row APIs already own
+row identity, insertion, cell editing, and per-row failure state:
+
+- Choose a Grid layer: https://sapporta.com/grid/start/choose-a-grid-layer.md
+- Phantom rows and inserts:
+  https://sapporta.com/grid/guides/advanced-rows/phantom-rows-and-inserts.md
+- In-memory and REST data sources:
+  https://sapporta.com/grid/reference/data-sources/in-memory-and-rest-sources.md
+
+Use TanStack Form's `mode="array"` fields instead when the collection is a
+short repeating group of ordinary inputs. Reach for a Grid once the rows want
+columns, keyboard navigation, or per-row state.
+
+The surrounding form still owns the header fields, submit state, and submit
+errors. Keep staged rows in the Grid runtime; do not mirror them into form
+state.
+
+Then decide where the draft becomes persistent shape. The screen can map rows
+to table writes at submit, or post the draft to one app-owned typed endpoint
+that owns the transform and the transaction. Prefer the endpoint when the save
+spans several tables, needs one transaction, or encodes a domain rule; put the
+draft row type in the shared contract so both sides agree. Read
+[../backend/parent-detail-transactions.md](../backend/parent-detail-transactions.md).
 
 ## Picker Policy
 
@@ -102,6 +138,66 @@ inside the hook so they stay part of the type.
 For a form split across many levels, `createFormHook`'s `withForm` types each
 piece from its own `defaultValues`. Do not set that up only to name a form
 type.
+
+## Validate The Draft And Map Submit Errors
+
+TanStack Form accepts a Standard Schema (Zod, Valibot, ArkType) directly as a
+validator, and form-level issues propagate to the named fields:
+
+```ts
+validators: { onChange: taskFormSchema }
+```
+
+It validates the schema's *input* type and discards transformed output, so a
+schema that coerces or transforms must still be parsed inside `onSubmit` to get
+the written value. Where fields come from table metadata, `parseCreateDraft()`
+already reports required and invalid columns; do not restate those rules in a
+second schema.
+
+Server field issues arrive only after the write is attempted, so map them
+inside `onSubmit`: catch the rejection, convert it, and call
+`formApi.setErrorMap({ onSubmit: { form, fields } })`. Do not move the write
+into `validators.onSubmitAsync` — a validator that writes has already changed
+the database by the time validation "fails". Reserve `onSubmitAsync` for a
+read-only pre-write check such as a remote uniqueness probe.
+
+Clear a stale submit error once with a form-level listener, instead of calling
+`setErrorMap` from every field's `onChange`:
+
+```ts
+listeners: {
+  onChange: ({ formApi }) => {
+    if (formApi.state.errorMap.onSubmit) {
+      formApi.setErrorMap({ onSubmit: undefined });
+    }
+  },
+}
+```
+
+## Follow The Library's Idioms
+
+Sapporta does not wrap TanStack Form, so the library's own documentation stays
+authoritative. Confirm each of these there rather than expanding it here:
+
+- Read reactive form state with `useSelector(form.store, selector)` in
+  component logic and `form.Subscribe` in JSX. `useStore` is deprecated. Never
+  omit the selector.
+- `isDirty` is persistent: a field edited and then restored to its loaded value
+  stays dirty. Use `!isDefaultValue` for a "changed since saved" prompt.
+- Reset or revalidate a dependent picker with field `listeners.onChange` and
+  `validators.onChangeListenTo`, not a `useEffect`.
+- `validationLogic: revalidateLogic()` validates on submit first and live after
+  the first submit, which suits create and edit screens.
+- Focus the first invalid control from `onSubmitInvalid`.
+- Share create and edit defaults with `formOptions()`.
+- Prefer `aria-disabled` over `disabled` on the submit button, and gate on
+  `!canSubmit || isPristine` where an untouched submit is meaningless.
+
+The guides live under
+https://tanstack.com/form/latest/docs/framework/react/guides/ — `basic-concepts`,
+`validation`, `submission-handling`, `reactivity`, `listeners`, `linked-fields`,
+`arrays`, `dynamic-validation`, `focus-management`, `form-composition`. Append
+`.md` to fetch the markdown with `curl`.
 
 ## Preserve These Boundaries
 
