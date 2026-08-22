@@ -15,7 +15,7 @@ the public lookup module:
 ```tsx
 import { LookupPicker, useTableLookup } from "@sapporta/frontend/lookup";
 
-const accountLookup = useTableLookup("accounts");
+const accountLookup = useTableLookup<number>("accounts");
 
 <LookupPicker<number>
   id="account-id"
@@ -28,17 +28,32 @@ const accountLookup = useTableLookup("accounts");
 />
 ```
 
-Match the generic and state type to the target table's primary key. Preserve a
-numeric id as a number. Convert only at an explicit text boundary such as URL
-or legacy form state:
+Parameterize `useTableLookup` and `LookupPicker` with the same type, and match
+it to the target table's primary key. Parameterize both or neither — a bare
+`useTableLookup("accounts")` yields `string | number` and will not typecheck
+against `LookupPicker<number>`. Omit both parameters for a table whose key type
+is not known at the call site.
+
+Keep a numeric id a number in component state. Convert with `toRecordId` at
+each address boundary — a `RecordId`, a URL segment, a query key:
 
 ```tsx
-<LookupPicker<number>
-  lookup={accountLookup}
-  value={accountId === null ? null : Number(accountId)}
-  onChange={(id) => setAccountId(id === null ? null : String(id))}
-/>
+import { toRecordId } from "@sapporta/shared/record-id";
+import { tableRecordQueryOptions } from "@sapporta/frontend/table/query";
+
+const account = useQuery(
+  tableRecordQueryOptions({
+    tableName: "accounts",
+    recordId: toRecordId(accountId),
+  }),
+);
 ```
+
+A lookup id and a `RecordId` are different types on purpose. Lookup entries
+carry the id as the database column typed it, so an INTEGER key is a number;
+`RecordId` is that value in an address position, which is always a string. Do
+not widen either to match the other, and do not reach for a bare `String()` —
+`toRecordId` marks the crossing.
 
 `LookupPicker` already handles scoped remote search through
 `LookupCapabilities`, selected-label loading outside the current search page,
@@ -95,7 +110,8 @@ from the current documentation.
 - Keep `LookupEntry` objects as `items` and as the Base UI selected value.
   Translate at the domain boundary with `pickedEntry?.value ?? null`.
 - Preserve numeric lookup ids as numbers. Use `lookupValueEquals()` for item
-  equality and `lookupValueKey()` for React keys.
+  equality and `lookupValueKey()` for React keys. Both tag by `typeof`, so `1`
+  and `"1"` never match; convert only at an address boundary, via `toRecordId`.
 - Pass `filter={null}` when a lookup or server performs the search. Update the
   remote query for the `"input-change"` reason and clear it after selection or
   other input-reset events.

@@ -251,7 +251,7 @@ requireAll("framework scoped row surface", files.scopedRows, [
   "lookup(input?: LookupRowsInput<TTable>)",
   "count(input?: CountRowsInput)",
   "countBy(input: CountRowsByInput<TTable>)",
-  "ids: readonly RowId[]",
+  "ids: readonly RecordId[]",
   "search?: never",
   "ids?: never",
 ]);
