@@ -140,8 +140,15 @@ type.
 ```bash
 sed -n '1,160p' packages/frontend/src/query-client.ts
 rg -n "tableRecordQueryOptions|tableRecordsPageQueryOptions|tableQueryKeys" packages/frontend/src
-rg -n "FormField|buildRecordFormFields|parseCreateDraft|LookupPicker" packages/frontend/src node_modules/@sapporta
+rg -n "FormField|buildRecordFormFields|parseCreateDraft|LookupPicker" packages/frontend/src
 rg -n "createApiClient|getApiBase" packages/frontend/src/api.ts packages/frontend/src
+```
+
+For the framework's own definitions, resolve the package and grep it:
+
+```bash
+PKG=$(dirname "$(node -p "require.resolve('@sapporta/frontend/package.json', { paths: ['packages/frontend'] })")")
+rg -n "FormField|buildRecordFormFields|parseCreateDraft|LookupPicker" "$PKG/dist" --glob '*.d.ts'
 ```
 
 The local files under `form-template/` are secondary structural examples. Use
