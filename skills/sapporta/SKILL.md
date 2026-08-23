@@ -177,6 +177,9 @@ form” does not skip project inspection or the proportional common gate.
   [app-building/frontend/forms.md](references/app-building/frontend/forms.md)
   first. It routes to the canonical form, validation, and table-query docs;
   follow its conditional routes to picker or Grid specialization.
+- Typing a table row in frontend code, decoding a generated table response, or a
+  frontend `$inferSelect` import -> read
+  [app-building/frontend/row-projections.md](references/app-building/frontend/row-projections.md)
 - Custom React routes, dashboards, table/grid views, master-detail screens,
   side panels, row selection, custom cells, or typed API clients -> read
   [app-building/frontend/views.md](references/app-building/frontend/views.md), then

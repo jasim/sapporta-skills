@@ -41,6 +41,8 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 
 // Application-owned types and schemas come from the real domain boundary.
+// `taskWireSchema` is the row projection — the `tasks` columns this form reads.
+// It belongs in packages/shared/src/contracts/; see ../row-projections.md.
 import {
   taskFormSchema,
   taskWireSchema,

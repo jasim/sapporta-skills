@@ -33,6 +33,10 @@ import { Label } from "@sapporta/ui/label";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 
+// Row projection: the `tasks` columns this form reads, with date columns as the
+// strings the generated routes return. Inline only so this file typechecks
+// standalone; in an application it belongs in packages/shared/src/contracts/.
+// See ../row-projections.md.
 const taskWireSchema = z.object({
   id: z.union([z.number(), z.string()]),
   title: z.string(),

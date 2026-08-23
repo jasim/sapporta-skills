@@ -16,9 +16,9 @@ below.
 
 Define the raw Drizzle table and its inferred row types before building a
 custom frontend form. Export `typeof table.$inferSelect` and
-`typeof table.$inferInsert` aliases from the schema module. After the table is
-registered, read [frontend/forms.md](../frontend/forms.md) for the
-metadata-driven form workflow and the frontend type-only boundary.
+`typeof table.$inferInsert` aliases from the schema module for server use. After
+the table is registered, read [frontend/forms.md](../frontend/forms.md) for the
+metadata-driven form workflow.
 
 When the schema directory contains only project-authentication tables, treat
 the project as a fresh app. Read the complete starter pattern before framework
@@ -102,10 +102,12 @@ primary key.
   Keep pure join tables contextual unless they gain a displayable domain label.
 - Export row and insert aliases from the raw table definition:
   `export type Project = typeof projectsTable.$inferSelect` and
-  `export type NewProject = typeof projectsTable.$inferInsert`. Server and
-  frontend domain code must reuse these aliases. Do not use the generic
-  Sapporta `Row` type as a domain model or hand-write a parallel frontend
-  interface.
+  `export type NewProject = typeof projectsTable.$inferInsert`. These are server
+  types: reuse them in `packages/api` domain code, and never import them into
+  `packages/frontend`, where a `date()` column resolves to Temporal rather than
+  the string the generated routes return. Frontend code types a row with a
+  projection; read
+  [../frontend/row-projections.md](../frontend/row-projections.md).
 - Use Sapporta semantic column factories for values when available. Use raw
   Drizzle columns for primary keys, foreign keys, and unsupported edge cases.
 - Use Temporal for date/time defaults and app-level date work. Do not use

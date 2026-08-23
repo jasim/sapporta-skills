@@ -15,6 +15,10 @@ TanStack Form composition with `NewRecordPage`, `FormField`,
 generated Sapporta table API, and the generated project's TanStack Query
 integration.
 
+Type every row a screen loads from a generated table route — in a dashboard or
+list as much as in a form — as a row projection parsed through `decodeRow`,
+never `$inferSelect`; read [row-projections.md](row-projections.md).
+
 Before creating an app-local field or picker, search for the public form and
 lookup surface:
 

@@ -143,6 +143,9 @@ curl -sL https://tanstack.com/form/latest/docs/framework/react/guides/[guide].md
 - Derive standard table fields from Sapporta metadata. Do not recreate a
   generic form-field, lookup, table-client, query-key, or API-error layer in the
   application.
+- Type a row the form loads as a shared-package row projection parsed through
+  `decodeRow`, never `$inferSelect`; read
+  [row-projections.md](row-projections.md).
 - Parse route identity before mounting mode-specific hooks. Load complete edit
   defaults before mounting the editor, key it to the record, and do not replace
   dirty values from a background refetch.

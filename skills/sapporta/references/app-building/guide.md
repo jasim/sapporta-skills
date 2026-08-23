@@ -150,6 +150,9 @@ troubleshooting before trying broad dependency changes.
 - Custom create or edit forms, domain mutation pages, form dialogs or drawers,
   and record-entry workflows -> read [frontend/forms.md](frontend/forms.md)
   first, then follow its conditional picker or Grid routes
+- Typing a table row in frontend code, decoding a generated table response, or a
+  frontend `$inferSelect` import -> read
+  [frontend/row-projections.md](frontend/row-projections.md)
 - Custom React routes, dashboards, table/grid views, master-detail screens,
   side panels, row selection, custom cells, typed API clients -> read
   [frontend/views.md](frontend/views.md), then [frontend/grids.md](frontend/grids.md)
