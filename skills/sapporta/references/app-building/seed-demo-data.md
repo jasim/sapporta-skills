@@ -34,11 +34,12 @@ app that never passed the app's own rules.
 
 ## Writing The Rows
 
-`seedAs` returns a writer bound to the demo account. Pass it a table definition
-to get that table's row operations:
+Open the app with `openScriptRuntime()`, act as the demo account with
+`asDevelopmentAccount()`, and pass a table definition to `demo.rows()` to get
+that table's row operations:
 
 ```ts
-import { openProjectRuntime } from "./runtime.js";
+import { openScriptRuntime } from "./script-runtime.js";
 import { authors } from "./schema/authors.js";
 import { books } from "./schema/books.js";
 
@@ -48,19 +49,25 @@ const DEMO_ACCOUNT = {
   password: "demo-password",
 };
 
-const { conn, seedAs } = await openProjectRuntime({ sendAccountEmail: false });
-const rows = await seedAs(DEMO_ACCOUNT);
+const script = await openScriptRuntime();
+const demo = await script.asDevelopmentAccount(DEMO_ACCOUNT, {
+  rows: "workspace-wide",
+});
 
-const herbert = await rows(authors).create({ name: "Frank Herbert" });
-await rows(books).create({
+const herbert = await demo.rows(authors).create({ name: "Frank Herbert" });
+await demo.rows(books).create({
   author_id: herbert.id,
   title: "Dune",
   published_on: "1965-08-01",
 });
 
 console.log(`Seeded. Sign in as ${DEMO_ACCOUNT.email} / ${DEMO_ACCOUNT.password}`);
-conn.sqlite.close();
+script.close();
 ```
+
+State the `rows` scope deliberately. Ask for `"workspace-wide"` when seeding,
+because demo data is about the whole workspace. Ask for `"account-only"` in a
+script that touches one person's records and nobody else's.
 
 Rules for the values:
 
@@ -79,16 +86,17 @@ Rules for the values:
 shorter for a batch that nothing else references:
 
 ```ts
-await rows(books).create([
+await demo.rows(books).create([
   { author_id: herbert.id, title: "Dune", published_on: "1965-08-01" },
   { author_id: herbert.id, title: "Dune Messiah", published_on: "1969-10-01" },
 ]);
 ```
 
-Prefer an existing domain endpoint's service function over `rows(table)` when
-one owns the business rule being demonstrated, such as a booking workflow that
-derives totals. Import the service and call it, so seeded data matches what the
-feature produces.
+Prefer an existing domain endpoint's service function over `demo.rows(table)`
+when one owns the business rule being demonstrated, such as a booking workflow
+that derives totals. Import the service and call it with `demo.auth`, which is
+the same value a route handler reads from `c.get("auth")`, so seeded data
+matches what the feature produces.
 
 ## Re-Running
 
@@ -97,9 +105,9 @@ workspace are reused when they already exist. Keep the row writes idempotent
 too, either by checking for existing rows first and returning early:
 
 ```ts
-if ((await rows(books).count()) > 0) {
+if ((await demo.rows(books).count()) > 0) {
   console.log("Already seeded.");
-  conn.sqlite.close();
+  script.close();
   process.exit(0);
 }
 ```
@@ -109,17 +117,30 @@ seed script that fails on its second run.
 
 ## What The Scaffold Provides
 
-`openProjectRuntime()` in `packages/api/runtime.ts` opens the database, loads
-the table schema, and configures auth and mail. `boot.ts` uses it too, so
-seeding behaves the same way the running app does.
+`openScriptRuntime()` in `packages/api/script-runtime.ts` opens the app with no
+server. It goes through `openProjectRuntime()` in `packages/api/runtime.ts`,
+which `boot.ts` uses too, so a script behaves the way the running app does.
+Scripts do not send email unless you pass `{ sendMail: true }`.
 
-`seedAs(account)` creates the account and its workspace on the first run and
-reuses them afterwards, then returns a writer scoped to that account. The
-account is marked verified so it can sign in under any email-verification
-setting. Seeding refuses to run with `NODE_ENV=production`.
+`script.asDevelopmentAccount(account, { rows })` creates the account and its
+first workspace on the first run and reuses them afterwards, then returns an
+actor bound to that account. The account is vouched for when it is created, so
+it can sign in under any email-verification setting. This refuses to run with
+`NODE_ENV=production`.
 
-Pass `{ sendAccountEmail: false }` to `openProjectRuntime` in a seed script, so
-creating the account does not send a verification email.
+`script.as(email, { rows })` acts as an account that already exists. Use it for
+a backfill, an import, or a scheduled job. Add such a script as
+`packages/api/<name>.ts` with a `package.json` entry next to `seed`, pointing at
+`dist/<name>.js`.
+
+Name the workspace with `{ workspace: "<id-or-slug>" }` when the account belongs
+to more than one. Without it the actor works in the first workspace the account
+joined, which is not necessarily the one a browser shows that person.
+
+Never import `@sapporta/server/script` outside `packages/api/script-runtime.ts`.
+A route, a middleware, or anything they reach already carries the row access it
+earned, at `c.get("auth")`. `pnpm test` in the project fails and names the file
+if that boundary is crossed.
 
 ## Reference Data
 
