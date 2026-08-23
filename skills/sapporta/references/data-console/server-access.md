@@ -5,20 +5,14 @@ deployments, auth failures, or direct `curl` calls.
 
 ## What Needs A Token
 
-Split the CLI by what each command reads before deciding you need credentials.
+Against a local development server, `pnpm exec sapporta endpoints list` and
+`endpoints show "<METHOD> <path>"` need no token. Every other API-backed command
+— `rows`, `sql`, `api`, `tables` — needs `SAPPORTA_API_TOKEN`. Against a
+deployment, `endpoints` needs one too. Read schema from `endpoints`, not
+`tables show`.
 
-Against a local dev server these need no token (the scaffold sets
-`SAPPORTA_OPENAPI_POLICY=public` in `.env.development`):
-
-- `pnpm exec sapporta endpoints list`
-- `pnpm exec sapporta endpoints show "<METHOD> <path>"`
-
-All other API-backed commands (`rows`, `sql`, `api`, `tables`) need an agent
-access token in `SAPPORTA_API_TOKEN`. This includes `tables list` and
-`tables show` — get schema from `endpoints` instead.
-
-Deployments leave `SAPPORTA_OPENAPI_POLICY` unset, so `endpoints` needs a
-token too.
+Why the split, and the policy that controls it:
+https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens.md
 
 Docs:
 
@@ -29,8 +23,10 @@ Docs:
 
 ## Agent Procedure
 
-- API-backed CLI commands call the selected running app. Pass `--api-url <url>`
-  for non-default servers; otherwise the CLI uses its documented default.
+- API-backed CLI commands call the selected running app. Run them from inside
+  the project, where the CLI resolves the app's port from `SAPPORTA_API_PORT` in
+  `.env.development`. Pass `--api-url <url>` only to reach a different
+  deployment.
 - If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message. It
   includes the resolved request URL and may mention sandbox network permission.
 - Do not request a token for repository-only inspection or source changes.
@@ -52,10 +48,11 @@ Docs:
 - Record the exact authenticated invocation in `AGENTS.md`, but never put the
   token there. Do not invent, transform, print, or store tokens in source,
   committed configuration, screenshots, shell history, or later task prompts.
-- Verify a configured token with `pnpm exec sapporta rows count <table>`, not
-  `endpoints list` (which needs no token against local dev and proves nothing
-  about the credential). Request network permission when the sandbox requires
-  it.
+- Verify a configured token with `pnpm exec sapporta api get '/api/auth-context'`.
+  The reply names the user and workspace the token acts as. Do not verify with
+  `endpoints list`, which answers without a credential on a local development
+  server, and do not verify with `rows count`, which needs a table a fresh app
+  does not have. Request network permission when the sandbox requires it.
 - A token belongs to one user and one workspace. To work in another workspace,
   the user needs a token created while that workspace is active.
 - When auth fails during data-console work, stop and tell the user the targeted

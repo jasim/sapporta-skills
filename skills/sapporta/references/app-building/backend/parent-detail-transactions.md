@@ -17,7 +17,7 @@ referenced-row reads in SQL. Pass parent keys and other trusted fields through
 `serverValues`; never copy ownership or parent keys from client input.
 
 `forTable()` takes the table definition (`parents`); Drizzle statements take the
-Drizzle table (`parentsTable`). Those are two different exports, not a typo.
+Drizzle table (`parentsTable`). Those are two different exports.
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -69,8 +69,9 @@ workflow still executes each insert and returns the result.
 
 The default `better-sqlite3` transaction callback is synchronous. Keep database
 reads, writes, and synchronous row-security preparation inside it. Perform mail,
-storage, network, and other awaited effects after commit. Do not mark the
-callback `async` or await work inside it.
+storage, network, and other awaited effects after commit. Leave the callback
+synchronous: marking it `async` or awaiting work inside it breaks the
+all-or-nothing guarantee.
 
 ## Prove All-Or-Nothing Behavior
 

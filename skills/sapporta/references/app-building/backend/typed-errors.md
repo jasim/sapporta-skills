@@ -12,17 +12,16 @@ Docs:
 
 ## Imports
 
-Import the shared error envelope from the framework package. The app's own
-`your-app-shared` package does not re-export it.
+The app's own `your-app-shared` package does not re-export the error envelope.
+Import it from the framework:
 
 ```ts
 import { errorBodySchema, type ErrorBody } from "@sapporta/shared/contracts";
 import { ApiError } from "@sapporta/shared/client";
 ```
 
-Declare non-2xx `responses` entries in the shared contract with
-`errorBodySchema`, type a handler's error return with `ErrorBody`, and catch
-`ApiError` in frontend actions.
+Declare non-2xx `responses` entries with `errorBodySchema`, type a handler's
+error return with `ErrorBody`, and catch `ApiError` in frontend actions.
 
 ## Pattern
 

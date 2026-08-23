@@ -79,22 +79,9 @@ with the `data-console` guide.
   migrations, and local database state as needed; do not block on an agent token
   unless the task is explicitly API-backed data work.
 - To read a framework symbol's real signature, resolve the installed package and
-  grep its declarations. Resolve from the workspace package that declares the
-  dependency: `packages/api` for `@sapporta/server` and `@sapporta/honest`,
-  `packages/frontend` for `@sapporta/frontend`, `@sapporta/ui`, and
-  `@sapporta/grid`, either one for `@sapporta/shared`.
-
-  ```bash
-  PKG=$(dirname "$(node -p "require.resolve('@sapporta/server/package.json', { paths: ['packages/api'] })")")
-  rg -n "<symbol>" "$PKG/dist" --glob '*.d.ts'
-  ```
-
-  Keep `--glob '*.d.ts'`; `dist/` also holds source maps with the whole source
-  inlined. The `exports` map gives import specifiers, not declaration sites, so
-  grep first and read the map afterwards. On `ERR_PACKAGE_PATH_NOT_EXPORTED`,
-  resolve the bare name and cut at `dist/`. Never hand-write or glob a
-  `node_modules` path: there is no root `node_modules/@sapporta`, and `.pnpm/`
-  directory names embed a peer-version hash that changes on reinstall.
+  grep its declarations; read
+  [framework-source-lookup.md](references/framework-source-lookup.md). Never
+  hand-write or glob a `node_modules` path.
 - To discover how to define application tables, follow
   [app-building/tables/create.md](references/app-building/tables/create.md). It routes to the canonical
   worked schema example and exact references.

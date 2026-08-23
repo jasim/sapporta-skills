@@ -37,11 +37,10 @@ creation, and use the environment's network and filesystem approval mechanism.
 
 ## Confirm pnpm 11 Or Later
 
-Run `pnpm --version` before scaffolding. Sapporta requires pnpm 11 or later, and
-`sapporta init` refuses to run on anything older: the generated project declares
-its workspace settings in `pnpm-workspace.yaml`, which pnpm 10 and earlier
-ignore. If the version is older, tell the user to upgrade (for example
-`corepack use pnpm@11`) and stop; do not work around the check.
+Run `pnpm --version` before scaffolding. On anything older than 11, tell the
+user to upgrade with `corepack use pnpm@11` and stop; do not work around the
+check. `sapporta init` refuses to run otherwise:
+https://sapporta.com/docs/getting-started/create-a-project.md
 
 ## Run The Documented Scaffold Command
 
@@ -58,6 +57,14 @@ Approve both when the user authorized a working local project. If the command
 fails, inspect the reported setup step. Retry the complete init command after
 fixing the cause because the target is published only after staged setup
 succeeds.
+
+## Read The Project's Ports
+
+Every project gets its own development ports, so no port number is shared
+between projects. Take them from the table `sapporta init` prints when it
+finishes, from the same table `pnpm dev` prints when it starts, or from
+`SAPPORTA_API_PORT` and `SAPPORTA_FRONTEND_PORT` in `.env.development`. Give the
+user the App URL to open, and use the API URL for direct HTTP calls.
 
 ## Inspect The Generated Project
 

@@ -36,8 +36,10 @@ Use `endpoints list` for this check. A failure means the server is
 unreachable or is the wrong server.
 
 If a command fails with `APP_SERVER_UNREACHABLE`, follow the CLI message before
-diagnosing app, auth, or schema behavior. If the project uses a non-default API
-port, pass `--api-url <url>`.
+diagnosing app, auth, or schema behavior. Run the command from inside the
+project so the CLI resolves that project's API port from `.env.development`.
+Every project gets its own ports, so never assume port 3000 and never pass
+`--api-url` to reach the project you are already inside.
 
 If a protected data command returns `unauthenticated`, `token_expired`,
 `token_revoked`, or `workspace_required`, read

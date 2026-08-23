@@ -123,12 +123,11 @@ pnpm dev
 pnpm exec sapporta endpoints show "METHOD /api/path"
 ```
 
-Run `pnpm typecheck` after every frontend change, and never treat a green
-`vite build` as proof that frontend code compiles: `vite build` strips types
-with esbuild and reports no type errors, so it succeeds on type-broken `.tsx`.
-In an older project whose root `package.json` has no `typecheck` script, run
-`pnpm --filter ./packages/frontend exec tsc --noEmit` instead, and add the
-script.
+Run `pnpm typecheck` after every frontend change. A green `vite build` is not a
+type check. In an older project whose root `package.json` has no `typecheck`
+script, run `pnpm --filter ./packages/frontend exec tsc --noEmit` instead, and
+add the script:
+https://sapporta.com/docs/reference/project/project-files.md
 
 For native module failures, binding errors, or dev-server startup failures, read
 troubleshooting before trying broad dependency changes.

@@ -48,7 +48,9 @@ Follow the current app convention. `packages/frontend/src/App.tsx` exports
 
 `appHomeRoute` opens `/` for signed-in users. Put the home page there. Add every
 other screen that needs a session to `appProtectedRoutes`; a screen outside
-those slots loads for visitors who have not signed in.
+those slots loads for visitors who have not signed in. Slot semantics and
+bootstrap order:
+https://sapporta.com/docs/reference/frontend/app-shell/application-routes-and-navigation.md
 
 Give every screen a browser tab title so history entries and open tabs stay
 readable. Pass `title` to `AppPage` or `PageHeader` — that sets the tab title

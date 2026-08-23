@@ -82,9 +82,7 @@ session, then render `TGrid` in the application-owned composition.
 
 ## Validate The Workflow
 
-Run `pnpm typecheck` — grid and lookup generics fail at the type level, and
-`vite build` never reports those errors. Then exercise keyboard and pointer
-input, active-row changes, repeat activation, selection, hierarchy expansion,
+Run `pnpm typecheck`. Then exercise keyboard and pointer input, active-row changes, repeat activation, selection, hierarchy expansion,
 loading and empty states, query constraints, persistence failures, and
 authorization. Confirm that Enter is assigned to either activation or
 expansion, not both.

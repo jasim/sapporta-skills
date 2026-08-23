@@ -209,9 +209,9 @@ For every expected failure, verify:
 
 ## Related Reading
 
-If endpoint runs a domain workflow, like orchestration across services, a
-  multi-step state transition, or a transaction. Read:
-
+- Endpoint runs a domain workflow — orchestration across services, a multi-step
+  state transition, or a transaction:
   https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions.md
-
-If it is a domain workflow, it would get or set data. Then you need to ensure that all APIs return/change only data that are scoped to the authenticated user and workspace. Read: https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
+- Endpoint reads or writes data — confirm every response and write is scoped to
+  the authenticated user and workspace:
+  https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md

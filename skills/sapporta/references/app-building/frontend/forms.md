@@ -9,6 +9,10 @@ QueryClient and keep its application-wide policy in the workspace-owned
 
 - Custom forms and cached table reads:
   https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-table-queries.md
+- Custom forms and validation:
+  https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-validation.md
+- Table lookups and record ids:
+  https://sapporta.com/docs/reference/frontend/lookups.md
 - Generated record surfaces and form helpers:
   https://sapporta.com/docs/reference/frontend/generated-record-surfaces.md
 - Table query options:
@@ -39,39 +43,24 @@ Sapporta version.
 
 ## Stage Multi-Row Drafts In A Grid
 
-Some workflows collect a repeating structure that no single stored table
-matches: an invoice's lines, a shift roster, a bill of materials, a batch of
-readings. The draft lives only in the browser, carries its own row shape, and
-is transformed on save — often across several tables, or into one named domain
-action. It is a logical representation of a domain concept, not a view of a
-table.
+Stage repeating draft rows — invoice lines, a roster, a bill of materials — in a
+Grid over an application-owned in-memory source. Do not hand-build a stack of
+Add/Edit/Delete rows, and do not keep the rows in `useState`.
 
-Stage that draft in a Grid. Do not hand-build a stack of rows with Add, Edit,
-and Delete buttons, and do not keep the rows in `useState`. Read
-[grids.md](grids.md), then compose GridCore with ColumnPreset over an
-application-owned in-memory source. Its draft and phantom-row APIs already own
-row identity, insertion, cell editing, and per-row failure state:
+- Rows want columns, keyboard navigation, or per-row state -> compose GridCore
+  with ColumnPreset; read [grids.md](grids.md).
+- Short repeating group of ordinary inputs -> TanStack Form `mode="array"`.
 
-- Choose a Grid layer: https://sapporta.com/grid/start/choose-a-grid-layer.md
-- Phantom rows and inserts:
-  https://sapporta.com/grid/guides/advanced-rows/phantom-rows-and-inserts.md
-- In-memory and REST data sources:
-  https://sapporta.com/grid/reference/data-sources/in-memory-and-rest-sources.md
+Keep staged rows in the Grid runtime. The surrounding form owns header fields,
+submit state, and submit errors.
 
-Use TanStack Form's `mode="array"` fields instead when the collection is a
-short repeating group of ordinary inputs. Reach for a Grid once the rows want
-columns, keyboard navigation, or per-row state.
-
-The surrounding form still owns the header fields, submit state, and submit
-errors. Keep staged rows in the Grid runtime; do not mirror them into form
-state.
-
-Then decide where the draft becomes persistent shape. The screen can map rows
-to table writes at submit, or post the draft to one app-owned typed endpoint
-that owns the transform and the transaction. Prefer the endpoint when the save
-spans several tables, needs one transaction, or encodes a domain rule; put the
-draft row type in the shared contract so both sides agree. Read
+Then choose where the draft becomes persistent shape. Post it to one app-owned
+typed endpoint when the save spans several tables, needs one transaction, or
+encodes a domain rule, and put the draft row type in the shared contract. Read
 [../backend/parent-detail-transactions.md](../backend/parent-detail-transactions.md).
+
+Pattern and trade-offs:
+https://sapporta.com/docs/guides/app-owned-features/staged-multi-row-drafts.md
 
 ## Picker Policy
 
@@ -95,109 +84,48 @@ forms, filters, or report controls.
 Before completing a form, audit every choice control against this policy,
 including toolbar and report filters that launch or constrain the workflow.
 
-## Name The Form Instance's Type
+## Type The Form Instance
 
-Call `useForm` inside one concrete hook per form, and name that hook's return
-type. Child components declare their `form` prop with that name:
+Call `useForm` inside one hook per form and name that hook's return type. Child
+components declare their `form` prop with that name.
 
-```tsx
-function useMealDraftForm(
-  defaults: MealDraft,
-  onSubmit: (value: MealDraft) => Promise<void>,
-) {
-  return useForm({
-    defaultValues: defaults,
-    onSubmit: ({ value }) => onSubmit(value),
-  });
-}
-
+```ts
 type MealForm = ReturnType<typeof useMealDraftForm>;
-
-function ItemRow({ form, index }: { form: MealForm; index: number }) {
-  return (
-    <form.Field name={`items[${index}].quantity`}>
-      {(quantityField) => (
-        <Input
-          value={quantityField.state.value}
-          onChange={(event) => quantityField.handleChange(event.target.value)}
-        />
-      )}
-    </form.Field>
-  );
-}
 ```
 
-The hook is the only practical name. `useForm` has twelve type parameters and
-no defaults, so `ReturnType<typeof useForm<MealDraft>>` fails to resolve and
-every `form.Field` render prop under it becomes an implicit `any`.
-`ReactFormExtendedApi` takes the same twelve arguments.
+`ReturnType<typeof useForm<MealDraft>>` does not resolve, and every `form.Field`
+render prop under it degrades to an implicit `any`. Keep validators and the
+submit handler inside the hook so they stay part of the type.
 
-Keep `useForm` to one call per form. Validators and the submit handler belong
-inside the hook so they stay part of the type.
+## Map Submit Errors
 
-For a form split across many levels, `createFormHook`'s `withForm` types each
-piece from its own `defaultValues`. Do not set that up only to name a form
-type.
+- Map server field issues inside `onSubmit`: catch the rejection, convert it,
+  and call `formApi.setErrorMap({ onSubmit: { form, fields } })`.
+- Never put the write in `validators.onSubmitAsync`. It has already changed the
+  database by the time validation reports a failure.
+- Clear a stale submit error with one form-level `listeners.onChange`, not from
+  every field's `onChange`.
+- A Standard Schema validator checks the schema's input type and discards
+  transformed output. Parse again inside `onSubmit` when the schema coerces or
+  transforms.
+- Where fields come from table metadata, `parseCreateDraft()` already reports
+  required and invalid columns. Do not restate them in a second schema.
 
-## Validate The Draft And Map Submit Errors
+## Follow TanStack Form's Idioms
 
-TanStack Form accepts a Standard Schema (Zod, Valibot, ArkType) directly as a
-validator, and form-level issues propagate to the named fields:
+Sapporta does not wrap TanStack Form. The custom-forms-and-validation guide
+listed above names the idioms this codebase relies on — `useSelector` over the
+deprecated `useStore`, persistent `isDirty`, `revalidateLogic()`,
+`onSubmitInvalid`, `formOptions()`, `aria-disabled` submit. Confirm each against
+the library's own guides:
 
-```ts
-validators: { onChange: taskFormSchema }
+```bash
+curl -sL https://tanstack.com/form/latest/docs/framework/react/guides/[guide].md
 ```
 
-It validates the schema's *input* type and discards transformed output, so a
-schema that coerces or transforms must still be parsed inside `onSubmit` to get
-the written value. Where fields come from table metadata, `parseCreateDraft()`
-already reports required and invalid columns; do not restate those rules in a
-second schema.
-
-Server field issues arrive only after the write is attempted, so map them
-inside `onSubmit`: catch the rejection, convert it, and call
-`formApi.setErrorMap({ onSubmit: { form, fields } })`. Do not move the write
-into `validators.onSubmitAsync` — a validator that writes has already changed
-the database by the time validation "fails". Reserve `onSubmitAsync` for a
-read-only pre-write check such as a remote uniqueness probe.
-
-Clear a stale submit error once with a form-level listener, instead of calling
-`setErrorMap` from every field's `onChange`:
-
-```ts
-listeners: {
-  onChange: ({ formApi }) => {
-    if (formApi.state.errorMap.onSubmit) {
-      formApi.setErrorMap({ onSubmit: undefined });
-    }
-  },
-}
-```
-
-## Follow The Library's Idioms
-
-Sapporta does not wrap TanStack Form, so the library's own documentation stays
-authoritative. Confirm each of these there rather than expanding it here:
-
-- Read reactive form state with `useSelector(form.store, selector)` in
-  component logic and `form.Subscribe` in JSX. `useStore` is deprecated. Never
-  omit the selector.
-- `isDirty` is persistent: a field edited and then restored to its loaded value
-  stays dirty. Use `!isDefaultValue` for a "changed since saved" prompt.
-- Reset or revalidate a dependent picker with field `listeners.onChange` and
-  `validators.onChangeListenTo`, not a `useEffect`.
-- `validationLogic: revalidateLogic()` validates on submit first and live after
-  the first submit, which suits create and edit screens.
-- Focus the first invalid control from `onSubmitInvalid`.
-- Share create and edit defaults with `formOptions()`.
-- Prefer `aria-disabled` over `disabled` on the submit button, and gate on
-  `!canSubmit || isPristine` where an untouched submit is meaningless.
-
-The guides live under
-https://tanstack.com/form/latest/docs/framework/react/guides/ — `basic-concepts`,
-`validation`, `submission-handling`, `reactivity`, `listeners`, `linked-fields`,
-`arrays`, `dynamic-validation`, `focus-management`, `form-composition`. Append
-`.md` to fetch the markdown with `curl`.
+`basic-concepts`, `validation`, `submission-handling`, `reactivity`,
+`listeners`, `linked-fields`, `arrays`, `dynamic-validation`,
+`focus-management`, `form-composition`.
 
 ## Preserve These Boundaries
 
@@ -240,12 +168,8 @@ rg -n "FormField|buildRecordFormFields|parseCreateDraft|LookupPicker" packages/f
 rg -n "createApiClient|getApiBase" packages/frontend/src/api.ts packages/frontend/src
 ```
 
-For the framework's own definitions, resolve the package and grep it:
-
-```bash
-PKG=$(dirname "$(node -p "require.resolve('@sapporta/frontend/package.json', { paths: ['packages/frontend'] })")")
-rg -n "FormField|buildRecordFormFields|parseCreateDraft|LookupPicker" "$PKG/dist" --glob '*.d.ts'
-```
+For the framework's own declarations, resolve the package first; read
+[../../framework-source-lookup.md](../../framework-source-lookup.md).
 
 The local files under `form-template/` are secondary structural examples. Use
 them only after reading the public guide. Adapt domain names, schemas, routes,
