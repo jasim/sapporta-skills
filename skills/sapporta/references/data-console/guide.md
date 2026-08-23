@@ -115,8 +115,12 @@ unless the user explicitly asks for admin/debug inspection.
 
 ## Read The Narrow Reference
 
-- Insert rows or seed flat data -> read
+- Insert rows or write flat data into a running app -> read
   [row-writes.md](row-writes.md)
+- Demo or sample data for a development database, seed scripts, `pnpm seed`
+  -> read
+  [../app-building/seed-demo-data.md](../app-building/seed-demo-data.md).
+  Seeding needs no server, no sign-in, and no access token.
 - Insert parent and child records atomically -> read
   [master-detail-writes.md](master-detail-writes.md)
 - Call existing report routes or answer data questions -> read

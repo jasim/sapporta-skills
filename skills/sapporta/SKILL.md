@@ -161,6 +161,9 @@ form” does not skip project inspection or the proportional common gate.
   cross-report links in table metadata), including the first application tables
   -> read
   [app-building/tables/create.md](references/app-building/tables/create.md)
+- Demo, sample, example, or fixture data for a development database, seed
+  scripts, `pnpm seed`, or a first account to sign in as -> read
+  [app-building/seed-demo-data.md](references/app-building/seed-demo-data.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [app-building/reports/create.md](references/app-building/reports/create.md)
 - Cell links, drill-through, cross-report navigation, declarative
@@ -198,7 +201,7 @@ form” does not skip project inspection or the proportional common gate.
 - Protected or remote app access, setup-prompt handling, auth failures, or
   direct authenticated HTTP -> read
   [data-console/server-access.md](references/data-console/server-access.md)
-- Insert rows, seed data, built-in row commands -> read
+- Insert rows into a running app, built-in row commands -> read
   [data-console/row-writes.md](references/data-console/row-writes.md)
 - Atomic parent-child data entry, detail rows, line items -> read
   [data-console/master-detail-writes.md](references/data-console/master-detail-writes.md)

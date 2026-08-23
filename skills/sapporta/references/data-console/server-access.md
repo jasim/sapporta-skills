@@ -42,6 +42,9 @@ Docs:
   user signs up and creates one. Do not create an account to work around this,
   and do not rebuild the CLI's job with hand-rolled sign-up calls, cookie jars,
   and fetch wrappers.
+- Seeding a development database is a different task and needs no token. Do not
+  request one for it, and do not sign in over HTTP to do it. Read
+  [../app-building/seed-demo-data.md](../app-building/seed-demo-data.md).
 - Treat the setup prompt as secret-bearing. Reuse the project's existing mise,
   direnv, or dotenv tooling. If none exists, use a private gitignored wrapper;
   do not install a new environment manager for this purpose.
