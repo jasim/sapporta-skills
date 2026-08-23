@@ -171,7 +171,9 @@ rg -n "FormField|buildRecordFormFields|parseCreateDraft|LookupPicker" packages/f
 rg -n "createApiClient|getApiBase" packages/frontend/src/api.ts packages/frontend/src
 ```
 
-For the framework's own declarations, resolve the package first; read
+To learn what a framework symbol is or which specifier exports it, use the API
+reference; drop to the installed declarations only for behavior a signature
+cannot express. Both routes are in
 [../../framework-source-lookup.md](../../framework-source-lookup.md).
 
 The local files under `form-template/` are secondary structural examples. Use

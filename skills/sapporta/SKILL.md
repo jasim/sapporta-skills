@@ -21,6 +21,8 @@ explanations, API shapes, CLI grammar, and reference details:
 - Agent workflow overview: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent.md
 - API/tool choice guide: https://sapporta.com/docs/guides/discovery/choose-an-application-interface.md
 - Reference index: https://sapporta.com/docs/reference.md
+- API reference — every published symbol, its declaration, and the specifier to
+  import it from: https://sapporta.com/api-reference/index.md
 
 ## Fetch Docs With `curl`, Not A Summarizer
 
@@ -78,8 +80,10 @@ with the `data-console` guide.
 - For app-development work, inspect local contracts, route files, schema,
   migrations, and local database state as needed; do not block on an agent token
   unless the task is explicitly API-backed data work.
-- To read a framework symbol's real signature, resolve the installed package and
-  grep its declarations; read
+- To learn what a framework symbol is, or which specifier exports it, fetch the
+  API reference at https://sapporta.com/api-reference/index.md — it carries every
+  published symbol's exact declaration and the specifier to import it from. Read
+  framework declarations only for behavior a signature cannot express, following
   [framework-source-lookup.md](references/framework-source-lookup.md). Never
   hand-write or glob a `node_modules` path.
 - To discover how to define application tables, follow
