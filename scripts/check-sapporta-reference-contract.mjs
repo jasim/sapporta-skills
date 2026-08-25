@@ -309,16 +309,15 @@ requireAll("generated QueryClient seam", files.generatedQueryClient, [
   "new QueryClient",
   "export const queryClient",
 ]);
-requireAll("scaffold ownership", files.scaffoldManifest, [
-  'scaffoldFile("packages/frontend/src/query-client.ts", "workspace")',
+requireAll("scaffold manifest", files.scaffoldManifest, [
+  'scaffoldFile("packages/frontend/src/query-client.ts")',
 ]);
+// The scaffold's AGENTS.md is a routing map to the docs, not an API listing,
+// so it names the libraries a project gets and leaves symbols to the guides
+// it links. Assert only what the map itself is responsible for.
 requireAll("generated agent guidance", files.generatedAgents, [
   "TanStack Form",
   "TanStack Query",
-  "tableRecordQueryOptions",
-  "tableRecordsPageQueryOptions",
-  "tableQueryKeys",
-  "reloadTGridRows",
   "Base UI",
 ]);
 

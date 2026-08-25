@@ -7,9 +7,9 @@ check it from `packages/api`, so a renamed or retyped column fails a test rather
 than a loaded screen.
 
 - Writing and checking a projection:
-  https://sapporta.com/docs/guides/app-owned-features/cached-table-reads-and-refresh.md
+  https://sapporta.com/docs/guides/application-code/cached-table-reads-and-refresh.md
 - Why wire shapes live in the shared package:
-  https://sapporta.com/docs/guides/app-owned-features/shared-contracts-and-request-validation.md
+  https://sapporta.com/docs/guides/application-code/shared-contracts-and-request-validation.md
 - Server row aliases and their Temporal types:
   https://sapporta.com/docs/reference/schema/table-definitions.md
 

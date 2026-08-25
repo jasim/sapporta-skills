@@ -7,7 +7,7 @@ values instead.
 
 Docs:
 
-- Errors and endpoint patterns: https://sapporta.com/docs/guides/app-owned-features/errors-uploads-and-endpoint-patterns.md
+- Errors and endpoint patterns: https://sapporta.com/docs/guides/application-code/errors-uploads-and-endpoint-patterns.md
 - Serialization and API errors: https://sapporta.com/docs/reference/contracts/serialization-and-api-errors.md
 
 ## Imports

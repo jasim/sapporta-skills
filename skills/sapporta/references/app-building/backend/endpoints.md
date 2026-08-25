@@ -6,10 +6,10 @@ register a shared ts-rest contract with `TsRestApi`.
 Use the public docs for exact contract syntax, handler arguments, multipart
 uploads, response content types, OpenAPI behavior, and typed clients:
 
-- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints.md
-- Domain workflows and transactions: https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions.md
-- Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients.md
-- Errors and endpoint patterns: https://sapporta.com/docs/guides/app-owned-features/errors-uploads-and-endpoint-patterns.md
+- Custom endpoints: https://sapporta.com/docs/guides/application-code/custom-api-endpoints.md
+- Domain workflows and transactions: https://sapporta.com/docs/guides/application-code/domain-workflows-and-transactions.md
+- Typed clients: https://sapporta.com/docs/guides/application-code/typed-api-clients.md
+- Errors and endpoint patterns: https://sapporta.com/docs/guides/application-code/errors-uploads-and-endpoint-patterns.md
 - Serialization and API errors: https://sapporta.com/docs/reference/contracts/serialization-and-api-errors.md
 - OpenAPI discovery: https://sapporta.com/docs/reference/http/openapi.md
 - Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security.md
@@ -211,7 +211,7 @@ For every expected failure, verify:
 
 - Endpoint runs a domain workflow — orchestration across services, a multi-step
   state transition, or a transaction:
-  https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions.md
+  https://sapporta.com/docs/guides/application-code/domain-workflows-and-transactions.md
 - Endpoint reads or writes data — confirm every response and write is scoped to
   the authenticated user and workspace:
   https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md

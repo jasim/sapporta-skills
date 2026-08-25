@@ -57,7 +57,7 @@ type, follow its links to the table-definition and metadata references above.
 Do not copy the example's project/task domain into an unrelated app.
 
 The generated application layout is documented at
-https://sapporta.com/docs/reference/project/generated-project-layout.md when the
+https://sapporta.com/docs/reference/project/project-files.md when the
 package responsibilities or extension points are unclear.
 
 ## Minimum `sapportaTable` Metadata

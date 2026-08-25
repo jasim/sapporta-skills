@@ -4,13 +4,13 @@ Use this file as a routing page. Canonical Sapporta documentation owns exact
 exports, behavior, examples, and invariants:
 
 Generated projects install TanStack Query and TanStack Form. They mount one
-QueryClient and keep its application-wide policy in the workspace-owned
-`packages/frontend/src/query-client.ts` file.
+QueryClient and keep its application-wide policy in
+`packages/frontend/src/query-client.ts`.
 
 - Custom forms and cached table reads:
-  https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-table-queries.md
+  https://sapporta.com/docs/guides/application-code/custom-forms-and-table-queries.md
 - Custom forms and validation:
-  https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-validation.md
+  https://sapporta.com/docs/guides/application-code/custom-forms-and-validation.md
 - Table lookups and record ids:
   https://sapporta.com/docs/reference/frontend/lookups.md
 - Generated record surfaces and form helpers:
@@ -60,7 +60,7 @@ encodes a domain rule, and put the draft row type in the shared contract. Read
 [../backend/parent-detail-transactions.md](../backend/parent-detail-transactions.md).
 
 Pattern and trade-offs:
-https://sapporta.com/docs/guides/app-owned-features/staged-multi-row-drafts.md
+https://sapporta.com/docs/guides/application-code/staged-multi-row-drafts.md
 
 ## Picker Policy
 
@@ -129,7 +129,7 @@ curl -sL https://tanstack.com/form/latest/docs/framework/react/guides/[guide].md
 
 ## Preserve These Boundaries
 
-- Reuse the generated TanStack Query provider and workspace-owned
+- Reuse the generated TanStack Query provider and
   `packages/frontend/src/query-client.ts`. Use
   `tableRecordQueryOptions()` and `tableRecordsPageQueryOptions()` with
   `tableQueryKeys` for generated table reads.

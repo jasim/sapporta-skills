@@ -3,11 +3,11 @@
  *
  * Imports from @sapporta packages represent public APIs available when this
  * reference was written; confirm them against the application's installed
- * version. Every APP_OWNED/*
- * module below is an intentionally unresolved placeholder. It marks code the
- * application must already own or design for its domain. Generated projects
- * already install TanStack Query and mount their workspace-owned queryClient.
- * packages/frontend/src/api.ts remains the generated client extension point.
+ * version. Every APP/* module below is an intentionally unresolved
+ * placeholder. It marks code the application must already own or design for
+ * its domain. Generated projects already install TanStack Query and mount
+ * their queryClient. packages/frontend/src/api.ts remains the generated
+ * client extension point.
  *
  * Preserve the control-flow boundaries, not the task names, fields, UI, helper
  * names, module layout, routes, cache effects, or mutation behavior.
@@ -47,7 +47,7 @@ import {
   taskFormSchema,
   taskWireSchema,
   type TaskFormValues,
-} from "APP_OWNED/task-domain";
+} from "APP/task-domain";
 
 // These functions compose current framework query/error mechanics with the
 // application's domain decisions. They are placeholders, not suggested public
@@ -58,12 +58,12 @@ import {
   taskIdFromRoute,
   taskPath,
   updateTask,
-} from "APP_OWNED/task-workflow";
+} from "APP/task-workflow";
 import {
   LoadingForm,
   MissingTask,
   TaskRequestFailure,
-} from "APP_OWNED/task-presentation";
+} from "APP/task-presentation";
 
 type TaskFormMode = "new" | "edit";
 

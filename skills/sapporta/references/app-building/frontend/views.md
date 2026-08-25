@@ -28,10 +28,10 @@ rg -n 'NewRecordPage|FormField|buildRecordFormFields|fieldModelForColumn|foreign
 
 Docs:
 
-- Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens.md
-- Custom forms and cached table reads: https://sapporta.com/docs/guides/app-owned-features/custom-forms-and-table-queries.md
+- Frontend screens: https://sapporta.com/docs/guides/application-code/custom-frontend-routes-and-screens.md
+- Custom forms and cached table reads: https://sapporta.com/docs/guides/application-code/custom-forms-and-table-queries.md
 - Table query options: https://sapporta.com/docs/reference/frontend/table-query-options.md
-- Typed clients: https://sapporta.com/docs/guides/app-owned-features/typed-api-clients.md
+- Typed clients: https://sapporta.com/docs/guides/application-code/typed-api-clients.md
 - Grid-first record workflows: https://sapporta.com/docs/guides/generated-surfaces/grid-first-record-workflows.md
 - Grid core model: https://sapporta.com/grid/guides/core-model.md
 - Choose a Grid layer: https://sapporta.com/grid/start/choose-a-grid-layer.md

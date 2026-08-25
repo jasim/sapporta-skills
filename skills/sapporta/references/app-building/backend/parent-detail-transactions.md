@@ -1,6 +1,6 @@
 # Parent-Detail Transactions
 
-<!-- vendored-from: https://sapporta.com/docs/guides/app-owned-features/parent-detail-transactions.md -->
+<!-- vendored-from: https://sapporta.com/docs/guides/application-code/parent-detail-transactions.md -->
 
 Vendored copy of the canonical parent-detail recipe. Use it directly; do not
 fetch the upstream page to obtain this code.
@@ -115,6 +115,6 @@ non-2xx outcome, read [typed-errors.md](typed-errors.md) before implementing
 
 Fetch these with `curl -sL` only when you need behavior beyond the recipe above:
 
-- https://sapporta.com/docs/guides/app-owned-features/parent-detail-transactions.md
-- https://sapporta.com/docs/guides/app-owned-features/domain-workflows-and-transactions.md
+- https://sapporta.com/docs/guides/application-code/parent-detail-transactions.md
+- https://sapporta.com/docs/guides/application-code/domain-workflows-and-transactions.md
 - https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md

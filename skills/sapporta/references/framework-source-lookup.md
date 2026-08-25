@@ -64,4 +64,4 @@ rg -n "<symbol>" "$PKG/dist" --glob '*.d.ts'
   where a declaration happens to live.
 
 Package layout and dependency ownership:
-https://sapporta.com/docs/reference/project/generated-project-layout.md
+https://sapporta.com/docs/reference/project/project-files.md

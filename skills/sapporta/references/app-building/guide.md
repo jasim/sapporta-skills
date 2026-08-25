@@ -73,11 +73,11 @@ implementation details.
 Docs:
 
 - Develop with a coding agent: https://sapporta.com/docs/guides/discovery/develop-with-a-coding-agent.md
-- Generated project layout: https://sapporta.com/docs/reference/project/generated-project-layout.md
+- Project files: https://sapporta.com/docs/reference/project/project-files.md
 - Tables, columns, and schema metadata: https://sapporta.com/docs/guides/model-data/tables-columns-and-schema-metadata.md
-- Custom endpoints: https://sapporta.com/docs/guides/app-owned-features/custom-api-endpoints.md
+- Custom endpoints: https://sapporta.com/docs/guides/application-code/custom-api-endpoints.md
 - Route-based reports: https://sapporta.com/docs/guides/reports/route-based-reports.md
-- Frontend screens: https://sapporta.com/docs/guides/app-owned-features/custom-frontend-routes-and-screens.md
+- Frontend screens: https://sapporta.com/docs/guides/application-code/custom-frontend-routes-and-screens.md
 
 ## Built-In APIs Or Custom Code
 
