@@ -49,6 +49,12 @@ semantic values, and error codes:
   timestamps, booleans, and lookup ids keep their table types.
 - Use the query-syntax reference for the current defaults, bounds, supported
   operators, and stable failure codes. Treat a rejected query as a caller bug.
+- A date-shaped value on a `timestamp` column is a string boundary, not a day:
+  every instant stored on the 24th begins `2026-08-24T`, which sorts after
+  `2026-08-24`. Ask a day-shaped question with the pair of instants the day
+  occupies — `gte` its first, `lt` the first instant of the next day, resolved
+  in the workspace's zone. A `date` column compares calendar days directly.
+  Read [../app-building/days-and-time-zones.md](../app-building/days-and-time-zones.md).
 - Do not catch-and-retry by dropping the filter or operator; that can read or
   export a much larger result set.
 - Built-in table routes apply row-access predicates.

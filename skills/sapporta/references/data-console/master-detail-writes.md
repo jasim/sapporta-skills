@@ -29,8 +29,14 @@ backfills it from the inserted parent.
 
 Trusted scope fields are propagated by the server for
 both parent and detail rows. Do not include `workspace_id`, `workspaceId`,
-`scoped_to_user_id`, `scopedToUserId`, or server-managed references marked
-`clientCanSet: false`.
+`scoped_to_user_id`, `scopedToUserId`, or a reference the child declares
+`apiSettable: false` (or a column marked `apiWritable: false`).
+
+Submitting the parent FK is not harmless either way. Where the child declares
+it non-writable, the request answers `422 VALIDATION_FAILED` naming that column
+and writes nothing. Where it does not, the request answers `201` and the
+server's parent key silently replaces the value sent — the row is correct and
+the caller is told nothing about the value it lost.
 
 For three or more hierarchy levels, chain commands: insert the first pair,
 query the visible child IDs, then insert the next level.

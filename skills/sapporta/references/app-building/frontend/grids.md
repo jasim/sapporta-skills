@@ -20,6 +20,8 @@ examples, and invariants:
   https://sapporta.com/docs/guides/generated-surfaces/filtering-sorting-search-and-pagination.md
 - Hierarchical Grids:
   https://sapporta.com/grid/guides/hierarchical-grids.md
+- Column presets, cells, and writes:
+  https://sapporta.com/docs/reference/frontend/tgrid/interactions-columns-and-writes.md
 - Advanced rows and drafts:
   https://sapporta.com/grid/guides/advanced-rows.md
 
@@ -39,6 +41,25 @@ master-detail behavior.
   [forms.md](forms.md) for where that draft becomes persistent shape.
 - Preserve search, filters, sort, pagination, CSV export, lookup labels, URL
   state, loading, and errors unless the product requirement changes them.
+
+## Leave Date, Timestamp, And Select Rendering Alone
+
+`date` and `timestamp` are separate presets, chosen from the column's declared
+kind rather than from the value in the cell. A date cell reads `2026-08-23`; a
+timestamp cell reads `2026-08-23 16:38` in the workspace's zone and describes
+the full moment on hover.
+
+- Do not set widths for these columns. Each preset carries its own, and
+  schema-declared sizing wins where it is present.
+- Do not add a date-picker editor to a timestamp column. An `<input type="date">`
+  has nowhere to put the time component and drops it on commit.
+- Do not pass a `zone` option to a column. Read
+  [../days-and-time-zones.md](../days-and-time-zones.md).
+- Do not reintroduce chips for select values. Select-backed columns preserve
+  exact option identity and render as plain text.
+- `on` and `not on` are not offered on a timestamp column. A date control there
+  names a local day and the operator picks the edge: `on or after`/`before` take
+  its first instant, `after`/`on or before` its last.
 
 ## Choose The Interaction
 

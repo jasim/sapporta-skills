@@ -67,6 +67,27 @@ references, merges trusted `serverValues`, validates final foreign-key
 visibility, and stamps request ownership. It prepares values for Drizzle; the
 workflow still executes each insert and returns the result.
 
+## Declare The Child Key Server-Owned
+
+The detail row's parent key is authored on the server. Declaring that in table
+metadata is what turns a caller who submits it into a refusal:
+
+```ts
+// On the detail table: either declaration removes the key from the insert shape.
+references: { parent_id: { apiSettable: false } }
+columns: { parent_id: { apiWritable: false } }
+```
+
+With the declaration, a request carrying `parent_id` answers `422
+VALIDATION_FAILED` naming that column, and writes nothing. Without it, the same
+request answers `201` and the server's parent key silently replaces the value
+the caller sent. The row is correct either way, and the caller is told nothing
+about the value it lost.
+
+This is also what the generated master-with-`$details` create branch relies on,
+so a table that declares `meta.children` should declare the child key
+non-writable on the same pass.
+
 The default `better-sqlite3` transaction callback is synchronous. Keep database
 reads, writes, and synchronous row-security preparation inside it. Perform mail,
 storage, network, and other awaited effects after commit. Leave the callback
@@ -79,8 +100,10 @@ Use an isolated fixture and verify:
 
 - a valid parent and every detail commit together;
 - an invisible referenced row follows the declared concealed-not-found branch;
-- caller-supplied ownership and parent keys are rejected or ignored according to
-  the contract;
+- caller-supplied ownership fields are rejected;
+- a caller-supplied parent key is refused with `422` where the detail table
+  declares that reference `apiSettable: false`, and is silently replaced by the
+  server's parent key where it does not;
 - a failure on any detail insert leaves no parent or earlier detail rows; and
 - returned IDs and server-authored values match authoritative read-back.
 

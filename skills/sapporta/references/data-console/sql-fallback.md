@@ -38,6 +38,11 @@ Use `pnpm exec sapporta sql query "<sql>"` for quick read-only inspection. Use
 `--params '<json-array>'` for bound parameters and `--limit <number>` for row
 limits.
 
+`to_tz_date(column, :zone)` is available here, because the command runs on the
+app's own connection; a bare `sqlite3` shell reports `unknown function`. Never
+`CREATE INDEX` over it — the framework refuses, and accepting it would leave the
+database file writable only by a process that registered the same function.
+
 For risky maintenance SQL, use
 `pnpm exec sapporta sql execute "<sql>" --dry-run` first. Treat the command as
 a one-statement escape hatch. Do not use it for manual transaction scripts;

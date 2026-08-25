@@ -110,8 +110,19 @@ primary key.
   [../frontend/row-projections.md](../frontend/row-projections.md).
 - Use Sapporta semantic column factories for values when available. Use raw
   Drizzle columns for primary keys, foreign keys, and unsupported edge cases.
+  Each factory preserves its column-name literal, so a row read through
+  `TableRow`/`scopedRows()` keeps each column's own type. `pnpm typecheck`
+  (`tsc --noEmit`) is what reports a mismatch; `vite build` erases types without
+  checking them.
+- When a table declares `meta.children`, declare the child's foreign key
+  non-writable on the same pass — `references: { fk: { apiSettable: false } }`
+  on the child, or `columns: { fk: { apiWritable: false } }`. Without it a
+  `$details` row carrying that key is accepted and the value is silently
+  replaced by the created master's key.
 - Use Temporal for date/time defaults and app-level date work. Do not use
-  `Date`, `dayjs`, or `date-fns`.
+  `Date`, `dayjs`, or `date-fns`. A day is a calendar day in the workspace's
+  zone; read [../days-and-time-zones.md](../days-and-time-zones.md) before
+  writing day arithmetic.
 - Keep table and column names in the app's established convention, normally SQL
   `snake_case`, kebab-case filenames, and camelCase exports.
 

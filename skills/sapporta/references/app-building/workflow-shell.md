@@ -69,8 +69,15 @@ sidebar:
 - every generated application table or Manage Data page;
 - every report, including specialist and diagnostic reports;
 - every app-owned importer, maintenance tool, and other specialist page;
-- every settings and configuration page; and
+- every settings and configuration page, including the framework's owner-only
+  Workspace settings screen at `workspace/settings`; and
 - every other Sapporta shell destination.
+
+Do not build a per-user or per-device time zone preference. The workspace keeps
+one calendar and its owner changes it on that screen; see
+[days-and-time-zones.md](days-and-time-zones.md). `SapportaRoutes.tsx` is
+app-owned and is not regenerated, so a project scaffolded before that screen
+shipped has no route for it and needs one added.
 
 Group the links by concrete nouns such as Tables, Reports, Import tools, and
 Settings. Build groups from schema metadata and route or report registries when

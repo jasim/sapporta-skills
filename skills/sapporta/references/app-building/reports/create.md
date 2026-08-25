@@ -18,6 +18,7 @@ data, frontend renderers, date range helpers, and examples:
 - Report routes: https://sapporta.com/docs/reference/reports/report-routes-and-registration.md
 - Grid result shape: https://sapporta.com/docs/reference/reports/grid-dataset.md
 - Scoped report data: https://sapporta.com/docs/reference/reports/scoped-report-helpers.md
+- Day ranges and day buckets: https://sapporta.com/docs/guides/reports/group-and-filter-by-day.md
 - Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
 - Agent access: https://sapporta.com/docs/guides/security/agent-access-and-scoped-tokens.md
 
@@ -96,6 +97,23 @@ Shared frontend helpers should be mechanics only: date defaults, date inputs,
 run/loading/error handling, and common grid/error body rendering. Report
 selection controls are a product decision; add them when they make the workflow
 clear, not as a substitute for route-level navigation.
+
+## Days And Periods
+
+Any report that names a day — a baseline, a bucket, a range — resolves it in the
+active workspace's zone. Read
+[../days-and-time-zones.md](../days-and-time-zones.md) before writing one.
+
+- Inject the application clock as `Temporal.Instant`, never `PlainDate`. Read
+  the zone in the handler with `workspaceTimeZone(auth)`.
+- Pass the zone into the mapper as an argument alongside `asOf`. A mapper that
+  reads an ambient zone produces two datasets from the same rows.
+- Bound with `resolveDateRangeQueryBounds(name, params, zone, now)`. Use
+  `period.days` against a `date` column and the half-open `period.instants`
+  (`>= from`, `< until`) against a `timestamp` column.
+- Bucket with `to_tz_date(column, :zone)` inside the scoped base relation, after
+  the range is bounded.
+- Render `ReportTimeZoneNote` in the toolbar when the numbers depend on the zone.
 
 ## Auth And Data Scope
 

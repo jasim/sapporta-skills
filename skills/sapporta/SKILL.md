@@ -114,6 +114,12 @@ with the `data-console` guide.
 - Apply auth scope on the server. Built-in endpoints apply row visibility;
   custom code must choose route-edge ability/data authority and use scoped row
   helpers.
+- A day is a calendar day in the active workspace's time zone. Never call
+  `Temporal.Now.timeZoneId()` or argless `Temporal.Now.plainDateISO()`; read the
+  zone with `workspaceTimeZone(auth)` on the server and `appTimeZone()` in a
+  screen. Read
+  [app-building/days-and-time-zones.md](references/app-building/days-and-time-zones.md)
+  before writing a report bucket, a date-range filter, or any day arithmetic.
 - Use the public row-scoped data-helper reference before choosing
   `scopedRows()`, a per-table Drizzle guard, a scan, or raw access. Do not infer
   method names or HTTP parsing behavior from older examples.
@@ -128,6 +134,7 @@ Reference docs:
 - OpenAPI discovery: https://sapporta.com/docs/guides/discovery/openapi-and-endpoint-discovery.md
 - Auth and row security: https://sapporta.com/docs/reference/server/auth-and-row-security.md
 - Row-scoped data helpers: https://sapporta.com/docs/reference/server/row-scoped-data-helpers.md
+- Days and time zones: https://sapporta.com/docs/reference/server/days-and-time-zones.md
 
 ## Direct Dispatch
 
@@ -168,6 +175,9 @@ form” does not skip project inspection or the proportional common gate.
 - Demo, sample, example, or fixture data for a development database, seed
   scripts, `pnpm seed`, or a first account to sign in as -> read
   [app-building/seed-demo-data.md](references/app-building/seed-demo-data.md)
+- Days, calendars, time zones, day-bucketed reports, date-range filters,
+  relative periods, or turning a stored timestamp into a day -> read
+  [app-building/days-and-time-zones.md](references/app-building/days-and-time-zones.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [app-building/reports/create.md](references/app-building/reports/create.md)
 - Cell links, drill-through, cross-report navigation, declarative

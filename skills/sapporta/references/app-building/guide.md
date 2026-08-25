@@ -143,6 +143,10 @@ troubleshooting before trying broad dependency changes.
   table validation, semantic values -> read [tables/create.md](tables/create.md)
 - Route-based reports, summaries, ledgers, route/result validation -> read
   [reports/create.md](reports/create.md)
+- Days, calendars, time zones, day-bucketed reports, date-range filters, or
+  relative periods -> read [days-and-time-zones.md](days-and-time-zones.md)
+- Demo, sample, or fixture data, seed scripts, `pnpm seed`, or any command-line
+  script that reads or writes rows -> read [seed-demo-data.md](seed-demo-data.md)
 - Cell links, drill-through, cross-report navigation -> read
   [reports/linking.md](reports/linking.md)
 - Domain endpoints, `TsRestApi`, shared contracts, handlers, uploads,

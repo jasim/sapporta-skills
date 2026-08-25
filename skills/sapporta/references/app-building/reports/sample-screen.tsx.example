@@ -16,6 +16,7 @@ import {
   ReportGridDataset,
   ReportRunButton,
   ReportScreenFrame,
+  ReportTimeZoneNote,
   ReportToolbar,
 } from "@sapporta/frontend/report";
 import {
@@ -137,6 +138,8 @@ export function SampleReport() {
           }
           error={fieldError(visibleErrors, "segment")}
         />
+        {/* Name the calendar the period was resolved in. */}
+        <ReportTimeZoneNote />
       </ReportToolbar>
 
       {urlErrors.length > 0 ? (

@@ -2,9 +2,15 @@
 import {
   DateRangeParseError,
   resolveDateRangeQueryBounds,
-} from "@sapporta/shared";
+} from "@sapporta/shared/daterange";
+import { Temporal, type TimeZone } from "@sapporta/shared/temporal";
 import type { GridDataset } from "@sapporta/shared/grid-dataset";
-import { forbidUnless, TsRestApi, type SapportaEnv } from "@sapporta/server";
+import {
+  forbidUnless,
+  TsRestApi,
+  workspaceTimeZone,
+  type SapportaEnv,
+} from "@sapporta/server";
 import {
   sampleReportContract,
   type SampleReportQuery,
@@ -20,7 +26,7 @@ api.register(
     const auth = c.get("auth");
     forbidUnless(c, auth.ability.can("read", "sample_report"));
 
-    const input = readSampleReportInput(request.query);
+    const input = readSampleReportInput(request.query, workspaceTimeZone(auth));
     if (!input.ok) {
       return {
         status: 400,
@@ -88,15 +94,24 @@ const SAMPLE_ROWS: readonly SampleReportRow[] = [
 
 function readSampleReportInput(
   query: SampleReportQuery,
+  zone: TimeZone,
 ): SampleReportInputResult {
   try {
-    const period = resolveDateRangeQueryBounds("period", query);
+    const period = resolveDateRangeQueryBounds(
+      "period",
+      query,
+      zone,
+      Temporal.Now.instant(),
+    );
+    // `period.days` is inclusive and compares against a `date` column, which is
+    // what the hidden period columns below carry. A `timestamp` column takes
+    // the half-open `period.instants` instead: `>= from` and `< until`.
     return {
       ok: true,
       value: {
         segment: query.segment ?? "all",
-        periodFrom: period.from,
-        periodTo: period.to,
+        periodFrom: period.days.from,
+        periodTo: period.days.to,
       },
     };
   } catch (error) {
