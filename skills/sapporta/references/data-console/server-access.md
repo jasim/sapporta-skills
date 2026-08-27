@@ -33,9 +33,9 @@ Docs:
 - Do not request a token for endpoint discovery against a local development
   server; run `endpoints list` first and only ask if it fails.
 - For live rows, runtime read-back, or discovery against a protected
-  deployment, ask the user to open `/account/profile` in the intended
-  workspace, create an agent access token, choose **Copy setup prompt**, and
-  paste that prompt into the trusted coding-agent session opened at the project
+  deployment, ask the user to open `/account/profile?token=new` in the intended
+  workspace, create an agent access token, choose **Copy prompt**, and paste
+  that prompt into the trusted coding-agent session opened at the project
   root.
 - Only a signed-in person can create a token. On a freshly scaffolded app there
   is no user yet, so state plainly that data commands are unavailable until the
@@ -67,7 +67,7 @@ Docs:
   inspection. If you do, state that it is local developer inspection, not
   workspace-user API behavior.
 
-Token creation is in the browser-facing app at `/account/profile`, not
-necessarily on the API origin. Prefer the app's configured public base URL when
+Token creation is in the browser-facing app at `/account/profile?token=new`,
+not necessarily on the API origin. Prefer the app's configured public base URL when
 available; otherwise derive the most likely local frontend URL from the dev
 server output or environment.
